@@ -1,0 +1,135 @@
+.daily {
+  /* The wheel and its button are the whole page, so it should not need scrolling. */
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 16px;
+}
+
+.daily__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.daily__status {
+  min-height: 42px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.daily__status.is-visible {
+  border-color: var(--border);
+  background: rgba(0, 0, 0, 0.28);
+  opacity: 1;
+}
+
+.daily__status strong {
+  color: var(--yellow);
+}
+
+/* Wheel */
+.daily__wheel {
+  position: relative;
+  /* Also bounded by the viewport height, so the wheel and its button fit without scrolling. */
+  width: min(72vw, 400px, 46vh);
+  aspect-ratio: 1;
+  margin: 2px 0;
+  border-radius: 50%;
+  /* The glow sits under the rim, so the wheel reads as lit rather than pasted on. */
+  box-shadow: 0 0 60px rgba(0, 186, 255, 0.16), 0 24px 50px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.4s ease;
+}
+
+.daily__wheel.is-spinning {
+  box-shadow: 0 0 90px rgba(0, 186, 255, 0.3), 0 24px 50px rgba(0, 0, 0, 0.5);
+}
+
+.daily__wheel-loading {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.wheel,
+.wheel-rim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wheel {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.15, 0.85, 0.2, 1);
+}
+
+.wheel-rim {
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Pointer: a notch cut into the rim at the top, drawn in CSS. */
+.daily__pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 3;
+  width: 26px;
+  height: 32px;
+  background: linear-gradient(180deg, #ffd873, var(--yellow));
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  filter: drop-shadow(0 4px 10px rgba(246, 168, 0, 0.55));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.daily__text {
+  max-width: 460px;
+  color: var(--text-dim);
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* The action plate, as on Adventures and the outpost. */
+.daily__spin.btn {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  min-width: 220px;
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.daily__spin.btn:hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+/* Waiting for tomorrow is this button's normal state, so it stays readable. */
+.daily__spin.btn:disabled {
+  opacity: 0.7;
+}

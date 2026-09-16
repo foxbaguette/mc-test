@@ -1,0 +1,1276 @@
+/* Actions are plates, as on Adventures, each in the colour it already carries. */
+.builder .btn,
+.bmodal .btn {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.builder .btn:hover:not(:disabled),
+.bmodal .btn:hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+/* Not being able to afford an upgrade yet is the common state here: keep it readable. */
+.builder .btn:disabled,
+.bmodal .btn:disabled {
+  opacity: 0.6;
+}
+
+.builder {
+  --r-green: #72c630;
+  --r-red: #ff4141;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.builder__status {
+  margin: 4px 0;
+  font-family: var(--font-heading);
+  font-size: clamp(17px, 2.2vw, 26px);
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.builder-skel--top {
+  height: 96px;
+}
+
+.builder-skel--col {
+  height: 560px;
+}
+
+.builder-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 24px;
+}
+
+.builder-text {
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+/* Welcome */
+.builder-welcome {
+  display: grid;
+  grid-template-columns: minmax(0, 510px) minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+  padding: clamp(20px, 4vw, 48px);
+}
+
+.builder-welcome__art {
+  width: 100%;
+  border-radius: 16px;
+}
+
+.builder-welcome__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.builder-welcome__title {
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 3vw, 32px);
+  line-height: 1.2;
+}
+
+.builder-welcome__body p {
+  color: var(--text-dim);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.builder-welcome__body p svg {
+  display: inline;
+  vertical-align: -3px;
+}
+
+.builder-welcome__body .builder-welcome__note {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.builder-welcome .btn {
+  min-width: 260px;
+  margin-top: 8px;
+}
+
+/* Season HUD: one row of readouts above the outpost. */
+.builder-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.builder-hud__plate {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+}
+
+.builder-hud__storage {
+  flex: 1 1 320px;
+  min-width: 0;
+  border-left-color: var(--r-green);
+  cursor: help;
+}
+
+.builder-hud__resources {
+  color: var(--r-green);
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.builder-hud__resources small {
+  color: var(--text-faint);
+  font-size: 14px;
+}
+
+.builder-hud__rate {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 12px;
+}
+
+/* The season clock is running: its own line above the readouts, as on Adventures. */
+.builder-hud__season {
+  display: inline-flex;
+  align-self: center;
+  margin-bottom: -6px;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+}
+
+.builder-hud__season::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 8px rgba(246, 168, 0, 0.8);
+  animation: bld-blink 2.4s ease-in-out infinite;
+}
+
+@keyframes bld-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.builder-hud__done {
+  color: var(--yellow);
+}
+
+.builder-hud__prize {
+  border-left-color: var(--yellow);
+}
+
+.builder-hud__label {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.builder-hud__pool {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.builder-hud__pool > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.builder-hud__pool svg {
+  width: 20px;
+  height: 20px;
+}
+
+.builder-hud__link {
+  align-self: center;
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.builder-hud__leaderboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.builder-hud__leaderboard:hover {
+  border-color: rgba(0, 186, 255, 0.45);
+  background: rgba(0, 186, 255, 0.1);
+  color: var(--text);
+}
+
+.builder-hud__leaderboard svg path {
+  fill: currentColor;
+}
+
+.builder-meter {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.builder-meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4f9a1f, var(--r-green));
+  transition: width 0.1s linear;
+}
+
+.builder-meter.is-full > span {
+  background: linear-gradient(90deg, #d9a400, #ffcc33);
+}
+
+/* Building rows */
+.builder-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Side by side, both columns end level: rows share any extra height. */
+.builder-group > .bld {
+  flex: 1 1 auto;
+}
+
+.bld {
+  position: relative;
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr) 150px;
+  align-items: stretch;
+  gap: 14px;
+  min-height: 104px;
+  padding-right: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* A lit edge along the top, as on the Adventures cards. */
+.bld::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(114, 198, 48, 0.5), rgba(0, 186, 255, 0.35), transparent);
+  opacity: 0.7;
+}
+
+.bld:hover {
+  border-color: rgba(0, 186, 255, 0.26);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.bld__art {
+  position: relative;
+  display: block;
+  align-self: stretch;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.bld__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+/* Inner frame: the art reads as a viewport onto the building. */
+.bld__art::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.2s ease;
+}
+
+.bld:hover .bld__art img {
+  transform: scale(1.05);
+}
+
+.bld:hover .bld__art::after {
+  border-color: rgba(0, 186, 255, 0.35);
+}
+
+.bld__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 0;
+}
+
+.bld__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.bld__name {
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  text-transform: capitalize;
+  transition: color 0.15s ease;
+}
+
+.bld__name:hover {
+  color: var(--blue);
+}
+
+.bld__level {
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.bld__rate {
+  color: var(--r-green);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.bld__desc {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Sockets: one per slot the building can ever hold. */
+.bld__sockets {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.bsocket {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 40px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: radial-gradient(120% 90% at 50% 0, rgba(0, 186, 255, 0.12), transparent 65%), rgba(0, 0, 0, 0.3);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.bsocket img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bsocket__level {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 11px;
+}
+
+.bsocket:hover {
+  border-color: rgba(0, 186, 255, 0.55);
+  transform: translateY(-2px);
+}
+
+.bsocket.is-filled {
+  border-color: rgba(114, 198, 48, 0.55);
+}
+
+/* An empty slot the level already unlocked is the one asking for a card. */
+.bsocket.is-open {
+  border-style: dashed;
+  border-color: rgba(0, 186, 255, 0.5);
+}
+
+.bsocket.is-locked {
+  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0.5;
+}
+
+.bld__actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.bld__upgrade {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  text-align: center;
+}
+
+.bld__cost {
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bld__cooldown {
+  font-weight: 600;
+}
+
+.bld__afford {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.bld__afford.is-hidden {
+  visibility: hidden;
+}
+
+/* How long until the storage holds enough, under the bar that shows how far it is. */
+.bld__eta {
+  min-height: 14px;
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.bld__eta.is-blocked {
+  color: var(--text-dim);
+}
+
+.bld__afford > span {
+  display: block;
+  height: 100%;
+  background: var(--blue);
+  transition: width 0.1s linear;
+}
+
+.bld.is-locked .bld__art img {
+  filter: grayscale(1) brightness(0.55);
+}
+
+.bld.is-locked .bld__body {
+  opacity: 0.6;
+}
+
+/* Specials carry a description, so they get a taller card. */
+.bld--special {
+  min-height: 132px;
+}
+
+/* Dialogs */
+.bmodal {
+  width: min(1180px, 94vw);
+  max-height: 92vh;
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border-2);
+  border-radius: 18px;
+  background: #0b1a2c;
+  color: var(--text);
+  overflow: hidden;
+}
+
+.bmodal::backdrop {
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+}
+
+.bmodal[open] {
+  animation: bld-in 0.18s ease-out;
+}
+
+@keyframes bld-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+.bmodal__body {
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+}
+
+.bmodal__head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 14px 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.bmodal__head::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(114, 198, 48, 0.5), rgba(0, 186, 255, 0.35), transparent);
+}
+
+.bmodal__title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  text-transform: capitalize;
+}
+
+.bmodal__content {
+  padding: 20px 22px 24px;
+  overflow-y: auto;
+}
+
+.bdlg__panel {
+  padding: 16px 18px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+}
+
+.bdlg__title {
+  margin-bottom: 10px;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+}
+
+/* Without the staking column there is nothing to fill a wide panel with. */
+.bmodal:has(.bdetail--single) {
+  width: min(780px, 94vw);
+}
+
+.bdlg--board .bmodal__content {
+  padding: 0;
+}
+
+/* Building detail */
+.bdetail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.bdetail--single {
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+}
+
+.bdetail__col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.bdetail__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.bdetail__name {
+  font-family: var(--font-heading);
+  font-size: 24px;
+}
+
+.bdetail__level {
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+}
+
+.bdetail__rate {
+  margin-left: auto;
+  color: var(--r-green);
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.bdetail__upgrade {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.bdetail__cost {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 160px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.bdetail__art {
+  width: 110px;
+  border-radius: 18px;
+}
+
+.bslots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.bslot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.2);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.bslot img {
+  width: 100%;
+  max-width: 140px;
+  aspect-ratio: 220 / 325;
+  object-fit: contain;
+}
+
+.bslot__level {
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 13px;
+}
+
+.bslot:disabled {
+  cursor: default;
+}
+
+.bslot.is-locked {
+  opacity: 0.4;
+}
+
+.bslot.is-open {
+  border-style: dashed;
+  border-color: rgba(0, 186, 255, 0.45);
+}
+
+.bslot.is-staked {
+  border-color: rgba(114, 198, 48, 0.45);
+}
+
+.bslot.is-picked {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0, 186, 255, 0.2);
+  cursor: pointer;
+}
+
+.bslot.is-picked:hover {
+  border-color: var(--r-red);
+  box-shadow: 0 0 0 3px rgba(255, 65, 65, 0.2);
+}
+
+.bdetail__bonus {
+  margin: 18px 0 12px;
+  color: var(--r-green);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  text-align: center;
+}
+
+.bschema {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.bschema__btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.bschema__btn:hover {
+  color: var(--text);
+}
+
+.bschema__btn.is-active {
+  border-color: transparent;
+  background: var(--yellow);
+  color: #1d1400;
+}
+
+.bnfts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+  max-height: 640px;
+  padding: 4px 4px 4px 0;
+  overflow-y: auto;
+}
+
+.bnft {
+  position: relative;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.bnft:not(:disabled):hover {
+  border-color: rgba(0, 186, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.bnft:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bnft img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 220 / 325;
+  object-fit: contain;
+}
+
+.bnft__bonus,
+.bnft__count {
+  position: absolute;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(5, 16, 30, 0.85);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bnft__bonus {
+  bottom: 6px;
+  left: 6px;
+  color: var(--r-green);
+}
+
+.bnft__count {
+  top: 6px;
+  right: 6px;
+}
+
+.bnft--skeleton {
+  aspect-ratio: 220 / 325;
+}
+
+/* Spaceport */
+.bmarket__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bmarket__title svg {
+  width: 22px;
+  height: 22px;
+}
+
+.bfield {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bfield__label {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.bfield__row {
+  position: relative;
+  display: flex;
+}
+
+.bfield__input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 76px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font-size: 18px;
+}
+
+.bfield__input:focus {
+  border-color: var(--blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 186, 255, 0.2);
+}
+
+.bfield__max {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  bottom: 6px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: rgba(0, 186, 255, 0.15);
+  color: var(--blue);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bfield__max:hover {
+  background: rgba(0, 186, 255, 0.25);
+}
+
+.bmarket__estimate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0;
+  font-family: var(--font-heading);
+}
+
+.bmarket__estimate > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+}
+
+.bmarket__estimate strong {
+  font-size: 22px;
+}
+
+.bspend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bspend__opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.bspend__opt .btn {
+  min-height: 62px;
+}
+
+.bspend__btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: 1.25;
+}
+
+.bspend__btn svg {
+  display: inline;
+  width: 15px;
+  height: 15px;
+  vertical-align: -2px;
+}
+
+.bspend__est {
+  margin-top: 4px;
+  color: var(--text-dim);
+}
+
+/* Confirm dialog */
+.bdialog {
+  width: min(92vw, 380px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #0b1a2c;
+  color: var(--text);
+}
+
+.bdialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.bdialog[open] {
+  animation: bdialog-in 0.18s ease-out;
+}
+
+@keyframes bdialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.bdialog__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.bdialog__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 22px;
+}
+
+.bdialog__title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+}
+
+.bdialog__qp,
+.bdialog__r {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.bdialog__qp svg {
+  width: 24px;
+  height: 24px;
+}
+
+.bdialog__r {
+  color: var(--r-green);
+}
+
+.bdialog__arrow {
+  color: var(--text-dim);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.bdialog__desc {
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* Tables */
+.btable-scroll {
+  margin: -6px;
+  padding: 0 6px;
+  overflow-x: auto;
+}
+
+.btable {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  font-size: 14px;
+}
+
+.btable--compact {
+  min-width: 620px;
+}
+
+.btable th {
+  padding: 8px 12px;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.btable td {
+  padding: 10px 12px;
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.btable td:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.btable td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.btable tr.is-me td {
+  background: rgba(0, 186, 255, 0.14);
+}
+
+.btable__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: -4px -8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.btable__sort svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btable__sort:hover,
+.btable__sort.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.btable__name {
+  max-width: 200px;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.btable__rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.btable__rank svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btable__builds {
+  display: flex;
+  gap: 6px;
+}
+
+.btable__build {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+.btable__build img {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.btable__gap {
+  width: 8px;
+}
+
+.btable__skeleton td {
+  padding: 0;
+  background: none;
+}
+
+.btable__skeleton .skeleton {
+  height: 46px;
+  border-radius: 10px;
+}
+
+@media (max-width: 1100px) {
+  .builder-columns,
+  .bdetail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .builder-welcome {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .builder-welcome__art {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Art down the left, everything else stacked beside it. */
+  .bld,
+  .bld--special {
+    grid-template-columns: 92px minmax(0, 1fr);
+    grid-template-areas:
+      'art body'
+      'art actions';
+    min-height: 0;
+    padding-right: 12px;
+  }
+
+  .bld__art {
+    grid-area: art;
+  }
+
+  .bld__body {
+    grid-area: body;
+  }
+
+  .bld__actions {
+    grid-area: actions;
+  }
+
+  /* Names and rates stay on one line, so a card does not grow a row per word. */
+  .bld__head {
+    flex-wrap: wrap;
+  }
+
+  .bld__name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bld__rate {
+    white-space: nowrap;
+  }
+
+  .bld__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-top: 0;
+  }
+
+  .bld__actions > * {
+    flex: 1 1 130px;
+  }
+
+  .bdetail__art {
+    width: 84px;
+  }
+
+  .bslots {
+    gap: 8px;
+  }
+
+  .bspend {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .builder-welcome .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}

@@ -1,0 +1,688 @@
+.menu {
+  gap: 28px;
+}
+
+.menu-grid {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Profile and Activity share one row height on desktop. */
+.menu-grid--play {
+  grid-template-columns: minmax(260px, 380px) 1fr;
+  align-items: stretch;
+}
+
+.menu-grid--two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.menu-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Key/value list used by profile and weekly statistics */
+.stat-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-list > div:last-child {
+  border-bottom: none;
+}
+
+.stat-list dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+}
+
+.stat-list dd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.stat-list svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Profile */
+.profile__id {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.profile__avatar.avatar {
+  border-width: 3px;
+}
+
+.profile__names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.profile__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 20px;
+  white-space: nowrap;
+}
+
+.profile--join {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-color: rgba(255, 1, 255, 0.3);
+  background: linear-gradient(160deg, rgba(222, 29, 222, 0.14), rgba(0, 186, 255, 0.06));
+}
+
+.profile__perks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 18px;
+  color: var(--text-dim);
+}
+
+.profile__perks li::marker {
+  color: var(--pink);
+}
+
+/* Feeds: activity and sponsors */
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+}
+
+.feed__loading {
+  height: 64px;
+}
+
+.feed__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radius);
+  transition: background 0.15s ease;
+  animation: mc-rise 0.25s ease-out both;
+}
+
+.feed__item:hover {
+  background: var(--surface-2);
+}
+
+.feed__avatar {
+  position: relative;
+  flex: none;
+}
+
+.feed__level {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid var(--bg-2);
+  border-radius: 999px;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.feed__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.feed__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+}
+
+.feed__meta time {
+  font-size: 12px;
+}
+
+.feed__body p {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* News */
+.news {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.news__loading {
+  height: 320px;
+}
+
+.news__card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.news__card:hover {
+  border-color: rgba(0, 186, 255, 0.45);
+  transform: translateY(-2px);
+}
+
+.news__media {
+  aspect-ratio: 16 / 9;
+  background: var(--bg-3);
+}
+
+.news__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.news__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.news__meta {
+  font-size: 12px;
+}
+
+.news__title {
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.news__desc {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-dim);
+  font-size: 14px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.news__link,
+.tutorial__link {
+  margin-top: auto;
+  color: var(--pink);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Tutorials */
+.tutorial__loading {
+  height: 380px;
+}
+
+.tutorial {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.tutorial:hover {
+  border-color: rgba(255, 1, 255, 0.45);
+  transform: translateY(-2px);
+}
+
+.tutorial__img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+.tutorial__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.tutorial__title {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* Weekly statistics and tips */
+.weekly__prize {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  border: 1px solid rgba(246, 168, 0, 0.28);
+  border-left: 2px solid var(--yellow);
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(90deg, rgba(246, 168, 0, 0.16), rgba(246, 168, 0, 0.03));
+}
+
+.weekly__prize span {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.weekly__prize strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 20px;
+}
+
+.weekly__prize svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Home banners: a plate with a coloured edge and a glow from the left, like the Alien Legends one. */
+.weekly.panel,
+.tip.panel {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 3px 14px 14px 3px;
+  box-shadow: none;
+}
+
+.weekly.panel {
+  padding: 14px 20px 16px;
+  border-left: 2px solid var(--yellow);
+  background:
+    radial-gradient(70% 200% at 0 50%, rgba(246, 168, 0, 0.14), transparent 60%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+
+.weekly .panel__head {
+  margin-bottom: 10px;
+}
+
+.weekly .panel__title,
+.tip .panel__title {
+  color: var(--text-faint);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+/* Prize pool on the left, the week's figures beside it split by hairlines. */
+.weekly__body {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  align-items: center;
+}
+
+.weekly .weekly__prize {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 0;
+  padding: 0 24px 0 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+}
+
+.weekly .weekly__prize strong {
+  font-size: 28px;
+  text-shadow: 0 0 22px rgba(246, 168, 0, 0.35);
+}
+
+.weekly .stat-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px 0;
+}
+
+.weekly .stat-list > div {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 18px;
+  border: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0;
+  background: none;
+}
+
+.weekly .stat-list > div:last-child {
+  border-bottom: none;
+}
+
+.weekly .stat-list dt {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Inline, so a wrapped label keeps its icon right after the last word. */
+.weekly .stat-list dt {
+  display: block;
+  line-height: 1.5;
+}
+
+.weekly .stat-list dt svg {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-left: 5px;
+  vertical-align: -2px;
+}
+
+.weekly .stat-list dd {
+  font-family: var(--font-heading);
+  font-size: 17px;
+}
+
+.tip.panel {
+  display: grid;
+  grid-template-areas:
+    'icon title'
+    'icon text';
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 14px;
+  padding: 12px 20px;
+  border-left: 2px solid var(--blue);
+  background:
+    radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.13), transparent 60%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+
+.tip .panel__head {
+  grid-area: title;
+  margin-bottom: 0;
+}
+
+.tip__body {
+  display: contents;
+}
+
+.tip__body svg {
+  grid-area: icon;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 0 8px rgba(0, 186, 255, 0.45));
+}
+
+.tip__body p {
+  grid-area: text;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .menu {
+    gap: 20px;
+  }
+
+  .menu-grid--play,
+  .menu-grid--two,
+  .news,
+  .weekly__body {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly .stat-list {
+    display: flex;
+    gap: 0;
+  }
+
+  .weekly .stat-list > div {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: none;
+  }
+
+  .weekly .stat-list > div:last-child {
+    border-bottom: none;
+  }
+
+  .weekly .weekly__prize {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  }
+
+  .weekly .weekly__prize strong {
+    font-size: 20px;
+  }
+
+}
+
+/* What the player can do, the one thing the home page is for. */
+.next {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.next__title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+}
+
+.next__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.next-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  /* Explicit rows: the icon spans all three lines beside it. */
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  gap: 1px 12px;
+  padding: 12px 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px 14px 14px 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.next-card:hover {
+  border-color: rgba(0, 186, 255, 0.3);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Something is waiting for the player here. */
+.next-card.is-ready {
+  border-color: rgba(246, 168, 0, 0.35);
+  border-left-color: var(--yellow);
+  background: linear-gradient(90deg, rgba(246, 168, 0, 0.12), rgba(246, 168, 0, 0.02));
+}
+
+.next-card__icon {
+  display: grid;
+  grid-row: 1 / 4;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+}
+
+.next-card__icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.next-card__title,
+.next-card__state,
+.next-card__detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.next-card__title {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.next-card__state {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.next-card.is-ready .next-card__state {
+  color: var(--yellow);
+}
+
+.next-card__detail {
+  color: var(--text-dim);
+  font-size: 11.5px;
+}
+
+/* Alien Legends, for players who have not tried it yet. */
+.ale-banner {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid #ffb800;
+  border-radius: 3px 14px 14px 3px;
+  background:
+    radial-gradient(120% 160% at 0 50%, rgba(255, 184, 0, 0.16), transparent 60%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.ale-banner:hover {
+  border-color: rgba(255, 184, 0, 0.45);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+.ale-banner__logo {
+  width: 150px;
+  flex: none;
+}
+
+.ale-banner__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ale-banner__text strong {
+  font-family: var(--font-heading);
+  font-size: 15px;
+}
+
+.ale-banner__text span {
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ale-banner__cta {
+  padding: 9px 20px;
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  border-left: 2px solid #ffb800;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(255, 184, 0, 0.2), rgba(255, 184, 0, 0.06));
+  color: #ffd873;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ale-banner:hover .ale-banner__cta {
+  background: linear-gradient(90deg, rgba(255, 184, 0, 0.34), rgba(255, 184, 0, 0.12));
+  color: #fff0cc;
+}
+
+@media (max-width: 700px) {
+  .ale-banner {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .ale-banner__logo {
+    width: 130px;
+  }
+}

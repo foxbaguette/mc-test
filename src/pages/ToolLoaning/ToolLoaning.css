@@ -1,0 +1,564 @@
+/* Actions are plates, as on Adventures and the outpost, each in its own colour. */
+.loaning .btn,
+.tl-dialog .btn {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.loaning .btn:hover:not(:disabled),
+.tl-dialog .btn:hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+/* A tool on cooldown is the common state here, so its countdown stays readable. */
+.loaning .btn:disabled,
+.tl-dialog .btn:disabled {
+  opacity: 0.6;
+}
+
+.loaning {
+  margin-top: -8px;
+}
+
+.loaning__nav {
+  display: flex;
+  max-width: 100%;
+}
+
+.is-positive {
+  color: var(--green);
+}
+
+.is-negative {
+  color: var(--red);
+}
+
+.loan-hint {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* The player's TLM, above every tab: borrowing spends it, lending fills it. */
+.tl-wallet {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.tl-plate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  text-align: left;
+}
+
+.tl-plate__label {
+  grid-column: 1;
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tl-plate__value {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.tl-plate__value svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tl-plate__btn.btn {
+  grid-row: 1 / -1;
+  grid-column: 2;
+  min-width: 110px;
+}
+
+/* A tab's own explanation, where the tab needs one. */
+.tl-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(0, 186, 255, 0.06);
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.tl-hint svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* Sections */
+.tl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tl-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tl-section__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+}
+
+.tl-section__count {
+  padding: 3px 10px;
+  border: 1px solid rgba(246, 168, 0, 0.35);
+  border-radius: 999px;
+  background: rgba(246, 168, 0, 0.12);
+  color: var(--yellow);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+/* Tool cards */
+.tl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.tl-card__loading {
+  aspect-ratio: 190 / 330;
+  border-radius: 14px;
+}
+
+.tl-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid var(--rarity);
+  border-radius: 3px 14px 14px 3px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rarity) 12%, transparent), var(--surface) 55%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.tl-card:hover {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+/* A tool that can be used right now says so before anything else. */
+.tl-card.is-ready {
+  border-color: rgba(246, 168, 0, 0.45);
+  border-left-color: var(--yellow);
+}
+
+.tl-card.is-ready::after {
+  content: 'READY';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(246, 168, 0, 0.16);
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.tl-card__art {
+  position: relative;
+  padding: 10px 10px 0;
+}
+
+.tl-card__art img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 220 / 325;
+  object-fit: contain;
+}
+
+.tl-card__count {
+  position: absolute;
+  bottom: 4px;
+  left: 14px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(5, 16, 30, 0.85);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tl-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+}
+
+.tl-card__title {
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tl-card__sub {
+  color: var(--text-faint);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tl-card__note {
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.tl-card__action {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* Readouts on a card */
+.tl-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tl-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tl-stat svg {
+  width: 14px;
+  height: 14px;
+}
+
+.tl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+}
+
+.tl-meta dt {
+  color: var(--text-faint);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tl-meta dd {
+  font-weight: 700;
+}
+
+/* Deposit dialog */
+.tl-dialog {
+  width: min(560px, 94vw);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border-2);
+  border-radius: 18px;
+  background: #0b1a2c;
+  color: var(--text);
+}
+
+.tl-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.tl-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 22px 22px;
+}
+
+.tl-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tl-dialog__title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+}
+
+.tl-dialog__balances {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.tl-dialog__balances .tl-plate {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tl-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.tl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tl-field__label {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tl-field__row {
+  display: flex;
+  gap: 10px;
+}
+
+.tl-field__input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.tl-field__input:focus {
+  border-color: var(--blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 186, 255, 0.2);
+}
+
+@media (max-width: 600px) {
+  .tl-plate__btn.btn {
+    min-width: 92px;
+  }
+
+  .tl-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* Loaning config */
+.config-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.config-toolbar__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.config-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-row__loading {
+  height: 64px;
+}
+
+.config-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px 8px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.config-row:not(.is-on) {
+  opacity: 0.6;
+}
+
+.config-row.is-on {
+  border-color: rgba(0, 186, 255, 0.35);
+}
+
+.config-row:hover {
+  background: var(--surface-2);
+}
+
+.config-row__thumb {
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border: 2px solid var(--border-2);
+  border-radius: 10px;
+  background: var(--bg-3);
+}
+
+.config-row__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
+  transform: scale(1.5);
+  transform-origin: center 20%;
+}
+
+.config-row__name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.config-row__name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.config-row__stats {
+  display: flex;
+  gap: 6px;
+}
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  display: inline-flex;
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle__track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  transition: background 0.15s ease;
+}
+
+.toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.toggle input:checked + .toggle__track {
+  background: var(--blue);
+}
+
+.toggle input:checked + .toggle__track .toggle__thumb {
+  transform: translateX(20px);
+}
+
+.toggle input:focus-visible + .toggle__track {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .loaning__nav .segmented {
+    width: 100%;
+  }
+
+  .loaning__nav .segmented button {
+    flex: 1;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+
+  .config-toolbar,
+  .config-toolbar__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .config-toolbar__actions .btn {
+    width: 100%;
+  }
+
+  .tl-field__row {
+    flex-direction: column;
+  }
+}

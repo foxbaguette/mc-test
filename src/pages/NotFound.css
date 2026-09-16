@@ -1,0 +1,68 @@
+.not-found {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: var(--gutter);
+  background:
+    linear-gradient(180deg, rgba(5, 16, 30, 0.6), rgba(5, 16, 30, 0.9)),
+    url(/assets/background/bg-login.jpeg) center / cover no-repeat,
+    var(--bg);
+}
+
+.not-found__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 560px;
+  padding: 40px 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(5, 16, 30, 0.75);
+  backdrop-filter: blur(10px);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.not-found__eyebrow {
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.not-found__404 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: clamp(72px, 14vw, 120px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.not-found__planet svg {
+  width: clamp(64px, 12vw, 104px);
+  height: clamp(64px, 12vw, 104px);
+}
+
+.not-found__label {
+  font-size: 22px;
+}
+
+.not-found__desc {
+  color: var(--text-dim);
+}
+
+.not-found__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.not-found__actions svg {
+  width: 20px;
+  height: 20px;
+}

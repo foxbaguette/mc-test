@@ -1,0 +1,69 @@
+:root {
+  --tabbar-h: 64px;
+}
+
+.tabbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .tabbar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 150;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--border-2);
+    background: rgba(5, 16, 30, 0.96);
+    backdrop-filter: blur(14px);
+  }
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: var(--tabbar-h);
+  padding: 6px 2px;
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.1;
+}
+
+/* Icons keep their colour; the label and the top marker show which tab is current. */
+.tab svg {
+  flex: none;
+  width: 26px;
+  height: 24px;
+}
+
+.tab.is-active {
+  color: var(--blue);
+}
+
+.tab.is-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--blue);
+  box-shadow: 0 0 8px rgba(0, 186, 255, 0.8);
+}
+
+.tab.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  filter: grayscale(1);
+}

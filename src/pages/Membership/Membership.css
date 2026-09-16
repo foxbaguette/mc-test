@@ -1,0 +1,433 @@
+.member {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Plate buttons, as in Adventures and Mining. */
+.member .btn {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.member .btn:hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+.member .btn:disabled {
+  opacity: 0.6;
+}
+
+.member .btn--ghost {
+  --btn-accent: #8a9bb0;
+}
+
+.member__intro {
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 2.4vw, 26px);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.member__lead {
+  max-width: 90ch;
+  margin: 0 auto;
+  color: var(--text-dim);
+  line-height: 1.65;
+  text-align: center;
+}
+
+.member__lead svg {
+  display: inline;
+  width: 16px;
+  height: 16px;
+  vertical-align: -3px;
+}
+
+/* Referral and status notes: banner plates. */
+.member__referral,
+.member__status {
+  padding: 14px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid var(--blue);
+  border-radius: 3px 14px 14px 3px;
+  background:
+    radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.12), transparent 60%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+
+.member__referral {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--text-dim);
+}
+
+.member__referral p svg {
+  display: inline;
+  width: 16px;
+  height: 16px;
+  vertical-align: -3px;
+}
+
+.member__status.is-revoked {
+  border-left-color: #ff4f6b;
+  background:
+    radial-gradient(60% 220% at 0 50%, rgba(255, 79, 107, 0.14), transparent 60%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+
+.member__status-title {
+  margin-bottom: 6px;
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.member__status p {
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Tiers: plate cards; the player's own tier is lit in gold. */
+.member__tiers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.member__tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px 18px 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px 14px 14px 3px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  text-align: center;
+}
+
+.member__tier.is-current {
+  border-color: rgba(246, 168, 0, 0.3);
+  border-left-color: var(--yellow);
+  background:
+    radial-gradient(90% 40% at 50% 0, rgba(246, 168, 0, 0.14), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+}
+
+.member__tier.is-current::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, var(--yellow), var(--blue) 70%, transparent);
+}
+
+.member__tier-title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  letter-spacing: 0.1em;
+}
+
+.member__tier.is-current .member__tier-title {
+  color: var(--yellow);
+}
+
+.member__tier-status {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+}
+
+.member__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.member__badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.member__badge.is-active {
+  color: #7ee787;
+}
+
+.member__badge.is-active::before {
+  background: #40d727;
+  box-shadow: 0 0 8px rgba(64, 215, 39, 0.7);
+}
+
+.member__badge.is-pending {
+  color: #ffd873;
+}
+
+.member__badge.is-pending::before {
+  background: var(--yellow);
+  box-shadow: 0 0 8px rgba(246, 168, 0, 0.8);
+  animation: member-blink 2.4s ease-in-out infinite;
+}
+
+.member__badge.is-revoked {
+  border-color: rgba(255, 79, 107, 0.4);
+  color: #ff8095;
+}
+
+.member__badge.is-revoked::before {
+  background: #ff4f6b;
+  box-shadow: 0 0 8px rgba(255, 79, 107, 0.7);
+}
+
+@keyframes member-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.member__features {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member__features li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 14px;
+  text-align: left;
+}
+
+.member__features li:last-child {
+  border-bottom: 0;
+}
+
+.member__features li.is-off {
+  color: var(--text-faint);
+}
+
+.member__features li.is-off svg {
+  opacity: 0.6;
+}
+
+.member__features svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.member__tier-desc {
+  margin-top: auto;
+  color: var(--text-faint);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* Join form */
+.member__unlocks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Framed art, like the landing page. */
+.member__unlock {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 2px solid var(--blue);
+  border-radius: 3px 14px 14px 3px;
+  background: var(--surface);
+}
+
+.member__unlock img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.member__unlock:hover img {
+  transform: scale(1.04);
+}
+
+.member__unlock figcaption {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 40px 14px 12px;
+  background: linear-gradient(180deg, rgba(5, 16, 30, 0), rgba(5, 16, 30, 0.92));
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.member__join {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid var(--yellow);
+  border-radius: 3px 14px 14px 3px;
+  background:
+    radial-gradient(50% 60% at 0 0, rgba(246, 168, 0, 0.1), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+}
+
+.member__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.member__input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  text-align: center;
+}
+
+.member__input:focus {
+  border-color: var(--blue);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 186, 255, 0.2);
+}
+
+.member__hint {
+  color: var(--text-faint);
+  font-size: 12px;
+  text-align: center;
+}
+
+.member__terms {
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-faint);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.member__join-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.member__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 20px;
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.member__social {
+  display: flex;
+  gap: 12px;
+}
+
+.member__social a {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.member__social a:hover {
+  border-color: rgba(0, 186, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.member__social svg {
+  width: 28px;
+  height: 28px;
+}
+
+@media (max-width: 900px) {
+  .member__tiers,
+  .member__unlocks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .member__badge.is-pending::before {
+    animation: none;
+  }
+}

@@ -1,0 +1,353 @@
+.maxi {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Plate buttons, as in Adventures and Mining. */
+.maxi .btn {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.maxi .btn:hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+.maxi .btn:disabled {
+  opacity: 0.6;
+}
+
+/* Equipped tools: one plate per tool, edged in its rarity. */
+.maxi-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.maxi-tools {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.maxi-tool {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 8px 18px 8px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid var(--rarity, var(--border-2));
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--rarity, #fff) 14%, transparent),
+    rgba(255, 255, 255, 0.015)
+  );
+}
+
+.maxi-tool--skeleton {
+  width: 200px;
+  height: 64px;
+  border-radius: 3px 12px 12px 3px;
+}
+
+.maxi-tool__img {
+  position: relative;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--rarity, #fff) 45%, transparent);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Crop the card to its artwork. */
+.maxi-tool__img img {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  width: 150%;
+  max-width: none;
+  transform: translateX(-50%);
+}
+
+.maxi-tool__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.maxi-tool__text strong {
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.maxi-tool__rarity {
+  /* Lifted toward white: the darker rarity colours are hard to read at this size. */
+  color: color-mix(in srgb, var(--rarity, var(--text-dim)) 70%, #fff);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Planets */
+.maxi-planets {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.maxi-planet--skeleton {
+  height: 270px;
+  border-radius: 3px 14px 14px 3px;
+}
+
+.maxi-planet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 20px 12px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px 14px 14px 3px;
+  background:
+    radial-gradient(60% 40% at 50% 22%, rgba(0, 186, 255, 0.08), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  text-align: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.maxi-planet:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  transform: translateY(-2px);
+}
+
+.maxi-planet__img {
+  width: 92px;
+  height: 92px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 28px rgba(0, 186, 255, 0.12);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.maxi-planet:hover .maxi-planet__img {
+  transform: rotate(12deg) scale(1.04);
+}
+
+.maxi-planet__name {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+}
+
+.maxi-planet__land {
+  min-height: 2.8em;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* The estimate as a stat plate at the foot of the card. */
+.maxi-planet__estimate {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-self: stretch;
+  margin-top: auto;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.maxi-planet__label {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.maxi-planet__value {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* The pick: gold edge, lit top and a warm glow behind the planet. */
+.maxi-planet.is-best {
+  border-color: rgba(246, 168, 0, 0.35);
+  border-left-color: var(--yellow);
+  background:
+    radial-gradient(70% 45% at 50% 22%, rgba(246, 168, 0, 0.18), transparent 70%),
+    linear-gradient(180deg, rgba(246, 168, 0, 0.06), rgba(255, 255, 255, 0.012));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 28px -10px rgba(246, 168, 0, 0.5);
+  transform: translateY(-4px);
+}
+
+.maxi-planet.is-best::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, var(--yellow), var(--blue) 70%, transparent);
+}
+
+.maxi-planet.is-best .maxi-planet__img {
+  box-shadow: 0 0 32px rgba(246, 168, 0, 0.35);
+}
+
+.maxi-planet.is-best .maxi-planet__name,
+.maxi-planet.is-best .maxi-planet__value {
+  color: var(--yellow);
+}
+
+.maxi-planet.is-best .maxi-planet__estimate {
+  border-color: rgba(246, 168, 0, 0.3);
+  background: linear-gradient(90deg, rgba(246, 168, 0, 0.16), rgba(246, 168, 0, 0.04));
+}
+
+/* Actions */
+.maxi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.maxi-actions .btn {
+  min-width: 280px;
+}
+
+@media (max-width: 1200px) {
+  .maxi-planets {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .maxi-bar {
+    align-items: flex-start;
+  }
+
+  .maxi-tool {
+    flex: 1 1 100%;
+  }
+
+  .maxi-tool__img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .maxi-tool__img img {
+    top: -13px;
+  }
+
+  .maxi-planets {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .maxi-planet {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'img name value'
+      'img land value';
+    align-items: center;
+    gap: 0 12px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+
+  .maxi-planet__img {
+    grid-area: img;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+  }
+
+  .maxi-planet__name {
+    grid-area: name;
+    font-size: 15px;
+  }
+
+  .maxi-planet__land {
+    grid-area: land;
+    min-height: 0;
+    font-size: 12px;
+  }
+
+  .maxi-planet__estimate {
+    grid-area: value;
+    align-self: center;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: right;
+  }
+
+  .maxi-planet.is-best .maxi-planet__estimate {
+    background: none;
+  }
+
+  .maxi-planet__label {
+    display: none;
+  }
+
+  .maxi-planet__value {
+    font-size: 14px;
+  }
+
+  .maxi-planet:hover,
+  .maxi-planet.is-best {
+    transform: none;
+  }
+
+  .maxi-actions .btn {
+    width: 100%;
+    min-width: 0;
+  }
+}

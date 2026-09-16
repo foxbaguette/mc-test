@@ -1,0 +1,224 @@
+/* Info note: a blue-edged plate, like the home banners. */
+.callout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid var(--blue);
+  border-radius: 3px 14px 14px 3px;
+  background:
+    radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.13), transparent 60%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.callout svg {
+  flex: none;
+  color: var(--blue);
+  filter: drop-shadow(0 0 8px rgba(0, 186, 255, 0.45));
+}
+
+.week-reward {
+  margin-top: -8px;
+}
+
+/* Plate buttons, as in Adventures and Builder. */
+.week-reward .btn {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  justify-content: space-between;
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: 0.06em;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.week-reward .btn .btn__label {
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.week-reward .btn:hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+.week-reward .btn:disabled {
+  opacity: 0.6;
+}
+
+.week-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* Week cards: plates with a coloured edge. Claimable weeks glow gold. */
+.week-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 320px;
+  padding: 18px 18px 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px 14px 14px 3px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+}
+
+/* Nothing left to claim: no need to hold room for the buttons. */
+.week-cards:not(:has(.is-claimable)) .week-card {
+  min-height: 0;
+}
+
+.week-card.is-claimable {
+  border-color: rgba(246, 168, 0, 0.3);
+  border-left-color: var(--yellow);
+  background:
+    radial-gradient(120% 60% at 0 0, rgba(246, 168, 0, 0.14), transparent 65%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+}
+
+/* Lit top edge on the weeks that can still be claimed. */
+.week-card.is-claimable::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, var(--yellow), var(--blue) 70%, transparent);
+  opacity: 0.8;
+}
+
+.week-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.week-card__title {
+  font-size: 17px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.week-card:not(.is-claimable) .week-card__title {
+  color: var(--text-dim);
+}
+
+.week-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.week-card__status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+/* The amount as a stat plate. */
+.week-card__amount {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1px solid rgba(246, 168, 0, 0.22);
+  border-left: 2px solid var(--yellow);
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(90deg, rgba(246, 168, 0, 0.14), rgba(246, 168, 0, 0.03));
+}
+
+.week-card__amount span,
+.week-card__label {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.week-card__amount strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 24px;
+  text-shadow: 0 0 20px rgba(246, 168, 0, 0.3);
+}
+
+.week-card__amount svg {
+  width: 20px;
+  height: 20px;
+}
+
+.week-card__desc {
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.week-card:not(.is-claimable) .week-card__desc {
+  color: var(--text-faint);
+}
+
+.week-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+@media (max-width: 1100px) {
+  .week-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .week-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .week-card {
+    order: var(--mobile-order);
+    min-height: 0;
+  }
+}

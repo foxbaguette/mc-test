@@ -1,0 +1,117 @@
+import { useMemo, useState } from 'react'
+
+import { RARITY_ORDER } from '@/chain/config'
+import { Button } from '@/components/Button'
+import { RefreshIcon } from '@/components/icons'
+import { useEquippedTools } from '@/data/queries'
+import { refreshToolLoaning, useLoanableTools, useLoanLand, type LoanTool } from '@/data/toolLoaning'
+import PersonSVG from '@/icons/person'
+import SettingsSVG from '@/icons/settings'
+import { cooldownLabel, useNow } from '@/lib/time'
+import { mineWithLoanedTool } from '@/mining/loan'
+import { useSession } from '@/state/session'
+
+import { ToolCard, ToolStats } from './Shared'
+
+export function Mine() {
+  const { account, permission } = useSession()
+  const loan = useLoanableTools(account)
+  const equipped = useEquippedTools(account)
+  const landFor = useLoanLand()
+  const now = useNow(1000)
+  const [mining, setMining] = useState<number | null>(null)
+
+  // What can be mined with right now comes first, then the rarest and the strongest.
+  const tools = useMemo(
+    () =>
+      [...loan.tools].sort(
+        (a, b) =>
+          Number(b.readyAt <= now) - Number(a.readyAt <= now) ||
+          (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99) ||
+          b.mining_power + b.nft_power - (a.mining_power + a.nft_power) ||
+          a.tool_name.localeCompare(b.tool_name)
+      ),
+    [loan.tools, now]
+  )
+  const ready = tools.filter((tool) => tool.readyAt <= now).length
+
+  async function handleMine(tool: LoanTool) {
+    if (!account) return
+    setMining(tool.template_id)
+    await mineWithLoanedTool({
+      account,
+      permission,
+      tool,
+      bagIds: (equipped.data ?? []).map((t) => t.asset_id),
+      landId: landFor(tool)
+    })
+    setMining(null)
+  }
+
+  return (
+    <section className="tl-section">
+      <div className="tl-section__head">
+        <h2 className="tl-section__title">
+          LOAN TOOLS
+          {!loan.isLoading && tools.length > 0 && (
+            <span className="tl-section__count num">
+              {ready}/{tools.length} ready
+            </span>
+          )}
+        </h2>
+        <button
+          className={`icon-btn ${loan.isFetching ? 'is-spinning' : ''}`}
+          onClick={() => refreshToolLoaning(account)}
+          disabled={loan.isFetching}
+          aria-label="Refresh"
+        >
+          <RefreshIcon />
+        </button>
+      </div>
+
+      <div className="tl-grid">
+        {loan.isLoading ? (
+          Array.from({ length: 8 }, (_, i) => <div key={i} className="skeleton tl-card__loading" />)
+        ) : tools.length === 0 ? (
+          <p className="empty">No tools</p>
+        ) : (
+          tools.map((tool) => {
+            const label = cooldownLabel(tool.readyAt, now)
+            const isReady = label === 'MINE'
+            return (
+              <ToolCard
+                key={tool.template_id}
+                templateId={tool.template_id}
+                name={tool.tool_name}
+                rarity={tool.rarity}
+                shine={tool.shine}
+                owned={tool.owned}
+                ready={isReady}
+                stats={<ToolStats power={tool.mining_power} nftPower={tool.nft_power} cooldown={tool.cooldown_seconds} />}
+              >
+                <Button
+                  block
+                  size="sm"
+                  color={isReady ? 'gradientYellow' : 'solidBlue'}
+                  isLoading={mining === tool.template_id}
+                  disabled={mining !== null || !isReady}
+                  onClick={() => handleMine(tool)}
+                >
+                  {isReady ? (
+                    'Mine'
+                  ) : (
+                    <>
+                      {/* Whose clock is still running: the player's own, or this tool's. */}
+                      {tool.blockedBy === 'miner' ? <PersonSVG /> : <SettingsSVG />}
+                      <span className="num">{label}</span>
+                    </>
+                  )}
+                </Button>
+              </ToolCard>
+            )
+          })
+        )}
+      </div>
+    </section>
+  )
+}

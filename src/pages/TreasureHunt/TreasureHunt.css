@@ -1,0 +1,476 @@
+.hunts {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* What a treasure hunt is, before anything else on the page. */
+.hunts__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hunts__intro-title {
+  font-family: var(--font-heading);
+  font-size: clamp(22px, 2.6vw, 30px);
+}
+
+.hunts__intro p {
+  max-width: 82ch;
+  color: var(--text-dim);
+  line-height: 1.65;
+}
+
+.hunts__intro a {
+  color: var(--blue);
+}
+
+/* The loop in three steps, so it reads without the paragraph. */
+.hunts__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  counter-reset: step;
+  list-style: none;
+}
+
+.hunts__steps li {
+  display: inline-flex;
+  flex: 1 1 240px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+  font-family: var(--font-heading);
+  font-size: 13px;
+}
+
+.hunts__steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.hunts__steps svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+/* Bar */
+.hunts__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hunts__bar-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hunts__count {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Hunts */
+.hunts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.hunt--skeleton {
+  height: 380px;
+  border-radius: var(--radius-lg);
+}
+
+.hunt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.hunt::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(246, 168, 0, 0.55), rgba(0, 186, 255, 0.4), transparent);
+  opacity: 0.7;
+}
+
+.hunt:hover {
+  border-color: rgba(0, 186, 255, 0.26);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+/* A hunt that can be mined right now carries the gold edge. */
+.hunt.is-live {
+  border-color: rgba(246, 168, 0, 0.4);
+}
+
+.hunt__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hunt__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.hunt:hover .hunt__media img {
+  transform: scale(1.04);
+}
+
+.hunt__media::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+}
+
+.hunt:hover .hunt__media::after {
+  border-color: rgba(0, 186, 255, 0.35);
+}
+
+/* Live, or how long until it is. */
+.hunt__state {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(5, 16, 30, 0.82);
+  backdrop-filter: blur(6px);
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hunt__state::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.hunt__state.is-live {
+  color: var(--yellow);
+}
+
+.hunt__state.is-live::before {
+  background: var(--yellow);
+  box-shadow: 0 0 8px rgba(246, 168, 0, 0.8);
+  animation: hunt-blink 2.4s ease-in-out infinite;
+}
+
+@keyframes hunt-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.hunt__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 16px;
+}
+
+.hunt__title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  text-transform: capitalize;
+}
+
+.hunt__where {
+  color: var(--text-faint);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hunt__plates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+
+.hunt__plate {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px 10px 10px 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+}
+
+.hunt__plate--reward {
+  border-left-color: var(--yellow);
+}
+
+.hunt__plate-label {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hunt__plate-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.hunt__plate--reward .hunt__plate-value {
+  color: var(--yellow);
+}
+
+.hunt__plate-value svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hunt__body .btn {
+  margin-top: auto;
+}
+
+/* Actions are plates, as on the other game screens. */
+.hunts .btn {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: 0.1em;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.hunts .btn:hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+/* Waiting for a hunt to start is normal here, so its label stays readable. */
+.hunts .btn:disabled {
+  opacity: 0.6;
+}
+
+/* Finished hunts, and who shared the reward. */
+.hunts__past {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hunts__past-skeleton {
+  height: 220px;
+  border-radius: var(--radius-lg);
+}
+
+.past {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.past__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 190px) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+
+/* A hunt this player shared in. */
+.past__row.is-won {
+  border-left-color: var(--yellow);
+  background: linear-gradient(90deg, rgba(246, 168, 0, 0.14), rgba(246, 168, 0, 0.02));
+}
+
+.past__land {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.past__land img {
+  width: 56px;
+  height: 36px;
+  flex: none;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.past__land span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.past__land strong {
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.past__land small {
+  color: var(--text-faint);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.past__reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.past__reward svg {
+  width: 16px;
+  height: 16px;
+}
+
+.past__winners {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.past__winners-count {
+  font-family: var(--font-heading);
+  font-size: 13px;
+}
+
+.past__share {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.past__you {
+  padding: 3px 10px;
+  border: 1px solid rgba(246, 168, 0, 0.4);
+  border-radius: 6px;
+  background: rgba(246, 168, 0, 0.14);
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 720px) {
+  .past__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 8px;
+  }
+
+  .past__winners {
+    grid-column: 1;
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .hunts__bar {
+    flex-wrap: wrap;
+  }
+
+  .hunts__bar .segmented {
+    display: flex;
+    flex: 1 1 100%;
+  }
+
+  .hunts__bar .segmented button {
+    flex: 1;
+    padding: 0 8px;
+  }
+
+  .hunts__bar-end {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

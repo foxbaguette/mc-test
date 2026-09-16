@@ -1,0 +1,541 @@
+/* Actions are plates, as on Adventures and the outpost, each in its own colour. */
+.mining .btn:not(.mining-type__preview) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: 0.08em;
+  box-shadow: none;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.mining .btn:not(.mining-type__preview):hover:not(:disabled) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+.mining .btn:not(.mining-type__preview):disabled {
+  opacity: 0.6;
+}
+
+.mining {
+  margin-top: -8px;
+}
+
+.mining__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mining__tactician {
+  color: var(--blue);
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.mining__tactician:hover {
+  text-decoration: underline;
+}
+
+/* Current selection */
+.selection-card {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.land-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.land-card__media,
+.land-tile__media {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.land-card__media::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.land-card__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.land-card__planet {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+}
+
+.land-card__coords {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(5, 16, 30, 0.8);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.land-card__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  text-transform: capitalize;
+}
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.stat-tiles > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 80px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 3px 12px 12px 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+}
+
+.stat-tiles dt {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.stat-tiles dd {
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+/* What the mine is actually worth gets the lit edge. */
+.stat-tiles .is-accent {
+  border-left-color: var(--yellow);
+}
+
+.stat-tiles .is-accent dd {
+  color: var(--yellow);
+}
+
+/* Tools */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid var(--rarity, var(--border-2));
+  border-radius: 3px 14px 14px 3px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rarity, transparent) 12%, transparent), var(--surface) 55%);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.tool-card:hover {
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+/* The three tools that are actually mining say so. */
+.tool-card.is-equipped {
+  border-color: rgba(246, 168, 0, 0.4);
+  box-shadow: inset 0 1px 0 rgba(246, 168, 0, 0.25);
+}
+
+.tool-card img {
+  width: 100%;
+  aspect-ratio: 220 / 325;
+  object-fit: contain;
+}
+
+.tool-card__loading {
+  aspect-ratio: 220 / 360;
+}
+
+/* Land selection */
+.planet-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.planet-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-transform: uppercase;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.planet-option img {
+  width: 64px;
+  height: 64px;
+}
+
+.planet-option:hover {
+  background: var(--surface-2);
+}
+
+.planet-option.is-selected {
+  border-color: var(--blue);
+  background: rgba(0, 186, 255, 0.1);
+}
+
+.planet-option.is-selected img {
+  filter: drop-shadow(0 0 12px rgba(0, 186, 255, 0.8));
+}
+
+.land-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.land-type {
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  aspect-ratio: 1;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.land-type img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.land-type:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.land-type.is-selected {
+  border-color: var(--blue);
+  box-shadow: 0 0 14px rgba(0, 186, 255, 0.5);
+}
+
+.land-type:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+.lands-head {
+  flex-wrap: wrap;
+}
+
+.lands-head__stats {
+  display: flex;
+  gap: 6px;
+  margin-right: auto;
+}
+
+.icon-btn.is-active {
+  background: rgba(0, 186, 255, 0.15);
+  color: var(--blue);
+}
+
+.land-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.land-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.land-filter input {
+  width: 160px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  background: var(--bg-3);
+  color: var(--text);
+}
+
+.land-filter__coords {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.land-filter__coords input {
+  width: 64px;
+}
+
+.land-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.land-grid--wide {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.land-grid__loading {
+  height: 260px;
+}
+
+.land-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.land-tile.is-ready {
+  border-color: rgba(246, 168, 0, 0.45);
+}
+
+.land-tile__media img:first-child {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.land-tile__remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(5, 16, 30, 0.8);
+  transition: background 0.15s ease;
+}
+
+.land-tile__remove:hover:not(:disabled) {
+  background: rgba(255, 77, 94, 0.35);
+}
+
+.land-tile__remove svg {
+  width: 18px;
+  height: 18px;
+}
+
+.land-tile__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 4px;
+  font-size: 14px;
+}
+
+.land-tile__info > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.land-tile__info dt {
+  color: var(--text-dim);
+}
+
+.land-tile__info dd {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.land-tile__info svg {
+  width: 15px;
+  height: 15px;
+}
+
+.land-tile__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* Favorite tool sets */
+.toolsets {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toolsets__loading {
+  height: 88px;
+}
+
+.toolset {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.toolset.is-active {
+  border-color: var(--blue);
+  background: rgba(0, 186, 255, 0.08);
+}
+
+.toolset__tools {
+  display: flex;
+  gap: 8px;
+}
+
+.toolset__tool {
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border: 2px solid #000;
+  border-radius: 8px;
+  background: var(--bg-3);
+}
+
+.toolset__tool img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 10%;
+  transform: scale(1.6);
+  transform-origin: center 25%;
+}
+
+.toolset__actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .selection-card {
+    grid-template-columns: 1fr;
+  }
+
+  .planet-picker {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .mining__nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mining__nav .segmented {
+    display: flex;
+  }
+
+  .mining__nav .segmented button {
+    flex: 1;
+    padding: 0 6px;
+    font-size: 10.5px;
+  }
+
+  .mining__tactician {
+    align-self: flex-end;
+  }
+
+  .stat-tiles {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-tiles dd {
+    font-size: 18px;
+  }
+
+  .tool-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .toolset {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolset__actions .btn:first-child {
+    flex: 1;
+  }
+}

@@ -1,0 +1,56 @@
+.mining-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.mining-type {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.mining-type:hover {
+  background: var(--surface-2);
+}
+
+.mining-type.is-selected {
+  border-color: var(--blue);
+  background: rgba(0, 186, 255, 0.1);
+  box-shadow: inset 0 0 0 1px var(--blue);
+}
+
+/* Shows the header button, so it keeps the same corners (see .mine__button). */
+.mining-type__preview.btn {
+  min-width: 110px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.mining-type__label {
+  font-weight: 600;
+}
+
+.mining-type__check {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-2);
+  border-radius: 50%;
+}
+
+.mining-type.is-selected .mining-type__check {
+  border-color: var(--blue);
+  background: radial-gradient(circle, var(--blue) 0 45%, transparent 50%);
+}
+
