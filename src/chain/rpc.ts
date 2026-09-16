@@ -81,10 +81,6 @@ async function post<T>(path: string, body: unknown, exclude?: Set<string>): Prom
   throw new ChainError(`All ${urls.length} endpoints failed for ${path}`, attempts)
 }
 
-export async function chainCall<T>(path: string, body: unknown): Promise<T> {
-  return (await post<T>(path, body)).data
-}
-
 export interface TableQuery {
   code: string
   table: string

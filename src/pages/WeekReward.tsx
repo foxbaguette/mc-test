@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { CONTRACTS } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { InfoCircleIcon } from '@/components/icons'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/Toaster'
-import { refreshPlayer, useMissionSettings, usePlayer, useWeeks } from '@/data/queries'
+import { toast } from '@/components/toast'
+import { refreshPlayer, usePlayer } from '@/data/player'
+import { useMissionSettings, useWeeks } from '@/data/game'
 import StarSVG from '@/icons/star'
 import TLMSVG from '@/icons/tlm'
 import { sleep, tlmToNumber } from '@/lib/format'
@@ -23,9 +25,9 @@ interface Card {
 }
 
 export default function WeekReward() {
-  const { account, permission } = useSession()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
   const player = usePlayer()
-  const { currentWeek, weeks, refetch: refetchWeeks, isLoading } = useWeeks()
+  const { currentWeek, weeks, query: weeksQuery } = useWeeks()
   const settings = useMissionSettings()
   const [claimed, setClaimed] = useState<number[]>([])
   const [busy, setBusy] = useState<string | null>(null)
@@ -66,7 +68,7 @@ export default function WeekReward() {
       setClaimed((prev) => [...prev, weekId])
       toast.success('Claim successfully!')
       await sleep(3000)
-      await Promise.all([refreshPlayer(account), refetchWeeks()])
+      await Promise.all([refreshPlayer(account), weeksQuery.refetch()])
     } catch (err) {
       if (!isUserCancel(err)) toast.error(formatTransactError(err))
     } finally {
@@ -94,7 +96,7 @@ export default function WeekReward() {
               style={{ '--mobile-order': 3 - index } as React.CSSProperties}
             >
               <div className="week-card__head">
-                <h2 className="week-card__title">Week {isLoading ? '…' : card.weekId}</h2>
+                <h2 className="week-card__title">Week {weeksQuery.isLoading ? '…' : card.weekId}</h2>
                 {!card.claimable && <span className="week-card__status">Claimed</span>}
               </div>
 
@@ -117,9 +119,15 @@ export default function WeekReward() {
                       title={player.mcPoints < cost ? `${cost.toLocaleString('en-US')} MC Points` : undefined}
                       onClick={() => claim(card.weekId, false)}
                     >
-                      <span className="num">{cost.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> <StarSVG color="#fff" />
+                      <span className="num">{cost.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>{' '}
+                      <StarSVG color="#fff" />
                     </Button>
-                    <Button block isLoading={busy === `${card.weekId}-true`} disabled={!!busy} onClick={() => claim(card.weekId, true)}>
+                    <Button
+                      block
+                      isLoading={busy === `${card.weekId}-true`}
+                      disabled={!!busy}
+                      onClick={() => claim(card.weekId, true)}
+                    >
                       <span className="num">{(card.userTlm / 2).toFixed(4)}</span> <TLMSVG />
                     </Button>
                   </div>

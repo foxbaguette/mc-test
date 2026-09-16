@@ -35,7 +35,6 @@ export const ATOMIC_NODES = [
   'https://wax-atomic-api.eosphere.io'
 ]
 
-export const IMAGE_URL = 'https://beastgarden.mypinata.cloud'
 export const AW_IMAGE_URL = 'https://ipfs.alienworlds.io'
 export const DEFAULT_AVATAR = `${AW_IMAGE_URL}/ipfs/QmWmAY3NELbkjLVk4qWrpBEafaS1wPJFwhsUNgRcurVox4`
 

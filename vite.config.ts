@@ -39,6 +39,7 @@ export default defineConfig({
           wharfkit: [
             '@wharfkit/session',
             '@wharfkit/web-renderer',
+            '@wharfkit/wallet-plugin-anchor',
             '@wharfkit/wallet-plugin-cloudwallet',
             '@wharfkit/wallet-plugin-wombat'
           ]

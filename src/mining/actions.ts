@@ -56,7 +56,12 @@ export function loanMineActions(
   return [
     payCpu(account, permission, 2),
     setLandAction(account, permission, landId),
-    { account: CONTRACTS.TOOLS, name: 'renttools', authorization: auth(account, permission), data: { wallet: account, tools: ids } },
+    {
+      account: CONTRACTS.TOOLS,
+      name: 'renttools',
+      authorization: auth(account, permission),
+      data: { wallet: account, tools: ids }
+    },
     setBagAction(account, permission, assetIds),
     mineAction(account, permission, nonce),
     {
@@ -274,7 +279,12 @@ export const claimAdventureAction = (account: string, permission: string, advent
   adventureAction(account, permission, 'claimadv', adventureid)
 
 /** Join by sending the team's NFTs; they come back when the adventure is claimed. */
-export const startAdventureWithNftsAction = (account: string, permission: string, adventureid: number, assetIds: string[]): AnyAction => ({
+export const startAdventureWithNftsAction = (
+  account: string,
+  permission: string,
+  adventureid: number,
+  assetIds: string[]
+): AnyAction => ({
   account: CONTRACTS.ATOMICASSETS,
   name: 'transfer',
   authorization: auth(account, permission),
@@ -311,7 +321,12 @@ export const qpFillStorageAction = (account: string, permission: string, qp: num
   gameAction(account, permission, 'qptogcfill', { qp })
 
 /** Stake NFTs into a building until the end of the season. */
-export const stakeBuildingNftsAction = (account: string, permission: string, buildingid: string, assetIds: string[]): AnyAction => ({
+export const stakeBuildingNftsAction = (
+  account: string,
+  permission: string,
+  buildingid: string,
+  assetIds: string[]
+): AnyAction => ({
   account: CONTRACTS.ATOMICASSETS,
   name: 'transfer',
   authorization: auth(account, permission),

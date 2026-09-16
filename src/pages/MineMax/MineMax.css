@@ -19,7 +19,11 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   box-shadow: none;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .maxi .btn:hover:not(:disabled) {
@@ -65,11 +69,7 @@
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-left: 2px solid var(--rarity, var(--border-2));
   border-radius: 3px 12px 12px 3px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--rarity, #fff) 14%, transparent),
-    rgba(255, 255, 255, 0.015)
-  );
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rarity, #fff) 14%, transparent), rgba(255, 255, 255, 0.015));
 }
 
 .maxi-tool--skeleton {
@@ -152,7 +152,10 @@
     radial-gradient(60% 40% at 50% 22%, rgba(0, 186, 255, 0.08), transparent 70%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
   text-align: center;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .maxi-planet:hover {
@@ -166,7 +169,9 @@
   margin-bottom: 10px;
   border-radius: 50%;
   box-shadow: 0 0 28px rgba(0, 186, 255, 0.12);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
 .maxi-planet:hover .maxi-planet__img {
@@ -221,7 +226,9 @@
   background:
     radial-gradient(70% 45% at 50% 22%, rgba(246, 168, 0, 0.18), transparent 70%),
     linear-gradient(180deg, rgba(246, 168, 0, 0.06), rgba(255, 255, 255, 0.012));
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 28px -10px rgba(246, 168, 0, 0.5);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.35),
+    0 0 28px -10px rgba(246, 168, 0, 0.5);
   transform: translateY(-4px);
 }
 

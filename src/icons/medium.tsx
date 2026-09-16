@@ -1,17 +1,10 @@
-
 interface MediumSvgProps {
   color?: string
 }
 
 const MediumSvg = ({ color = 'white' }: MediumSvgProps) => {
   return (
-    <svg
-      width="141"
-      height="23"
-      viewBox="0 0 141 23"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="141" height="23" viewBox="0 0 141 23" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M21.15 11.5937C21.15 17.4687 16.403 22.2157 10.575 22.2157C4.747 22.2157 0 17.5157 0 11.5937C0 5.67168 4.747 0.97168 10.575 0.97168C16.403 0.97168 21.15 5.71868 21.15 11.5937Z"
         fill={color}

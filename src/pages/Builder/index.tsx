@@ -2,25 +2,26 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { PageHeader } from '@/components/PageHeader'
 import { useBuilderPlayer, useBuilderSeason } from '@/data/builder'
-import { chainDate, useNow } from '@/lib/time'
+import { chainDate, useRerenderAt } from '@/lib/time'
 import { useAccount } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 
 import { Overview } from './Overview'
 import { Welcome } from './Welcome'
 
-import '../Questing.css'
 import './Builder.css'
 
 export default function Builder() {
   const account = useAccount()
   const season = useBuilderSeason()
   const player = useBuilderPlayer(account)
-  // Resources tick up continuously, so the counter is read many times a second.
-  const now = useNow(100)
-
   const current = season.data
-  const inSeason = !!current && now >= +chainDate(current.season_start) && now < +chainDate(current.season_end)
+  const start = current ? +chainDate(current.season_start) : 0
+  const end = current ? +chainDate(current.season_end) : 0
+  const now = Date.now()
+  // No clock here: the page only needs to switch views when the season starts or ends.
+  useRerenderAt(now < start ? start : now < end ? end : undefined)
+  const inSeason = !!current && now >= start && now < end
 
   return (
     <>
@@ -37,12 +38,12 @@ export default function Builder() {
           </>
         ) : inSeason && current && player.data ? (
           <Routes>
-            <Route index element={<Overview player={player.data} season={current} now={now} />} />
+            <Route index element={<Overview player={player.data} season={current} />} />
             <Route path="*" element={<Navigate to="/builder" replace />} />
           </Routes>
         ) : (
           <Routes>
-            <Route index element={<Welcome season={current ?? null} now={now} />} />
+            <Route index element={<Welcome season={current ?? null} />} />
             <Route path="*" element={<Navigate to="/builder" replace />} />
           </Routes>
         )}

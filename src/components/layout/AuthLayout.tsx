@@ -1,6 +1,8 @@
 import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+
 import { Drawer } from './Drawer'
 import { Header } from './Header'
 import { SectionNav } from './SectionNav'
@@ -27,15 +29,18 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       <Header />
       <SectionNav />
       <main id="main" className="app__main">
-        <Suspense
-          fallback={
-            <div className="app__loading">
-              <span className="spinner spinner--lg" />
-            </div>
-          }
-        >
-          {children}
-        </Suspense>
+        {/* Keyed by page: a crash stays on its page and clears when the player navigates away. */}
+        <ErrorBoundary key={pathname}>
+          <Suspense
+            fallback={
+              <div className="app__loading">
+                <span className="spinner spinner--lg" />
+              </div>
+            }
+          >
+            {children}
+          </Suspense>
+        </ErrorBoundary>
       </main>
       <TabBar onMore={() => setSheetOpen(true)} moreOpen={sheetOpen} />
       <Drawer open={sheetOpen} onClose={() => setSheetOpen(false)} />

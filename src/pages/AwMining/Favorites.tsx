@@ -3,8 +3,9 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { RARITY_COLORS } from '@/chain/config'
 import { AsyncIconButton, Button } from '@/components/Button'
+import { MiningBlocked } from '@/components/MiningBlocked'
 import { useFavorites, type FavoriteLand } from '@/data/favorites'
-import { refreshMining, useEquippedTools, useMiner } from '@/data/queries'
+import { refreshMining, useEquippedTools, useMiner } from '@/data/mining'
 import HearthBrokenSVG from '@/icons/hearth-broken'
 import RefreshSVG from '@/icons/refresh'
 import ShardsSVG from '@/icons/shards'
@@ -15,7 +16,9 @@ import { cooldownLabel, useNow } from '@/lib/time'
 import { remFavLand, remFavTools, setBagAction, setLandAction } from '@/mining/actions'
 import { mineReadyAt } from '@/mining/estimates'
 import { mineNow } from '@/mining/mineNow'
+import { useCanMine } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
+import { miningKeys, playerKeys } from '@/data/keys'
 
 import { useChainAction } from './useMemberAction'
 
@@ -27,6 +30,7 @@ export function Favorites() {
   const miner = useMiner(account)
   const now = useNow(1000)
   const [mining, setMining] = useState<string | null>(null)
+  const canMine = useCanMine()
 
   const equippedIds = (tools.data ?? []).map((t) => t.asset_id)
   const activeSet = favorites.toolSets.findIndex(
@@ -38,7 +42,7 @@ export function Favorites() {
   const ready = withLabel.filter((l) => l.label === 'MINE').sort((a, b) => b.land.delay - a.land.delay)
   const waiting = withLabel.filter((l) => l.label !== 'MINE').sort((a, b) => a.land.delay - b.land.delay)
 
-  const refreshMember = () => queryClient.invalidateQueries({ queryKey: ['member', account] })
+  const refreshMember = () => queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
 
   async function mineLand(landId: string) {
     if (!account) return
@@ -66,7 +70,12 @@ export function Favorites() {
               <div key={set.value} className={`toolset ${activeSet === index ? 'is-active' : ''}`}>
                 <div className="toolset__tools">
                   {set.tools.map((tool) => (
-                    <span key={tool.asset_id} className="toolset__tool" style={{ borderColor: RARITY_COLORS[tool.rarity] }} title={tool.name}>
+                    <span
+                      key={tool.asset_id}
+                      className="toolset__tool"
+                      style={{ borderColor: RARITY_COLORS[tool.rarity] }}
+                      title={tool.name}
+                    >
                       <img src={publicUrl(`/assets/aw-nft-images/${tool.template_id}.webp`)} alt={tool.name} loading="lazy" />
                     </span>
                   ))}
@@ -76,8 +85,10 @@ export function Favorites() {
                     size="sm"
                     disabled={busy || activeSet === index}
                     onClick={() =>
-                      run((a, p) => setBagAction(a, p, set.assetIds), 'Changed tools successfully', () =>
-                        queryClient.invalidateQueries({ queryKey: ['equippedTools', account] })
+                      run(
+                        (a, p) => setBagAction(a, p, set.assetIds),
+                        'Changed tools successfully',
+                        () => queryClient.invalidateQueries({ queryKey: miningKeys.equippedTools(account) })
                       )
                     }
                   >
@@ -98,6 +109,8 @@ export function Favorites() {
           )}
         </div>
       </section>
+
+      <MiningBlocked />
 
       <section className="panel">
         <div className="panel__head">
@@ -167,8 +180,10 @@ export function Favorites() {
                     block
                     disabled={busy}
                     onClick={() =>
-                      run((a, p) => setLandAction(a, p, land.asset_id), 'Land changed successfully', () =>
-                        queryClient.invalidateQueries({ queryKey: ['miner', account] })
+                      run(
+                        (a, p) => setLandAction(a, p, land.asset_id),
+                        'Land changed successfully',
+                        () => queryClient.invalidateQueries({ queryKey: miningKeys.miner(account) })
                       )
                     }
                   >
@@ -179,7 +194,7 @@ export function Favorites() {
                     block
                     color={label === 'MINE' ? 'gradientYellow' : 'solidBlue'}
                     isLoading={mining === land.asset_id}
-                    disabled={busy || mining !== null || label !== 'MINE'}
+                    disabled={!canMine || busy || mining !== null || label !== 'MINE'}
                     onClick={() => mineLand(land.asset_id)}
                   >
                     <span className="num">{label === 'MINE' ? 'Mine' : label}</span>

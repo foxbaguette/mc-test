@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { login as walletLogin, logout as walletLogout, permission, restoreSession } from '@/wallet/session'
+import { canMine, login as walletLogin, logout as walletLogout, permission, restoreSession, walletId } from '@/wallet/session'
 import { queryClient } from '@/data/queryClient'
 
 export type MiningType = 'gold' | 'green' | 'orange' | 'blue' | 'red'
@@ -28,6 +28,8 @@ function storedMiningType(): MiningType {
 interface SessionState {
   account: string | null
   permission: string
+  /** The wallet plugin the player signed in with ("cloudwallet", "wombat", "anchor"). */
+  wallet: string | null
   /** True once the stored wallet session has been restored (or found missing). */
   restored: boolean
   miningType: MiningType
@@ -40,6 +42,7 @@ interface SessionState {
 export const useSession = create<SessionState>((set) => ({
   account: null,
   permission: 'active',
+  wallet: null,
   restored: false,
   miningType: storedMiningType(),
 
@@ -55,7 +58,7 @@ export const useSession = create<SessionState>((set) => ({
     }
     try {
       const session = await restoreSession()
-      set({ account: session ? String(session.actor) : null, permission: permission(), restored: true })
+      set({ account: session ? String(session.actor) : null, permission: permission(), wallet: walletId(), restored: true })
     } catch {
       set({ account: null, restored: true })
     }
@@ -64,14 +67,14 @@ export const useSession = create<SessionState>((set) => ({
   async login() {
     const session = await walletLogin()
     if (!session) return false
-    set({ account: String(session.actor), permission: permission() })
+    set({ account: String(session.actor), permission: permission(), wallet: walletId() })
     return true
   },
 
   async logout() {
     await walletLogout().catch(() => undefined)
     queryClient.clear()
-    set({ account: null })
+    set({ account: null, wallet: null })
   },
 
   setMiningType(type) {
@@ -85,3 +88,6 @@ export const useSession = create<SessionState>((set) => ({
 }))
 
 export const useAccount = () => useSession((s) => s.account)
+
+/** False for wallets that are not allowed to mine (Anchor). */
+export const useCanMine = () => useSession((s) => canMine(s.wallet))

@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { AnyAction } from '@wharfkit/session'
+import { useShallow } from 'zustand/react/shallow'
 
 import { Button } from '@/components/Button'
+import { Modal } from '@/components/Modal'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/Toaster'
-import { usePlayer } from '@/data/queries'
+import { toast } from '@/components/toast'
+import { usePlayer } from '@/data/player'
 import { useMinerClaim } from '@/data/toolLoaning'
 import { refreshVault, useClaimableWeeks, useLandComms, useLandPayouts } from '@/data/vault'
 import InformationSvgBuilder from '@/icons/info-builder'
@@ -31,7 +33,7 @@ import { publicUrl } from '@/lib/publicUrl'
 import './TriliumVault.css'
 
 export default function TriliumVault() {
-  const { account, permission } = useSession()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
   const player = usePlayer()
   const minerClaim = useMinerClaim(account)
   const landComms = useLandComms(account)
@@ -46,13 +48,6 @@ export default function TriliumVault() {
 
   const rewardPoints = player.rewardPoints
   useEffect(() => setDepositQp(String(rewardPoints)), [rewardPoints])
-
-  // Balances change while the page sits open, so re-read them every minute.
-  useEffect(() => {
-    if (!account) return
-    const timer = setInterval(() => void refreshVault(account), 60_000)
-    return () => clearInterval(timer)
-  }, [account])
 
   const mineAmount = tlmToNumber(minerClaim.data?.amount)
   const mineReadyAt = minerClaim.data ? +chainDate(minerClaim.data.timestamp) : 0
@@ -244,7 +239,11 @@ export default function TriliumVault() {
                     isLoading={pending === 'withdrawQp'}
                     disabled={!!pending || !player.isMember || Number(withdrawQp) <= 0}
                     onClick={() =>
-                      run('withdrawQp', [withdrawRewardPointsAction(account!, permission, Number(withdrawQp))], 'Successfully withdrawn')
+                      run(
+                        'withdrawQp',
+                        [withdrawRewardPointsAction(account!, permission, Number(withdrawQp))],
+                        'Successfully withdrawn'
+                      )
                     }
                   >
                     Withdraw
@@ -258,7 +257,11 @@ export default function TriliumVault() {
                     value={depositQp}
                     onChange={(e) => setDepositQp(e.target.value.replace(/\D/g, ''))}
                   />
-                  <Button size="sm" disabled={!!pending || !player.isMember || Number(depositQp) <= 0} onClick={() => setConfirmDeposit(true)}>
+                  <Button
+                    size="sm"
+                    disabled={!!pending || !player.isMember || Number(depositQp) <= 0}
+                    onClick={() => setConfirmDeposit(true)}
+                  >
                     Deposit
                   </Button>
                 </div>
@@ -338,22 +341,10 @@ interface DepositDialogProps {
 }
 
 function DepositDialog({ points, busy, onClose, onConfirm }: DepositDialogProps) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => ref.current?.showModal(), [])
   const fee = Math.ceil(points * 0.1)
 
   return (
-    <dialog
-      ref={ref}
-      className="vault-dialog"
-      onCancel={(e) => {
-        e.preventDefault()
-        if (!busy) onClose()
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current && !busy) onClose()
-      }}
-    >
+    <Modal className="vault-dialog" locked={busy} onClose={onClose}>
       <div className="vault-dialog__body">
         <button className="icon-btn vault-dialog__close" onClick={onClose} disabled={busy} aria-label="Close">
           ×
@@ -373,6 +364,6 @@ function DepositDialog({ points, busy, onClose, onConfirm }: DepositDialogProps)
           Confirm
         </Button>
       </div>
-    </dialog>
+    </Modal>
   )
 }

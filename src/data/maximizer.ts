@@ -1,10 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 import { evaluateSuggestedLands, miningPowerByRarity, topLandEstimate } from '@/mining/estimates'
 
-import { refreshMining, useEquippedTools, useLandTypes, usePlanetMinCommission, usePlanetPools } from './queries'
-import { readSuggestedLands } from './tables'
+import {
+  refreshMining,
+  useEquippedTools,
+  useLandTypes,
+  usePlanetMinCommission,
+  usePlanetPools,
+  useSuggestedLands
+} from './mining'
 
 /** Every planet's suggested land with its estimated TLM per mine for the equipped tools, and the best of them. */
 export function useMaximizerPlanets(account: string | null) {
@@ -12,10 +17,11 @@ export function useMaximizerPlanets(account: string | null) {
   const landTypes = useLandTypes()
   const pools = usePlanetPools()
   const planetMin = usePlanetMinCommission()
-  const suggested = useQuery({ queryKey: ['suggestedLands'], queryFn: readSuggestedLands, staleTime: 60 * 60_000 })
+  const suggested = useSuggestedLands()
 
   const planets = useMemo(
-    () => evaluateSuggestedLands(miningPowerByRarity(tools.data), suggested.data ?? [], landTypes.data, pools.data, planetMin.data),
+    () =>
+      evaluateSuggestedLands(miningPowerByRarity(tools.data), suggested.data ?? [], landTypes.data, pools.data, planetMin.data),
     [tools.data, suggested.data, landTypes.data, pools.data, planetMin.data]
   )
 

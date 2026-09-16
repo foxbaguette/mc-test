@@ -70,7 +70,9 @@
   display: inline-flex;
   flex: none;
   opacity: 0.75;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .apl__link:hover {

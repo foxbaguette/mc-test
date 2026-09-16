@@ -1,6 +1,8 @@
 import type { Planet } from '@/chain/config'
-import type { EquippedTool, LandType, SuggestedLand } from '@/data/types'
+import type { FavoriteLand } from '@/data/favorites'
+import type { EquippedTool, LandType, SuggestedLand } from '@/data/types/mining'
 import { chainDate } from '@/lib/time'
+import type { MiningType } from '@/state/session'
 
 /**
  * When the equipped bag can mine again, the way the original header computed it:
@@ -32,7 +34,11 @@ export function miningPowerByRarity(tools: EquippedTool[] | undefined): Record<s
 }
 
 /** Expected TLM per mine before commission: each rarity share is capped at 80% of that planet's pool bucket. */
-export function estimateTlm(powerByRarity: Record<string, number>, landMiningPowerMod: number, pools: Record<string, number> | undefined) {
+export function estimateTlm(
+  powerByRarity: Record<string, number>,
+  landMiningPowerMod: number,
+  pools: Record<string, number> | undefined
+) {
   if (!pools) return 0
   return Object.entries(powerByRarity).reduce((sum, [rarity, power]) => {
     const share = Math.min(0.8, (power * landMiningPowerMod) / 10000)
@@ -96,4 +102,17 @@ export function bestSuggestedLand(
 ): { asset_id: string; value: number } | null {
   const top = topLandEstimate(evaluateSuggestedLands(powerByRarity, rows, landTypes, pools, planetMin))
   return top ? { asset_id: top.row.asset_id, value: top.value } : null
+}
+
+/** The favorite land to mine next: ready lands first, then by shards (green) or TLM (orange). */
+export function pickFavoriteLand(lands: FavoriteLand[], readyAt: (land: FavoriteLand) => number, type: MiningType, now: number) {
+  if (lands.length === 0) return null
+  let pool = lands.filter((land) => readyAt(land) <= now)
+  if (pool.length === 0) {
+    const soonest = Math.min(...lands.map(readyAt))
+    pool = lands.filter((land) => readyAt(land) === soonest)
+  }
+  const primary = (land: FavoriteLand) => (type === 'orange' ? land.estimatedTlm : land.shards)
+  const secondary = (land: FavoriteLand) => (type === 'orange' ? land.shards : land.estimatedTlm)
+  return [...pool].sort((a, b) => primary(b) - primary(a) || secondary(b) - secondary(a))[0]
 }

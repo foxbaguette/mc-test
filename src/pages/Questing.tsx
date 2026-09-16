@@ -3,7 +3,8 @@ import { useMemo, useState } from 'react'
 import { PageHeader } from '@/components/PageHeader'
 import { RefreshIcon } from '@/components/icons'
 import { Select } from '@/components/Select'
-import { useCollectInfo, useQuests, useUserWeeklies } from '@/data/queries'
+import { useCollectInfo, useQuests } from '@/data/game'
+import { useUserWeeklies } from '@/data/player'
 import QuestSVG from '@/icons/quest'
 import { chainDate } from '@/lib/time'
 import { useAccount } from '@/state/session'
@@ -102,8 +103,8 @@ export default function Questing() {
     [collections.data, quests.data]
   )
 
-  const refreshing = weeklies.isFetching || quests.isFetching
-  const loading = quests.isLoading || weeklies.isLoading
+  const refreshing = weeklies.query.isFetching || quests.isFetching
+  const loading = quests.isLoading || weeklies.query.isLoading
 
   return (
     <>
@@ -129,7 +130,7 @@ export default function Questing() {
             <Select value={game} options={gameOptions} onChange={setGame} ariaLabel="Game" />
             <button
               className={`icon-btn ${refreshing ? 'is-spinning' : ''}`}
-              onClick={() => Promise.all([quests.refetch(), weeklies.refetch()])}
+              onClick={() => Promise.all([quests.refetch(), weeklies.query.refetch()])}
               disabled={refreshing}
               aria-label="Refresh"
             >
@@ -166,7 +167,12 @@ export default function Questing() {
                       <span className="num">
                         {quest.completions}/{quest.quest_max_completions}
                       </span>
-                      <span className="progress" role="progressbar" aria-valuenow={quest.completions} aria-valuemax={quest.quest_max_completions}>
+                      <span
+                        className="progress"
+                        role="progressbar"
+                        aria-valuenow={quest.completions}
+                        aria-valuemax={quest.quest_max_completions}
+                      >
                         <span style={{ width: `${pct}%` }} />
                       </span>
                     </div>

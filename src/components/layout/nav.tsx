@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { DISCORD_URL } from '@/chain/config'
-import { usePlayer } from '@/data/queries'
+import { useMembership, usePlayerSupport } from '@/data/player'
 import ApplicationsSVG from '@/icons/applications'
 import AwMiningSVG from '@/icons/aw-mining'
 import BulldozerSVG from '@/icons/bulldozer'
@@ -42,7 +42,8 @@ export const TABBAR_ORDER = ['builder', 'adventures', 'tool-loaning', 'emporium'
  *  more  — opened rarely, behind More
  */
 export function useNavItems(): Record<NavGroup, NavItem[]> {
-  const { isMember, isFullMember, isSupport } = usePlayer()
+  const { account, isMember, isFullMember } = useMembership()
+  const isSupport = !!usePlayerSupport(account).data?.wallet
 
   return {
     main: [

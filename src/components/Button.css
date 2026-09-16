@@ -24,8 +24,13 @@
   line-height: 1.1;
   text-align: center;
   white-space: nowrap;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 18px var(--btn-glow);
-  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 6px 18px var(--btn-glow);
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    box-shadow 0.15s ease;
   user-select: none;
 }
 
@@ -60,7 +65,9 @@
 .btn.is-busy:disabled {
   opacity: 1;
   cursor: progress;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 18px var(--btn-glow);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 6px 18px var(--btn-glow);
 }
 
 .btn--ghost.is-busy,
@@ -285,10 +292,14 @@
 @keyframes charged-glow {
   0%,
   100% {
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6), 0 0 20px -4px rgb(var(--charge-glow) / 55%);
+    box-shadow:
+      0 6px 22px rgba(0, 0, 0, 0.6),
+      0 0 20px -4px rgb(var(--charge-glow) / 55%);
   }
   50% {
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6), 0 0 34px 2px rgb(var(--charge-glow) / 90%);
+    box-shadow:
+      0 6px 22px rgba(0, 0, 0, 0.6),
+      0 0 34px 2px rgb(var(--charge-glow) / 90%);
   }
 }
 

@@ -1,0 +1,16 @@
+/* A banner plate, red-edged: the mine buttons below it are switched off. */
+.mining-blocked {
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid #ff4f6b;
+  border-radius: 3px 14px 14px 3px;
+  background:
+    radial-gradient(60% 220% at 0 50%, rgba(255, 79, 107, 0.14), transparent 60%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  color: #ff9aab;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

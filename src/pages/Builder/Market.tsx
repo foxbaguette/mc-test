@@ -12,8 +12,8 @@ import {
   useBuilderSettings,
   useSwapPool
 } from '@/data/builder'
-import { usePlayer } from '@/data/queries'
-import type { BuilderPlayer, PlayerBuilding } from '@/data/types'
+import { usePlayer } from '@/data/player'
+import type { BuilderPlayer, PlayerBuilding } from '@/data/types/builder'
 import QuestSVG from '@/icons/quest'
 import StarSVG from '@/icons/star'
 import { cooldownLabel } from '@/lib/time'
@@ -102,7 +102,12 @@ export function Market({ player, building, resources, now }: MarketProps) {
           <strong className="num">~ {estimateMcpForDelivery(pool.data, value, building).toLocaleString('en-US')}</strong>
         </div>
 
-        <Button block isLoading={busy && !confirm} disabled={busy || locked || cooling || value <= 0 || value > resources} onClick={deliver}>
+        <Button
+          block
+          isLoading={busy && !confirm}
+          disabled={busy || locked || cooling || value <= 0 || value > resources}
+          onClick={deliver}
+        >
           <span className="num">{cooling ? cooldownLabel(readyAt, now) : 'DELIVER NOW'}</span>
         </Button>
       </section>

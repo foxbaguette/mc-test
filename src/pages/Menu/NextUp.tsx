@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 
 import { nextAdventureAt, useAdventures, useAdventureSettings } from '@/data/adventures'
 import { useBuilderSeason } from '@/data/builder'
-import { useQuests, usePlayer, useUserWeeklies } from '@/data/queries'
+import { useQuests } from '@/data/game'
+import { useMembership, useUserWeeklies } from '@/data/player'
 import { useMinerClaim } from '@/data/toolLoaning'
 import { useClaimableWeeks, useLandComms, useLandPayouts } from '@/data/vault'
 import Exclamation2SVG from '@/icons/exclamation2'
@@ -31,7 +32,7 @@ interface Action {
 export function NextUp() {
   const account = useAccount()
   const now = useNow(1000)
-  const player = usePlayer()
+  const player = useMembership()
 
   const quests = useQuests()
   const weeklies = useUserWeeklies(account)
@@ -44,8 +45,9 @@ export function NextUp() {
   const weeks = useClaimableWeeks()
 
   // Quests: what is live this week, and how much of it is done.
+  const currentWeekly = weeklies.current
   const questCounts = useMemo(() => {
-    const done = weeklies.current?.quest_id_array ?? []
+    const done = currentWeekly?.quest_id_array ?? []
     const live = (quests.data ?? []).filter(
       (quest) => +chainDate(quest.quest_start_date) <= now && +chainDate(quest.quest_end_date) > now
     )
@@ -53,7 +55,7 @@ export function NextUp() {
       (quest) => done.filter((id) => Number(id) === quest.quest_id).length >= quest.quest_max_completions
     ).length
     return { total: live.length, completed, open: live.length - completed }
-  }, [quests.data, weeklies.current, now])
+  }, [quests.data, currentWeekly, now])
 
   // Claimable TLM: the same four sources the Vault adds up.
   const claimable =
@@ -97,7 +99,11 @@ export function NextUp() {
       icon: <RocketSVG color1="#00A3FF" color2="#E75300" />,
       state: adventures.isLoading ? '…' : openAdventures.length > 0 ? `${openAdventures.length} open` : 'None open',
       detail:
-        nextAdventure > now ? `Next in ${shortDuration(nextAdventure - now)}` : openAdventures.length > 0 ? 'Send in your NFTs' : '',
+        nextAdventure > now
+          ? `Next in ${shortDuration(nextAdventure - now)}`
+          : openAdventures.length > 0
+            ? 'Send in your NFTs'
+            : '',
       ready: openAdventures.length > 0
     },
     {
@@ -112,7 +118,13 @@ export function NextUp() {
       to: '/builder',
       title: 'Builder',
       icon: <MCPBuilderSVG />,
-      state: season.isLoading ? '…' : seasonLive ? 'Live' : seasonStart > now ? shortDuration(seasonStart - now) : 'Between seasons',
+      state: season.isLoading
+        ? '…'
+        : seasonLive
+          ? 'Live'
+          : seasonStart > now
+            ? shortDuration(seasonStart - now)
+            : 'Between seasons',
       detail: seasonLive
         ? `Ends in ${shortDuration(seasonEnd - now)}`
         : seasonStart > now

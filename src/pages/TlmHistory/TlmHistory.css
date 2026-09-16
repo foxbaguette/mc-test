@@ -48,7 +48,9 @@
   height: 36px;
   border-radius: 999px;
   color: var(--text-dim);
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .thist__step svg {
@@ -191,7 +193,9 @@
   background: linear-gradient(90deg, color-mix(in srgb, var(--source) 12%, transparent), rgba(255, 255, 255, 0.012));
   color: var(--text);
   text-align: left;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .thist__source:hover:not(:disabled) {
@@ -201,7 +205,11 @@
 
 .thist__source.is-active {
   border-color: var(--source);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--source) 26%, transparent), color-mix(in srgb, var(--source) 6%, transparent));
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--source) 26%, transparent),
+    color-mix(in srgb, var(--source) 6%, transparent)
+  );
 }
 
 .thist__source.is-empty {

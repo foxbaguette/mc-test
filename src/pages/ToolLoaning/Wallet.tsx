@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/Button'
+import { Modal } from '@/components/Modal'
 import { InfoCircleIcon } from '@/components/icons'
-import { refreshPlayer, usePlayer } from '@/data/queries'
+import { refreshPlayer, usePlayer } from '@/data/player'
 import { depositState, useMinerClaim, useToolWallet } from '@/data/toolLoaning'
 import TLMSVG from '@/icons/tlm'
 import { tlmToNumber } from '@/lib/format'
 import { chainDate, timeLeft, useNow } from '@/lib/time'
 import { claimMinesAction, claimToolsTlmAction, depositToolsTlmAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { toolLoaningKeys } from '@/data/keys'
 
 import { DepositValue } from './Shared'
 
@@ -69,7 +71,6 @@ export function Wallet() {
 }
 
 function DepositDialog({ onClose }: { onClose: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null)
   const queryClient = useQueryClient()
   const { run, busy, account } = useChainAction()
   const player = usePlayer()
@@ -78,7 +79,6 @@ function DepositDialog({ onClose }: { onClose: () => void }) {
   const [withdraw, setWithdraw] = useState('')
   const [pending, setPending] = useState<'deposit' | 'withdraw' | null>(null)
 
-  useEffect(() => ref.current?.showModal(), [])
   const state = depositState(wallet.data)
 
   async function submit(event: FormEvent, kind: 'deposit' | 'withdraw') {
@@ -89,24 +89,15 @@ function DepositDialog({ onClose }: { onClose: () => void }) {
     const ok = await run(
       (a, p) => (kind === 'deposit' ? depositToolsTlmAction(a, p, value) : claimToolsTlmAction(a, p, value)),
       kind === 'deposit' ? 'Deposit successful' : 'Withdraw successful',
-      () => Promise.all([queryClient.invalidateQueries({ queryKey: ['toolWallet', account] }), refreshPlayer(account)])
+      () =>
+        Promise.all([queryClient.invalidateQueries({ queryKey: toolLoaningKeys.toolWallet(account) }), refreshPlayer(account)])
     )
     if (ok) (kind === 'deposit' ? setDeposit : setWithdraw)('')
     setPending(null)
   }
 
   return (
-    <dialog
-      ref={ref}
-      className="tl-dialog"
-      onCancel={(e) => {
-        e.preventDefault()
-        if (!busy) onClose()
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current && !busy) onClose()
-      }}
-    >
+    <Modal className="tl-dialog" locked={busy} onClose={onClose}>
       <div className="tl-dialog__body">
         <header className="tl-dialog__head">
           <h2 className="tl-dialog__title">Deposited TLM</h2>
@@ -161,6 +152,6 @@ function DepositDialog({ onClose }: { onClose: () => void }) {
           <p>The Trilium you earn from your referrals using Tool Loaning is automatically added to your deposit.</p>
         </div>
       </div>
-    </dialog>
+    </Modal>
   )
 }

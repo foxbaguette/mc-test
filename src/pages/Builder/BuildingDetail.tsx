@@ -11,11 +11,12 @@ import {
   useBuildingDefs,
   useSchemaInventory
 } from '@/data/builder'
-import type { BuilderPlayer, PlayerBuilding } from '@/data/types'
+import type { BuilderPlayer, PlayerBuilding } from '@/data/types/builder'
 import { stakeBuildingNftsAction, upgradeBuildingAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
 import { useAccount } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
+import { useNow } from '@/lib/time'
 
 import { Market } from './Market'
 import { BuilderDialog, NftImg } from './shared'
@@ -23,16 +24,15 @@ import { BuilderDialog, NftImg } from './shared'
 interface DialogProps {
   player: BuilderPlayer
   building: PlayerBuilding
-  now: number
   onClose: () => void
 }
 
 /** A building opens over the outpost, so the player never leaves the overview. */
-export function BuildingDialog({ player, building, now, onClose }: DialogProps) {
+export function BuildingDialog({ player, building, onClose }: DialogProps) {
   return (
     <BuilderDialog className="bdlg" title={building.building_name} onClose={onClose}>
       {/* Keyed so a different building starts with a clean selection. */}
-      <Detail key={building.buildingid} player={player} building={building} now={now} onClose={onClose} />
+      <Detail key={building.buildingid} player={player} building={building} onClose={onClose} />
     </BuilderDialog>
   )
 }
@@ -48,7 +48,8 @@ const BONUS_LABEL: Record<string, string> = {
   storage: 'BONUS STORAGE'
 }
 
-function Detail({ player, building, now }: DialogProps) {
+function Detail({ player, building }: DialogProps) {
+  const now = useNow()
   const account = useAccount()
   const defs = useBuildingDefs()
   const bonuses = useBuilderBonuses()
@@ -111,7 +112,11 @@ function Detail({ player, building, now }: DialogProps) {
       </p>
       <div className="bschema">
         {def.allowed_schemas.map((name) => (
-          <button key={name} className={`bschema__btn ${name === activeSchema ? 'is-active' : ''}`} onClick={() => setSchema(name)}>
+          <button
+            key={name}
+            className={`bschema__btn ${name === activeSchema ? 'is-active' : ''}`}
+            onClick={() => setSchema(name)}
+          >
             {name}
           </button>
         ))}
@@ -127,7 +132,9 @@ function Detail({ player, building, now }: DialogProps) {
                   className="bnft"
                   title={group.name}
                   disabled={openSlots === 0 || free.length === 0}
-                  onClick={() => setPicked((cards) => [...cards, { asset_id: free[0], template_id: group.template_id, bonus: group.bonus }])}
+                  onClick={() =>
+                    setPicked((cards) => [...cards, { asset_id: free[0], template_id: group.template_id, bonus: group.bonus }])
+                  }
                 >
                   <NftImg templateId={group.template_id} alt={group.name} />
                   <span className="bnft__bonus num">{group.bonus}%</span>

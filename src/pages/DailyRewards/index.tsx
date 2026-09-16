@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/Toaster'
+import { toast } from '@/components/toast'
 import { CONTRACTS } from '@/chain/config'
-import { refreshPlayer, useClaimChances, usePlayer } from '@/data/queries'
+import { refreshPlayer, useMembership } from '@/data/player'
+import { useClaimChances } from '@/data/game'
 import { readMember } from '@/data/tables'
 import { sleep } from '@/lib/format'
 import { chainDate, cooldownLabel, useNow } from '@/lib/time'
@@ -20,8 +22,8 @@ import './DailyRewards.css'
 const DAY = 86_400_000
 
 export default function DailyRewards() {
-  const { account, permission } = useSession()
-  const player = usePlayer()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const player = useMembership()
   const chances = useClaimChances()
   const now = useNow(1000)
   const [busy, setBusy] = useState(false)

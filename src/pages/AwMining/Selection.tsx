@@ -5,8 +5,8 @@ import { atomic } from '@/chain/atomic'
 import { LAND_NAMES, PLANETS, type Planet } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { useFavorites } from '@/data/favorites'
-import { useMiner, usePlanetMinCommission } from '@/data/queries'
-import type { LandData } from '@/data/types'
+import { useMiner, usePlanetMinCommission } from '@/data/mining'
+import type { LandData } from '@/data/types/mining'
 import BoltSVG from '@/icons/bolt'
 import FilterSVG from '@/icons/filter'
 import HearthSVG from '@/icons/hearth'
@@ -16,6 +16,7 @@ import SearchSVG from '@/icons/search'
 import ShardsSVG from '@/icons/shards'
 import { landImage, planetImage } from '@/lib/format'
 import { addFavLand, remFavLand, setLandAction } from '@/mining/actions'
+import { miningKeys, playerKeys } from '@/data/keys'
 
 import { useChainAction } from './useMemberAction'
 
@@ -41,7 +42,7 @@ export function Selection() {
   const [filter, setFilter] = useState<Filter>({ owner: '' })
 
   const available = useQuery({
-    queryKey: ['landTemplates', planet],
+    queryKey: miningKeys.landTemplates(planet),
     staleTime: 60 * 60_000,
     queryFn: async () => {
       const templates = await atomic.getTemplates<{ immutable_data: { name: string } }>({
@@ -56,7 +57,7 @@ export function Selection() {
   })
 
   const lands = useQuery({
-    queryKey: ['landsOnPlanet', planet, landName, filter],
+    queryKey: miningKeys.landsOnPlanet(planet, landName, filter),
     staleTime: 60 * 60_000,
     queryFn: async () => {
       const hasCoords = filter.x !== undefined || filter.y !== undefined
@@ -93,8 +94,8 @@ export function Selection() {
     setFilter({ owner: String(form.get('owner') ?? '').trim(), x: x ? Number(x) : undefined, y: y ? Number(y) : undefined })
   }
 
-  const refreshMember = () => queryClient.invalidateQueries({ queryKey: ['member', account] })
-  const refreshMiner = () => queryClient.invalidateQueries({ queryKey: ['miner', account] })
+  const refreshMember = () => queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
+  const refreshMiner = () => queryClient.invalidateQueries({ queryKey: miningKeys.miner(account) })
 
   return (
     <>
@@ -104,7 +105,13 @@ export function Selection() {
         </div>
         <div className="planet-picker" role="radiogroup" aria-label="Planet">
           {PLANETS.map((p) => (
-            <button key={p} role="radio" aria-checked={planet === p} className={`planet-option ${planet === p ? 'is-selected' : ''}`} onClick={() => setPlanet(p)}>
+            <button
+              key={p}
+              role="radio"
+              aria-checked={planet === p}
+              className={`planet-option ${planet === p ? 'is-selected' : ''}`}
+              onClick={() => setPlanet(p)}
+            >
               <img src={planetImage(p)} alt="" />
               <span>{p}</span>
             </button>
@@ -138,9 +145,7 @@ export function Selection() {
 
       <section className="panel">
         <div className="panel__head lands-head">
-          <h2 className="panel__title">
-            {lands.isLoading ? '…' : first ? first.landName : 'No lands found'}
-          </h2>
+          <h2 className="panel__title">{lands.isLoading ? '…' : first ? first.landName : 'No lands found'}</h2>
           {first && (
             <div className="lands-head__stats">
               <span className="chip" title="Luck">
@@ -154,7 +159,12 @@ export function Selection() {
               </span>
             </div>
           )}
-          <button className={`icon-btn ${filterOpen ? 'is-active' : ''}`} onClick={() => setFilterOpen((v) => !v)} aria-expanded={filterOpen} aria-label="Filter">
+          <button
+            className={`icon-btn ${filterOpen ? 'is-active' : ''}`}
+            onClick={() => setFilterOpen((v) => !v)}
+            aria-expanded={filterOpen}
+            aria-label="Filter"
+          >
             <FilterSVG />
           </button>
         </div>
@@ -200,7 +210,14 @@ export function Selection() {
                     </div>
                   </dl>
                   <div className="land-tile__actions">
-                    <Button size="sm" block disabled={busy} onClick={() => run((a, p) => setLandAction(a, p, land.asset_id), 'Land added to current setup', refreshMiner)}>
+                    <Button
+                      size="sm"
+                      block
+                      disabled={busy}
+                      onClick={() =>
+                        run((a, p) => setLandAction(a, p, land.asset_id), 'Land added to current setup', refreshMiner)
+                      }
+                    >
                       Select
                     </Button>
                     {isFavorite(land.asset_id) ? (
@@ -209,7 +226,9 @@ export function Selection() {
                         color="ghost"
                         disabled={busy}
                         aria-label="Remove from favorites"
-                        onClick={() => run((a, p) => remFavLand(a, p, land.asset_id), 'Land removed from favorites', refreshMember)}
+                        onClick={() =>
+                          run((a, p) => remFavLand(a, p, land.asset_id), 'Land removed from favorites', refreshMember)
+                        }
                       >
                         <HearthBrokenSVG />
                       </Button>
@@ -219,7 +238,9 @@ export function Selection() {
                         color="gradientYellow"
                         disabled={busy}
                         aria-label="Add to favorites"
-                        onClick={() => run((a, p) => addFavLand(a, p, land.asset_id), 'Current Land added to favorites', refreshMember)}
+                        onClick={() =>
+                          run((a, p) => addFavLand(a, p, land.asset_id), 'Current Land added to favorites', refreshMember)
+                        }
                       >
                         <HearthSVG />
                       </Button>

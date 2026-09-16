@@ -27,7 +27,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /** Tracks a click handler's promise so the element can show it is working until it settles. */
-export function usePendingClick<E>(onClick?: (event: E) => unknown) {
+function usePendingClick<E>(onClick?: (event: E) => unknown) {
   const [pending, setPending] = useState(false)
   const mounted = useRef(true)
 
@@ -54,7 +54,13 @@ export function usePendingClick<E>(onClick?: (event: E) => unknown) {
 }
 
 /** A plain (icon) button that shows a spinner while its click promise runs. */
-export function AsyncIconButton({ onClick, disabled, className = '', children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function AsyncIconButton({
+  onClick,
+  disabled,
+  className = '',
+  children,
+  ...rest
+}: ButtonHTMLAttributes<HTMLButtonElement>) {
   const { pending, handleClick } = usePendingClick<MouseEvent<HTMLButtonElement>>(onClick)
   return (
     <button
@@ -111,7 +117,14 @@ export function Button({
   if (asSpan) return <span className={classes}>{content}</span>
 
   return (
-    <button type={type} className={classes} aria-busy={busy || undefined} disabled={disabled || busy} onClick={handleClick} {...rest}>
+    <button
+      type={type}
+      className={classes}
+      aria-busy={busy || undefined}
+      disabled={disabled || busy}
+      onClick={handleClick}
+      {...rest}
+    >
       {content}
     </button>
   )

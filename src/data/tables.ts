@@ -1,43 +1,33 @@
 import { CONTRACTS, PLANET_SCOPES, type Planet } from '@/chain/config'
 import { getAllRows, getRow, getRows } from '@/chain/rpc'
+import type { AwTool, Bag, LandType, Miner, MinerClaim, MineTrack, PlanetPools, SuggestedLand, ToolUse } from './types/mining'
 import type {
-  ActivityLog,
-  AwTool,
-  Bag,
   Blog,
   ClaimChance,
   CollectInfo,
-  FlagReason,
   KeyValue,
-  LandType,
   Level,
-  LevelOffer,
   McSettings,
-  Member,
-  Miner,
-  MinerClaim,
-  MineTrack,
-  MTool,
-  StakedTool,
-  ToolOv,
-  ToolWallet,
   MissionSettings,
-  PlanetPools,
   Quest,
-  SponsorLog,
-  SuggestedLand,
   Tip,
-  ToolUse,
   Treasure,
-  Tutorial,
-  UserPoints,
-  UserWeekly,
   Week
-} from './types'
-import type { BuilderBonus, BuilderPlayer, BuilderRanking, BuilderSeason, BuilderSettings, BuilderSwapPool, BuildingDef } from './types'
-import type { Adventure, AdventureParticipation, AdvTemplate, LevelUnlock } from './types'
-import type { EmporiumConfig, EmporiumTask } from './types'
-import type { DaoCandidate, PlanetCandidate, VoteHistory, VotingConfig } from './types'
+} from './types/game'
+import type { FlagReason, Member, UserPoints, UserWeekly } from './types/player'
+import type { MTool, StakedTool, ToolOv, ToolWallet } from './types/toolLoaning'
+import type {
+  BuilderBonus,
+  BuilderPlayer,
+  BuilderRanking,
+  BuilderSeason,
+  BuilderSettings,
+  BuilderSwapPool,
+  BuildingDef
+} from './types/builder'
+import type { Adventure, AdventureParticipation, AdvTemplate, LevelUnlock } from './types/adventures'
+import type { EmporiumConfig, EmporiumTask } from './types/emporium'
+import type { DaoCandidate, PlanetCandidate, VoteHistory, VotingConfig } from './types/voting'
 
 const { MISSIONS, MEMBERS, USPTS, ALIEN_WORLDS, HQ_MU, M_FEDERATION, AWLNDRATINGS, PLANETAWORLD, ALE_PLAYERS } = CONTRACTS
 
@@ -48,7 +38,6 @@ export const readWeeks = () => getRows<Week>({ code: MISSIONS, table: 'weeks', r
 export const readMissionSettings = () => getRow<MissionSettings>({ code: MISSIONS, table: 'settings' })
 export const readQuests = () => getRows<Quest>({ code: MISSIONS, table: 'quests' })
 export const readCollectInfo = () => getRows<CollectInfo>({ code: MISSIONS, table: 'collectinfo' })
-export const readTutorials = () => getRows<Tutorial>({ code: MISSIONS, table: 'tutorials' })
 export const readBlogs = () => getRows<Blog>({ code: MISSIONS, table: 'blogs' })
 export const readSuggestedLands = () => getRows<SuggestedLand>({ code: MISSIONS, table: 'lands' })
 export const readUserWeeklies = (account: string) =>
@@ -63,8 +52,6 @@ export const readMember = (account: string) =>
 export const readAllMembers = () => getAllRows<Member>({ code: MEMBERS, table: 'mcmembers' })
 export const readLevels = () => getRows<Level>({ code: MEMBERS, table: 'levels' })
 export const readMcSettings = () => getRow<McSettings>({ code: MEMBERS, table: 'settings' })
-export const readActivity = () => getRows<ActivityLog>({ code: MEMBERS, table: 'activitylog', limit: 5, reverse: true })
-export const readSponsors = () => getRows<SponsorLog>({ code: MEMBERS, table: 'sponsorlog', limit: 3, reverse: true })
 export const readClaimChances = () => getRows<ClaimChance>({ code: MEMBERS, table: 'claimchance' })
 export const readTips = () => getRows<Tip>({ code: MEMBERS, table: 'tips' })
 export const readFlagReasons = () => getRows<FlagReason>({ code: MEMBERS, table: 'reasons' })
@@ -84,24 +71,29 @@ export const readSupportLog = (account: string) =>
 const { VOTING, DAO_WORLDS } = CONTRACTS
 export const readVotingConfig = () => getRow<VotingConfig>({ code: VOTING, table: 'config' })
 export const readPlanetCandidates = (planet: string) =>
-  getRows<PlanetCandidate>({ code: VOTING, table: 'candidates', index_position: 3, key_type: 'name', lower_bound: planet, upper_bound: planet })
+  getRows<PlanetCandidate>({
+    code: VOTING,
+    table: 'candidates',
+    index_position: 3,
+    key_type: 'name',
+    lower_bound: planet,
+    upper_bound: planet
+  })
 /** The table has no index on voter, but it only holds about a month of votes: read it whole. */
 export const readVoteHistory = () => getAllRows<VoteHistory>({ code: VOTING, table: 'history' })
 export const readVoteBlocklist = () => getRows<{ wallet: string }>({ code: VOTING, table: 'blocklist' })
-export const readDaoCandidates = (planet: string) => getAllRows<DaoCandidate>({ code: DAO_WORLDS, table: 'candidates', scope: planet })
+export const readDaoCandidates = (planet: string) =>
+  getAllRows<DaoCandidate>({ code: DAO_WORLDS, table: 'candidates', scope: planet })
 
 // uspts.worlds / alien.worlds
 export const readUserPoints = (account: string) =>
   getRow<UserPoints>({ code: USPTS, table: 'userpoints', ...exact(account) }, { confirmEmpty: true })
-export const readLevelOffers = () => getRows<LevelOffer>({ code: USPTS, table: 'leveloffers', reverse: true })
 export async function readTlmBalance(account: string): Promise<number> {
   const row = await getRow<{ balance: string }>({ code: ALIEN_WORLDS, table: 'accounts', scope: account })
   return Number(String(row?.balance ?? '0').replace(' TLM', '')) || 0
 }
 
 // hq.mu
-export const readHqMember = (account: string) =>
-  getRow<{ deposit: string }>({ code: HQ_MU, table: 'members', ...exact(account) })
 export const readAwTools = () => getAllRows<AwTool>({ code: HQ_MU, table: 'awtools' })
 export const readLandTypes = () => getRows<LandType>({ code: HQ_MU, table: 'awlandtypes' })
 export const readMineTrack = () => getRow<MineTrack>({ code: HQ_MU, table: 'mineptrack' })
@@ -111,8 +103,7 @@ export const readMiner = (account: string) =>
   getRow<Miner>({ code: M_FEDERATION, table: 'miners', ...exact(account) }, { confirmEmpty: true })
 export const readBag = (account: string) =>
   getRow<Bag>({ code: M_FEDERATION, table: 'bags', ...exact(account) }, { confirmEmpty: true })
-export const readToolUse = (assetId: string) =>
-  getRow<ToolUse>({ code: M_FEDERATION, table: 'tooluse', ...exact(assetId) })
+export const readToolUse = (assetId: string) => getRow<ToolUse>({ code: M_FEDERATION, table: 'tooluse', ...exact(assetId) })
 export const readLandComms = (account: string) =>
   getRow<{ landowner: string; comms: string }>({ code: M_FEDERATION, table: 'landcomms', ...exact(account) })
 export const readPlanetPools = (planet: Planet) =>
@@ -145,7 +136,10 @@ export const readToolOvRow = (templateId: number) =>
 export const readToolWallet = (account: string) =>
   getRow<ToolWallet>({ code: TOOLS, table: 'wallets', ...exact(account) }, { confirmEmpty: true })
 export const readStakedTools = (account: string) =>
-  getRows<StakedTool>({ code: TOOLS, table: 'tools', index_position: 3, key_type: 'name', ...exact(account) }, { confirmEmpty: true })
+  getRows<StakedTool>(
+    { code: TOOLS, table: 'tools', index_position: 3, key_type: 'name', ...exact(account) },
+    { confirmEmpty: true }
+  )
 export const readMTools = () => getRows<MTool>({ code: TOOLS, table: 'mtools' })
 // emporium.mc (Zapp's)
 const { EMPORIUM } = CONTRACTS
@@ -182,8 +176,7 @@ export const readParticipations = (account: string) =>
     { code: ADVENTURE, table: 'participants', index_position: 3, key_type: 'name', ...exact(account) },
     { confirmEmpty: true }
   )
-export const readAdventureSettings = () =>
-  getRow<{ auto_create_hours: number }>({ code: ADVENTURE, table: 'settings' })
+export const readAdventureSettings = () => getRow<{ auto_create_hours: number }>({ code: ADVENTURE, table: 'settings' })
 export const readAdvTemplates = () => getAllRows<AdvTemplate>({ code: ADVENTURE, table: 'advtemplates' })
 export const readLevelUnlocks = () => getRows<LevelUnlock>({ code: ADVENTURE, table: 'levelunlocks' })
 

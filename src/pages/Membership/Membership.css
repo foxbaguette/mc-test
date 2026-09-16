@@ -19,7 +19,11 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   box-shadow: none;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .member .btn:hover:not(:disabled) {
@@ -406,7 +410,9 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .member__social a:hover {

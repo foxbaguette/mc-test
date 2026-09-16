@@ -32,9 +32,7 @@ export default function Adventures() {
 
   const available = useMemo(
     () =>
-      data.open
-        .filter((a) => +chainDate(a.enter_end) > now)
-        .sort((a, b) => +chainDate(a.enter_end) - +chainDate(b.enter_end)),
+      data.open.filter((a) => +chainDate(a.enter_end) > now).sort((a, b) => +chainDate(a.enter_end) - +chainDate(b.enter_end)),
     [data.open, now]
   )
   const running = useMemo(
@@ -89,7 +87,16 @@ export default function Adventures() {
           </div>
         ) : (
           <Routes>
-            <Route index element={<AvailableList items={available} now={now} nextAt={nextAdventureAt(data.all, settings.data?.auto_create_hours, now)} />} />
+            <Route
+              index
+              element={
+                <AvailableList
+                  items={available}
+                  now={now}
+                  nextAt={nextAdventureAt(data.all, settings.data?.auto_create_hours, now)}
+                />
+              }
+            />
             <Route path="running" element={<RunningList items={running} templates={templates} now={now} />} />
             <Route path="claimable" element={<ClaimableList items={claimable} templates={templates} />} />
             <Route path=":adventureId" element={<AdventureDetail available={available} templates={templates} now={now} />} />

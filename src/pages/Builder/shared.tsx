@@ -1,7 +1,8 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
+import { Modal } from '@/components/Modal'
 import { buildingImage, splitBuildings } from '@/data/builder'
-import type { PlayerBuilding } from '@/data/types'
+import type { PlayerBuilding } from '@/data/types/builder'
 import { publicUrl } from '@/lib/publicUrl'
 
 export function NftImg({ templateId, alt = '' }: { templateId: string | number; alt?: string }) {
@@ -27,21 +28,8 @@ interface DialogProps {
 
 /** Everything the outpost opens stays on the overview, in a console panel over it. */
 export function BuilderDialog({ title, className = '', onClose, children }: DialogProps) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => ref.current?.showModal(), [])
-
   return (
-    <dialog
-      ref={ref}
-      className={`bmodal ${className}`}
-      onCancel={(e) => {
-        e.preventDefault()
-        onClose()
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current) onClose()
-      }}
-    >
+    <Modal className={`bmodal ${className}`} label={title} onClose={onClose}>
       <div className="bmodal__body">
         <header className="bmodal__head">
           <h2 className="bmodal__title">{title}</h2>
@@ -53,17 +41,8 @@ export function BuilderDialog({ title, className = '', onClose, children }: Dial
         </header>
         <div className="bmodal__content">{children}</div>
       </div>
-    </dialog>
+    </Modal>
   )
-}
-
-/** Shard colour for a leaderboard position (0-based), as on the original leaderboard. */
-export function shardColor(index: number) {
-  if (index < 3) return '#e80066'
-  if (index < 10) return '#e69839'
-  if (index < 25) return '#9716ec'
-  if (index < 50) return '#2a74e6'
-  return '#9d9d9d'
 }
 
 /** Small building icons with their levels, for the leaderboard. */

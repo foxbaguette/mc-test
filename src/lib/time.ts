@@ -15,6 +15,9 @@ export interface TimeLeft {
   ms: number
 }
 
+/** "2d 5h 12min" */
+export const countdown = (t: TimeLeft) => `${t.days}d ${t.hours}h ${t.minutes}min`
+
 export function timeLeft(target: Date | number, now = Date.now()): TimeLeft {
   const ms = Math.max(0, +target - now)
   return {
@@ -26,7 +29,7 @@ export function timeLeft(target: Date | number, now = Date.now()): TimeLeft {
   }
 }
 
-const pad = (n: number) => String(n).padStart(2, '0')
+export const pad = (n: number) => String(n).padStart(2, '0')
 
 /** "MINE" once ready, otherwise "mm:ss" or "hh:mm:ss" like the original button. */
 export function cooldownLabel(target: Date | number, now = Date.now(), ready = 'MINE'): string {
@@ -58,6 +61,34 @@ export function durationLabel(target: Date | number, now = Date.now()): string {
   return out.trim()
 }
 
+/** setTimeout can't wait longer than this (about 24.8 days). */
+const MAX_TIMEOUT_MS = 2 ** 31 - 1
+
+/**
+ * Re-renders the caller once, when `at` (a timestamp) is reached, and returns a counter that
+ * changes at that moment — put it in a memo's dependencies to recompute across a boundary
+ * (a week ending, a season starting) without ticking every second.
+ */
+export function useRerenderAt(at: number | undefined): number {
+  const [passed, setPassed] = useState(0)
+  useEffect(() => {
+    if (!at || !Number.isFinite(at)) return
+    let timer: ReturnType<typeof setTimeout>
+    const arm = () => {
+      const wait = at - Date.now()
+      if (wait <= 0) {
+        setPassed((n) => n + 1)
+        return
+      }
+      // Very distant targets are re-armed in steps.
+      timer = setTimeout(arm, Math.min(wait + 50, MAX_TIMEOUT_MS))
+    }
+    arm()
+    return () => clearTimeout(timer)
+  }, [at])
+  return passed
+}
+
 /** Re-renders the caller every `intervalMs` and returns the current time. */
 export function useNow(intervalMs = 1000): number {
   const [now, setNow] = useState(() => Date.now())
@@ -68,17 +99,36 @@ export function useNow(intervalMs = 1000): number {
   return now
 }
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+export const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
 const MONTHS_SHORT = MONTHS.map((m) => m.slice(0, 3))
-
-/** "05 March 2025 14:02" */
-export function formatDateTime(date: Date): string {
-  return `${pad(date.getDate())} ${MONTHS[date.getMonth()]} ${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
-}
 
 /** "05 March 2025" */
 export function formatDate(date: Date): string {
   return `${pad(date.getDate())} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`
+}
+
+/** "05/03/2025" */
+export function formatDateNumeric(date: Date): string {
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`
+}
+
+/** "16 Sep, 14:02" in UTC, the chain's clock. */
+export function formatUtcDayTime(at: number): string {
+  const date = new Date(at)
+  return `${pad(date.getUTCDate())} ${MONTHS_SHORT[date.getUTCMonth()]}, ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`
 }
 
 /** "05 Mar 2025 14:02" */

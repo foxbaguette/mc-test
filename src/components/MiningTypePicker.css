@@ -15,7 +15,9 @@
   border-radius: var(--radius);
   background: var(--surface);
   text-align: left;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .mining-type:hover {
@@ -53,4 +55,3 @@
   border-color: var(--blue);
   background: radial-gradient(circle, var(--blue) 0 45%, transparent 50%);
 }
-

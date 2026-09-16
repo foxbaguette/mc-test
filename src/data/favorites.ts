@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { atomic } from '@/chain/atomic'
 import type { Planet } from '@/chain/config'
@@ -12,15 +12,10 @@ import {
   miningPowerByRarity
 } from '@/mining/estimates'
 
-import {
-  useEquippedTools,
-  useLandTypes,
-  useMember,
-  usePlanetMinCommission,
-  usePlanetPools
-} from './queries'
-import { readSuggestedLands } from './tables'
-import type { CurrentLand, LandData, ToolData } from './types'
+import { useEquippedTools, useLandTypes, usePlanetMinCommission, usePlanetPools, useSuggestedLands } from './mining'
+import { useMember } from './player'
+import type { CurrentLand, LandData, ToolData } from './types/mining'
+import { miningKeys } from './keys'
 
 export interface FavoriteLand extends CurrentLand {
   estimatedTlm: number
@@ -37,23 +32,30 @@ export interface FavoriteToolSet {
   tools: (ToolData & { asset_id: string; template_id: string })[]
 }
 
-/** Favorite lands and tool sets stored in the member's `usrsettings`. */
+/**
+ * Favorite lands and tool sets stored in the member's `usrsettings`. Pass null as the account
+ * to skip loading, e.g. when the top bar isn't in a favorites mode.
+ */
 export function useFavorites(account: string | null) {
+  const enabled = !!account
   const member = useMember(account)
   const tools = useEquippedTools(account)
-  const landTypes = useLandTypes()
-  const pools = usePlanetPools()
-  const planetMin = usePlanetMinCommission()
+  const landTypes = useLandTypes(enabled)
+  const pools = usePlanetPools(enabled)
+  const planetMin = usePlanetMinCommission(enabled)
 
   const settings = member.data?.usrsettings ?? []
-  const landIds = settings.filter((s) => s.key.includes('land')).flatMap((s) => s.value.split(',')).filter(Boolean)
+  const landIds = settings
+    .filter((s) => s.key.includes('land'))
+    .flatMap((s) => s.value.split(','))
+    .filter(Boolean)
   const toolSets = settings
     .filter((s) => s.key.includes('toolset'))
     .map((s) => ({ value: s.value, assetIds: s.value.split(',').filter(Boolean) }))
     .filter((s) => s.assetIds.length > 0)
 
   const assets = useQuery({
-    queryKey: ['favorites', account, landIds.join(','), toolSets.map((s) => s.value).join('|')],
+    queryKey: miningKeys.favorites(account, landIds.join(','), toolSets.map((s) => s.value).join('|')),
     enabled: !!account && member.isSuccess,
     staleTime: 60 * 60_000,
     queryFn: async () => {
@@ -107,19 +109,46 @@ export function useFavorites(account: string | null) {
       refetch: () => Promise.all([member.refetch(), assets.refetch()])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assets.data, assets.isLoading, assets.isFetching, member.data, member.isLoading, tools.data, landTypes.data, pools.data, planetMin.data])
+  }, [
+    assets.data,
+    assets.isLoading,
+    assets.isFetching,
+    member.data,
+    member.isLoading,
+    tools.data,
+    landTypes.data,
+    pools.data,
+    planetMin.data
+  ])
 }
 
-/** Best land for the Mine Maximizer: the suggested land per planet with the highest TLM after commission. */
+/**
+ * The Mine Maximizer's pick for the top-bar mine button. Nothing is estimated until mining:
+ * `refreshAndPick` reads the pools again and returns the best suggested land for the equipped tools.
+ */
 export function useMaximizerLand(account: string | null, enabled: boolean) {
   const tools = useEquippedTools(account)
-  const landTypes = useLandTypes()
-  const pools = usePlanetPools()
-  const planetMin = usePlanetMinCommission()
-  const suggested = useQuery({ queryKey: ['suggestedLands'], queryFn: readSuggestedLands, staleTime: 60 * 60_000, enabled })
+  const landTypes = useLandTypes(enabled)
+  const pools = usePlanetPools(enabled)
+  const planetMin = usePlanetMinCommission(enabled)
+  const suggested = useSuggestedLands(enabled)
 
-  return useMemo(() => {
-    const best = bestSuggestedLand(miningPowerByRarity(tools.data), suggested.data ?? [], landTypes.data, pools.data, planetMin.data)
-    return { best, refetch: () => Promise.all([suggested.refetch(), pools.refetch()]) }
-  }, [suggested, tools.data, landTypes.data, pools, planetMin.data])
+  const toolData = tools.data
+  const landTypeData = landTypes.data
+  const planetMinData = planetMin.data
+  const refetchSuggested = suggested.refetch
+  const refetchPools = pools.refetch
+
+  const refreshAndPick = useCallback(async () => {
+    const [freshSuggested, freshPools] = await Promise.all([refetchSuggested(), refetchPools()])
+    return bestSuggestedLand(
+      miningPowerByRarity(toolData),
+      freshSuggested.data ?? [],
+      landTypeData,
+      freshPools.data,
+      planetMinData
+    )
+  }, [refetchSuggested, refetchPools, toolData, landTypeData, planetMinData])
+
+  return { refreshAndPick }
 }

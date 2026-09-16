@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { HISTORY_NODES } from '@/chain/config'
+import { getActions, historyTime, withHistoryNode, type HistoryAction } from '@/chain/history'
+import { tlmHistoryKeys } from './keys'
 
 /**
  * Every TLM a player received in one calendar month (UTC, chain time), read from the
@@ -10,7 +11,6 @@ import { HISTORY_NODES } from '@/chain/config'
  */
 
 const PAGE_SIZE = 250
-const TIMEOUT_MS = 20_000
 
 export type TlmSource = 'mc' | 'ale' | 'pdef' | 'naron' | 'aw' | 'other'
 
@@ -43,12 +43,7 @@ export function sourceOf(from: string): TlmSource {
   if (from.endsWith('.pdef') || from === 'magordefense' || from === 'botplanetary') return 'pdef'
   if (from === NARON_REWARDS) return 'naron'
   // Mining (m.federation), land ratings, inflation, staking and teleport refunds, planet DAOs, the Arkhive.
-  if (
-    from === 'm.federation' ||
-    from === 'federation' ||
-    from === 'awlndratings' ||
-    /\.(worlds|world|dac|lore)$/.test(from)
-  )
+  if (from === 'm.federation' || from === 'federation' || from === 'awlndratings' || /\.(worlds|world|dac|lore)$/.test(from))
     return 'aw'
   return 'other'
 }
@@ -63,17 +58,16 @@ export interface TlmTransfer {
   source: TlmSource
 }
 
-interface TransferAction {
-  global_sequence: number
-  trx_id: string
-  timestamp: string
-  act: { data: { from: string; to: string; amount?: number; quantity?: string; symbol?: string; memo?: string } }
+interface TransferData {
+  from: string
+  to: string
+  amount?: number
+  quantity?: string
+  symbol?: string
+  memo?: string
 }
 
-interface ActionsPage {
-  total?: { value: number }
-  actions?: TransferAction[]
-}
+type TransferAction = HistoryAction<TransferData>
 
 /** A month as "YYYY-MM"; boundaries are UTC, like every chain timestamp. */
 export const monthKey = (date: Date) => `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
@@ -90,25 +84,20 @@ export function shiftMonth(key: string, by: number) {
   return monthKey(date)
 }
 
-async function readPage(node: string, account: string, key: string, stream: (typeof STREAMS)[number], skip: number): Promise<ActionsPage> {
+function readPage(node: string, account: string, key: string, stream: (typeof STREAMS)[number], skip: number) {
   const { start, end } = monthRange(key)
-  const params = new URLSearchParams({
+  return getActions<TransferData>(node, {
     account,
     filter: `${stream.contract}:transfer`,
     'transfer.to': account,
-    ...(stream.from ? { 'transfer.from': stream.from } : {}),
+    'transfer.from': stream.from,
     after: new Date(start).toISOString(),
     before: new Date(end).toISOString(),
-    limit: String(PAGE_SIZE),
-    skip: String(skip),
+    limit: PAGE_SIZE,
+    skip,
     // Oldest first: transfers arriving while the month loads land at the end instead of shifting the pages.
     sort: 'asc'
   })
-  const res = await fetch(`${node}/v2/history/get_actions?${params}`, { signal: AbortSignal.timeout(TIMEOUT_MS) })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const json = (await res.json()) as ActionsPage
-  if (!Array.isArray(json.actions)) throw new Error('No actions in response')
-  return json
 }
 
 const toTransfer = (action: TransferAction): TlmTransfer => {
@@ -116,8 +105,7 @@ const toTransfer = (action: TransferAction): TlmTransfer => {
   return {
     id: String(action.global_sequence),
     trxId: action.trx_id,
-    // Hyperion timestamps are UTC without the marker.
-    at: +new Date(`${action.timestamp}Z`),
+    at: historyTime(action.timestamp),
     from: data.from,
     amount: data.amount ?? Number(data.quantity?.split(' ')[0] ?? 0),
     memo: data.memo ?? '',
@@ -129,48 +117,42 @@ const toTransfer = (action: TransferAction): TlmTransfer => {
  * The whole month, page by page, reporting progress as it goes. All pages come from the
  * node that answered the first, so the pages line up; the next node is tried if one fails.
  */
-async function readMonth(account: string, key: string, onProgress: (loaded: number, total: number) => void) {
-  let lastError: unknown
-  for (const node of HISTORY_NODES) {
-    try {
-      // First pages together: their totals size the loading bar for both tokens at once.
-      const firsts = await Promise.all(STREAMS.map((stream) => readPage(node, account, key, stream, 0)))
-      const totals = firsts.map((first) => first.total?.value ?? first.actions!.length)
-      const total = totals.reduce((a, b) => a + b, 0)
-      const lists = firsts.map((first) => [...first.actions!])
-      const loaded = () => lists.reduce((sum, list) => sum + list.length, 0)
-      onProgress(loaded(), total)
+function readMonth(account: string, key: string, onProgress: (loaded: number, total: number) => void) {
+  return withHistoryNode(async (node) => {
+    // First pages together: their totals size the loading bar for both tokens at once.
+    const firsts = await Promise.all(STREAMS.map((stream) => readPage(node, account, key, stream, 0)))
+    const totals = firsts.map((first) => first.total)
+    const total = totals.reduce((a, b) => a + b, 0)
+    const lists = firsts.map((first) => [...first.actions])
+    const loaded = () => lists.reduce((sum, list) => sum + list.length, 0)
+    onProgress(loaded(), total)
 
-      for (const [i, stream] of STREAMS.entries()) {
-        while (lists[i].length < totals[i]) {
-          const page = await readPage(node, account, key, stream, lists[i].length)
-          if (page.actions!.length === 0) break
-          lists[i].push(...page.actions!)
-          onProgress(loaded(), total)
-        }
+    for (const [i, stream] of STREAMS.entries()) {
+      while (lists[i].length < totals[i]) {
+        const page = await readPage(node, account, key, stream, lists[i].length)
+        if (page.actions.length === 0) break
+        lists[i].push(...page.actions)
+        onProgress(loaded(), total)
       }
-
-      // Incoming only (no transfers to oneself), the stream's own token, each action once, newest first.
-      const seen = new Set<number>()
-      return STREAMS.flatMap((stream, i) =>
-        lists[i]
-          .filter((action) => action.act.data.to === account && action.act.data.from !== account)
-          .filter((action) => !action.act.data.symbol || action.act.data.symbol === stream.symbol)
-          .filter((action) => (seen.has(action.global_sequence) ? false : (seen.add(action.global_sequence), true)))
-          .map(toTransfer)
-      ).sort((a, b) => b.at - a.at || Number(b.id) - Number(a.id))
-    } catch (err) {
-      lastError = err
     }
-  }
-  throw lastError
+
+    // Incoming only (no transfers to oneself), the stream's own token, each action once, newest first.
+    const seen = new Set<number>()
+    return STREAMS.flatMap((stream, i) =>
+      lists[i]
+        .filter((action) => action.act.data.to === account && action.act.data.from !== account)
+        .filter((action) => !action.act.data.symbol || action.act.data.symbol === stream.symbol)
+        .filter((action) => (seen.has(action.global_sequence) ? false : (seen.add(action.global_sequence), true)))
+        .map(toTransfer)
+    ).sort((a, b) => b.at - a.at || Number(b.id) - Number(a.id))
+  })
 }
 
 export function useTlmHistory(account: string | null, key: string) {
   const [progress, setProgress] = useState<{ key: string; loaded: number; total: number } | null>(null)
 
   const query = useQuery({
-    queryKey: ['tlmHistory', account, key],
+    queryKey: tlmHistoryKeys.month(account, key),
     enabled: !!account,
     // A past month never changes; the current one is refreshed by hand.
     staleTime: key === monthKey(new Date()) ? 5 * 60_000 : Infinity,
@@ -180,7 +162,8 @@ export function useTlmHistory(account: string | null, key: string) {
     }
   })
 
-  return { ...query, progress: progress?.key === key ? progress : null }
+  // The query object is passed on untouched so the page only re-renders for the fields it reads.
+  return { query, progress: progress?.key === key ? progress : null }
 }
 
 /** Totals per source, in the order the sources are listed. */

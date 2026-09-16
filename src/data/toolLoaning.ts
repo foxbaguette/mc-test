@@ -7,9 +7,11 @@ import { chainDate } from '@/lib/time'
 import { bestSuggestedLand } from '@/mining/estimates'
 
 import { queryClient } from './queryClient'
-import { useLandTypes, useMiner, usePlanetMinCommission, usePlanetPools, useUserPoints } from './queries'
-import { readMinerClaim, readMTools, readStakedTools, readSuggestedLands, readToolOv, readToolWallet } from './tables'
-import type { MTool, ToolOv, ToolWallet } from './types'
+import { useLandTypes, useMiner, usePlanetMinCommission, usePlanetPools, useSuggestedLands } from './mining'
+import { useUserPoints } from './player'
+import { readMinerClaim, readMTools, readStakedTools, readToolOv, readToolWallet } from './tables'
+import type { MTool, ToolOv, ToolWallet } from './types/toolLoaning'
+import { miningKeys, toolLoaningKeys } from './keys'
 
 const MIN = 60_000
 
@@ -20,28 +22,44 @@ export const KOL_DIGGER_LAND = '1099512958237'
 export const SHINE_ORDER: Record<string, number> = { 'X-Dimension': 0, Antimatter: 1, Stardust: 2, Gold: 3, Stone: 4 }
 
 export const useToolOv = (enabled = true) =>
-  useQuery({ queryKey: ['toolOv'], queryFn: readToolOv, staleTime: MIN, enabled })
+  useQuery({ queryKey: toolLoaningKeys.toolOv, queryFn: readToolOv, staleTime: MIN, enabled })
 
 export const useMTools = (enabled = true) =>
-  useQuery({ queryKey: ['mtools'], queryFn: readMTools, staleTime: MIN, enabled })
+  useQuery({ queryKey: toolLoaningKeys.mtools, queryFn: readMTools, staleTime: MIN, enabled })
 
 export const useToolWallet = (account: string | null) =>
-  useQuery({ queryKey: ['toolWallet', account], queryFn: () => readToolWallet(account!), enabled: !!account, staleTime: MIN })
+  useQuery({
+    queryKey: toolLoaningKeys.toolWallet(account),
+    queryFn: () => readToolWallet(account!),
+    enabled: !!account,
+    staleTime: MIN
+  })
 
 export const useStakedTools = (account: string | null) =>
-  useQuery({ queryKey: ['stakedTools', account], queryFn: () => readStakedTools(account!), enabled: !!account, staleTime: MIN })
+  useQuery({
+    queryKey: toolLoaningKeys.stakedTools(account),
+    queryFn: () => readStakedTools(account!),
+    enabled: !!account,
+    staleTime: MIN
+  })
 
 export const useMinerClaim = (account: string | null) =>
-  useQuery({ queryKey: ['minerClaim', account], queryFn: () => readMinerClaim(account!), enabled: !!account, staleTime: MIN, refetchInterval: MIN })
+  useQuery({
+    queryKey: toolLoaningKeys.minerClaim(account),
+    queryFn: () => readMinerClaim(account!),
+    enabled: !!account,
+    staleTime: MIN,
+    refetchInterval: MIN
+  })
 
 export function refreshToolLoaning(account: string | null) {
   return Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['toolOv'] }),
-    queryClient.invalidateQueries({ queryKey: ['mtools'] }),
-    queryClient.invalidateQueries({ queryKey: ['toolWallet', account] }),
-    queryClient.invalidateQueries({ queryKey: ['stakedTools', account] }),
-    queryClient.invalidateQueries({ queryKey: ['minerClaim', account] }),
-    queryClient.invalidateQueries({ queryKey: ['miner', account] })
+    queryClient.invalidateQueries({ queryKey: toolLoaningKeys.toolOv }),
+    queryClient.invalidateQueries({ queryKey: toolLoaningKeys.mtools }),
+    queryClient.invalidateQueries({ queryKey: toolLoaningKeys.toolWallet(account) }),
+    queryClient.invalidateQueries({ queryKey: toolLoaningKeys.stakedTools(account) }),
+    queryClient.invalidateQueries({ queryKey: toolLoaningKeys.minerClaim(account) }),
+    queryClient.invalidateQueries({ queryKey: miningKeys.miner(account) })
   ])
 }
 
@@ -107,7 +125,11 @@ export function useLoanableTools(account: string | null) {
           blockedBy: lastMine > lastUse ? ('miner' as const) : ('tool' as const)
         }
       })
-      .sort((a, b) => (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99) || (SHINE_ORDER[a.shine] ?? 9) - (SHINE_ORDER[b.shine] ?? 9))
+      .sort(
+        (a, b) =>
+          (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99) ||
+          (SHINE_ORDER[a.shine] ?? 9) - (SHINE_ORDER[b.shine] ?? 9)
+      )
   }, [toolOv.data, mtools.data, wallet.data, points.data, miner.data])
 
   return {
@@ -122,21 +144,24 @@ export function pickBestLoanTool(tools: LoanTool[], now: number): LoanTool | nul
   if (tools.length === 0) return null
   const ready = tools.filter((tool) => tool.readyAt <= now)
   if (ready.length > 0) {
-    return [...ready].sort((a, b) => (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99) || b.mining_power - a.mining_power)[0]
+    return [...ready].sort(
+      (a, b) => (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99) || b.mining_power - a.mining_power
+    )[0]
   }
   return [...tools].sort((a, b) => a.readyAt - b.readyAt)[0]
 }
 
 /** Returns a function giving the best suggested land for a single loaned tool. */
 export function useLoanLand(enabled = true) {
-  const suggested = useQuery({ queryKey: ['suggestedLands'], queryFn: readSuggestedLands, staleTime: 60 * MIN, enabled })
-  const landTypes = useLandTypes()
-  const pools = usePlanetPools()
-  const planetMin = usePlanetMinCommission()
+  const suggested = useSuggestedLands(enabled)
+  const landTypes = useLandTypes(enabled)
+  const pools = usePlanetPools(enabled)
+  const planetMin = usePlanetMinCommission(enabled)
 
   return useCallback(
     (tool: Pick<ToolOv, 'rarity' | 'mining_power'>) =>
-      bestSuggestedLand({ [tool.rarity]: tool.mining_power }, suggested.data ?? [], landTypes.data, pools.data, planetMin.data)?.asset_id,
+      bestSuggestedLand({ [tool.rarity]: tool.mining_power }, suggested.data ?? [], landTypes.data, pools.data, planetMin.data)
+        ?.asset_id,
     [suggested.data, landTypes.data, pools.data, planetMin.data]
   )
 }

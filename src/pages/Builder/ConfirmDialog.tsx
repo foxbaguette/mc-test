@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/Button'
+import { Modal } from '@/components/Modal'
 import { formatR, refreshBuilder } from '@/data/builder'
 import QuestSVG from '@/icons/quest'
 import { qpFillStorageAction, qpToResourcesAction } from '@/mining/actions'
@@ -17,7 +18,6 @@ interface ConfirmDialogProps {
 
 /** Quest point exchange confirmation; the quote expires after 15 seconds, as before. */
 export function ConfirmDialog({ qp, resources, fill, onClose }: ConfirmDialogProps) {
-  const ref = useRef<HTMLDialogElement>(null)
   const { run, busy } = useChainAction()
   const [left, setLeft] = useState(SECONDS)
 
@@ -27,7 +27,6 @@ export function ConfirmDialog({ qp, resources, fill, onClose }: ConfirmDialogPro
   busyRef.current = busy
 
   useEffect(() => {
-    ref.current?.showModal()
     const started = Date.now()
     const id = setInterval(() => {
       const remaining = SECONDS - Math.floor((Date.now() - started) / 1000)
@@ -50,17 +49,7 @@ export function ConfirmDialog({ qp, resources, fill, onClose }: ConfirmDialogPro
   }
 
   return (
-    <dialog
-      ref={ref}
-      className="bdialog"
-      onCancel={(e) => {
-        e.preventDefault()
-        if (!busy) closeRef.current()
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current && !busy) closeRef.current()
-      }}
-    >
+    <Modal className="bdialog" locked={busy} onClose={() => closeRef.current()}>
       <div className="bdialog__body">
         <button className="icon-btn bdialog__close" onClick={() => closeRef.current()} disabled={busy} aria-label="Close">
           ×
@@ -82,6 +71,6 @@ export function ConfirmDialog({ qp, resources, fill, onClose }: ConfirmDialogPro
           <span className="num">Confirm ({String(left).padStart(2, '0')}s)</span>
         </Button>
       </div>
-    </dialog>
+    </Modal>
   )
 }

@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import type { AnyAction } from '@wharfkit/session'
+import { useShallow } from 'zustand/react/shallow'
 
-import { toast } from '@/components/Toaster'
+import { toast } from '@/components/toast'
 import { sleep } from '@/lib/format'
 import { useSession } from '@/state/session'
 import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
 
 /** Runs one signed action, shows the success message, then refreshes after the chain has caught up. */
 export function useChainAction() {
-  const { account, permission } = useSession()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
   const [busy, setBusy] = useState(false)
 
   async function run(build: (account: string, permission: string) => AnyAction, success: string, after?: () => unknown) {

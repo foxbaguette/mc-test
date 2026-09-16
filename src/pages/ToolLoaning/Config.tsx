@@ -11,6 +11,7 @@ import ShardsSVG from '@/icons/shards'
 import { setTempListAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
 import { publicUrl } from '@/lib/publicUrl'
+import { toolLoaningKeys } from '@/data/keys'
 
 type Sort = 'rarity' | 'name' | 'shine'
 
@@ -78,8 +79,10 @@ export function Config() {
             isLoading={busy}
             disabled={busy || checked === null}
             onClick={() =>
-              run((a, p) => setTempListAction(a, p, selected), 'Config saved', () =>
-                queryClient.invalidateQueries({ queryKey: ['toolWallet', account] })
+              run(
+                (a, p) => setTempListAction(a, p, selected),
+                'Config saved',
+                () => queryClient.invalidateQueries({ queryKey: toolLoaningKeys.toolWallet(account) })
               )
             }
           >

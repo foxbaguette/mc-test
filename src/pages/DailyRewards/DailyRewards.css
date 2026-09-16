@@ -43,12 +43,16 @@
   margin: 2px 0;
   border-radius: 50%;
   /* The glow sits under the rim, so the wheel reads as lit rather than pasted on. */
-  box-shadow: 0 0 60px rgba(0, 186, 255, 0.16), 0 24px 50px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 60px rgba(0, 186, 255, 0.16),
+    0 24px 50px rgba(0, 0, 0, 0.5);
   transition: box-shadow 0.4s ease;
 }
 
 .daily__wheel.is-spinning {
-  box-shadow: 0 0 90px rgba(0, 186, 255, 0.3), 0 24px 50px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 90px rgba(0, 186, 255, 0.3),
+    0 24px 50px rgba(0, 0, 0, 0.5);
 }
 
 .daily__wheel-loading {
@@ -114,7 +118,11 @@
   font-size: 17px;
   letter-spacing: 0.12em;
   box-shadow: none;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .daily__spin.btn:hover:not(:disabled) {

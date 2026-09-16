@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { DISCORD_URL } from '@/chain/config'
 import { Button } from '@/components/Button'
-import { toast } from '@/components/Toaster'
+import { toast } from '@/components/toast'
 import { useSession } from '@/state/session'
 import { formatTransactError } from '@/wallet/session'
 import { publicUrl } from '@/lib/publicUrl'

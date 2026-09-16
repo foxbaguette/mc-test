@@ -1,9 +1,10 @@
 import SessionKit, { ChainDefinition, type AnyAction, type Session } from '@wharfkit/session'
 import WebRenderer from '@wharfkit/web-renderer'
+import { WalletPluginAnchor } from '@wharfkit/wallet-plugin-anchor'
 import { WalletPluginCloudWallet } from '@wharfkit/wallet-plugin-cloudwallet'
 import { WalletPluginWombat } from '@wharfkit/wallet-plugin-wombat'
 
-import { APP_NAME, CHAIN_ID } from '@/chain/config'
+import { APP_NAME, CHAIN_ID, CONTRACTS } from '@/chain/config'
 import { endpointPool } from '@/chain/endpoints'
 
 let kit: SessionKit | null = null
@@ -12,7 +13,7 @@ let current: Session | undefined
 /**
  * Built lazily after the endpoint pool has been probed, so the wallet
  * broadcasts through a node confirmed up and in sync this session.
- * Only WAX Cloud Wallet and Wombat are offered.
+ * Only WAX Cloud Wallet, Wombat and Anchor are offered.
  */
 async function getKit(): Promise<SessionKit> {
   if (kit) return kit
@@ -21,7 +22,7 @@ async function getKit(): Promise<SessionKit> {
     appName: APP_NAME,
     chains: [ChainDefinition.from({ id: CHAIN_ID, url: endpointPool.next() })],
     ui: new WebRenderer(),
-    walletPlugins: [new WalletPluginCloudWallet(), new WalletPluginWombat()]
+    walletPlugins: [new WalletPluginCloudWallet(), new WalletPluginWombat(), new WalletPluginAnchor()]
   })
   return kit
 }
@@ -60,6 +61,18 @@ export async function logout(): Promise<void> {
   current = undefined
 }
 
+/** Wallets that may sign in but never mine (every mine path checks canMine). */
+const NO_MINING_WALLETS = ['anchor']
+
+export const MINING_BLOCKED_MESSAGE = 'Mining is not available with Anchor'
+
+/** The signed-in wallet plugin, e.g. "cloudwallet", "wombat" or "anchor". */
+export function walletId(): string | null {
+  return current ? current.walletPlugin.id : null
+}
+
+export const canMine = (wallet: string | null) => !wallet || !NO_MINING_WALLETS.includes(wallet)
+
 export function permission(): string {
   return current ? String(current.permission) : 'active'
 }
@@ -80,6 +93,13 @@ export { isUserCancel }
 export async function transact(actions: AnyAction[]): Promise<string> {
   const session = current ?? (await restoreSession())
   if (!session) throw new Error('User not found, please login')
+  // Last line of defence: no mine leaves this app from a wallet that may not mine.
+  if (
+    !canMine(session.walletPlugin.id) &&
+    actions.some((a) => String(a.account) === CONTRACTS.M_FEDERATION && String(a.name) === 'mine')
+  ) {
+    throw new Error(MINING_BLOCKED_MESSAGE)
+  }
   const result = await session.transact({ actions }, { broadcast: true, expireSeconds: 120 })
   return String(result.resolved?.transaction.id ?? '')
 }

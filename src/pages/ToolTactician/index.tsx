@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { RARITY_COLORS, RARITY_ORDER } from '@/chain/config'
 import { PageHeader } from '@/components/PageHeader'
 import { Select } from '@/components/Select'
-import { useAwTools, useEquippedTools, useLandTypes, useMineTrack, useMiner } from '@/data/queries'
-import type { AwTool, LandType } from '@/data/types'
+import { useAwTools, useEquippedTools, useLandTypes, useMiner, useMineTrack } from '@/data/mining'
+import type { AwTool, LandType } from '@/data/types/mining'
 import ShardsSVG from '@/icons/shards'
 import TLMSVG from '@/icons/tlm'
 import { tlmToNumber } from '@/lib/format'
@@ -46,15 +46,17 @@ function rarityShares({ tools, land }: Setup, landOverride?: LandType) {
 }
 
 const tlmPerMine = (setup: Setup, landOverride?: LandType) =>
-  rarityShares(setup, landOverride).reduce((sum, { rarity, percentage }) => sum + (percentage / 100) * (setup.pools[rarity] ?? 0), 0)
+  rarityShares(setup, landOverride).reduce(
+    (sum, { rarity, percentage }) => sum + (percentage / 100) * (setup.pools[rarity] ?? 0),
+    0
+  )
 
 const shardPower = (setup: Setup, landOverride?: LandType) => {
   const nftPower = setup.tools.reduce((sum, tool) => sum + (tool?.nft_power ?? 0), 0)
   return (nftPower * ((landOverride ?? setup.land)?.nft_power_mod ?? 0)) / 100
 }
 
-const shardsPerMine = (setup: Setup, landOverride?: LandType) =>
-  tlmPerMine(setup) === 0 ? 0 : shardPower(setup, landOverride)
+const shardsPerMine = (setup: Setup, landOverride?: LandType) => (tlmPerMine(setup) === 0 ? 0 : shardPower(setup, landOverride))
 
 /** Rarity colour lifted toward white: Common's own colour is near black and unreadable on the dark UI. */
 const rarityTint = (rarity?: string) =>
@@ -83,8 +85,8 @@ export default function ToolTactician() {
   const [landId, setLandId] = useState<number | null>(null)
   const [touched, setTouched] = useState(false)
 
-  const tools = awTools.data ?? []
-  const lands = landTypes.data ?? []
+  const tools = useMemo(() => awTools.data ?? [], [awTools.data])
+  const lands = useMemo(() => landTypes.data ?? [], [landTypes.data])
 
   // A tool name always belongs to one rarity; the shine does not change it.
   const rarityOf = useMemo(() => new Map(tools.map((tool) => [tool.toolname, tool.rarity])), [tools])
@@ -99,9 +101,11 @@ export default function ToolTactician() {
     ]
   }, [tools, rarityOf])
 
-  const shineOptions = (name: string) => [
-    ...new Set(tools.filter((tool) => tool.toolname === name).map((tool) => tool.shine))
-  ].map((shine) => ({ value: shine, label: shine }))
+  const shineOptions = (name: string) =>
+    [...new Set(tools.filter((tool) => tool.toolname === name).map((tool) => tool.shine))].map((shine) => ({
+      value: shine,
+      label: shine
+    }))
 
   const landOptions = useMemo(() => lands.map((land) => ({ value: String(land.landtype_id), label: land.landname })), [lands])
 
@@ -122,7 +126,9 @@ export default function ToolTactician() {
 
   const setup: Setup = useMemo(() => {
     const picked = names.map((name, i) => tools.find((tool) => tool.toolname === name && tool.shine === shines[i]))
-    const pools = Object.fromEntries((mineTrack.data?.pool_buckets ?? []).map((bucket) => [bucket.key, tlmToNumber(bucket.value)]))
+    const pools = Object.fromEntries(
+      (mineTrack.data?.pool_buckets ?? []).map((bucket) => [bucket.key, tlmToNumber(bucket.value)])
+    )
     return { tools: picked, land: lands.find((land) => land.landtype_id === landId), pools }
   }, [names, shines, tools, lands, landId, mineTrack.data])
 
@@ -131,7 +137,9 @@ export default function ToolTactician() {
     setNames((current) => current.map((value, i) => (i === index ? name : value)))
     // Keep the shine if the new tool has it, otherwise take its first one.
     const available = tools.filter((tool) => tool.toolname === name).map((tool) => tool.shine)
-    setShines((current) => current.map((value, i) => (i === index ? (available.includes(value) ? value : (available[0] ?? NONE)) : value)))
+    setShines((current) =>
+      current.map((value, i) => (i === index ? (available.includes(value) ? value : (available[0] ?? NONE)) : value))
+    )
   }
 
   function pickShine(index: number, shine: string) {
@@ -218,7 +226,12 @@ export default function ToolTactician() {
               <section className="tactician__block">
                 <h2 className="tactician__heading">TLM POOLS AVERAGE (LAST WEEK)</h2>
                 {(mineTrack.data?.pool_buckets ?? []).map((bucket) => (
-                  <Row key={bucket.key} label={bucket.key} value={tlmToNumber(bucket.value).toFixed(4)} icon={<TLMSVG color="#fff" />} />
+                  <Row
+                    key={bucket.key}
+                    label={bucket.key}
+                    value={tlmToNumber(bucket.value).toFixed(4)}
+                    icon={<TLMSVG color="#fff" />}
+                  />
                 ))}
               </section>
 

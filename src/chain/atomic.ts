@@ -98,7 +98,9 @@ export const atomic = {
     const out: AtomicAsset<D>[] = []
     for (let i = 0; i < unique.length; i += 100) {
       const chunk = unique.slice(i, i + 100)
-      out.push(...(await getNonEmpty<AtomicAsset<D>>(`/atomicassets/v1/assets${toQuery({ ids: chunk.join(','), limit: chunk.length })}`)))
+      out.push(
+        ...(await getNonEmpty<AtomicAsset<D>>(`/atomicassets/v1/assets${toQuery({ ids: chunk.join(','), limit: chunk.length })}`))
+      )
     }
     return out
   },

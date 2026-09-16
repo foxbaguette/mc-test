@@ -1,8 +1,10 @@
-import { toast } from '@/components/Toaster'
-import { refreshMining, refreshPlayer } from '@/data/queries'
+import { toast } from '@/components/toast'
+import { refreshMining } from '@/data/mining'
+import { refreshPlayer } from '@/data/player'
 import { readMiner, readToolOvRow } from '@/data/tables'
 import { KOL_DIGGER, KOL_DIGGER_LAND, refreshToolLoaning, type LoanTool } from '@/data/toolLoaning'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+import { useSession } from '@/state/session'
+import { canMine, formatTransactError, isUserCancel, MINING_BLOCKED_MESSAGE, transact } from '@/wallet/session'
 
 import { loanMineActions } from './actions'
 import { computeNonce } from './nonce'
@@ -20,6 +22,11 @@ interface LoanMineOptions {
 
 /** Rents a loaned tool, mines with it and returns it. Resolves true on success. */
 export async function mineWithLoanedTool({ account, permission, tool, bagIds, landId }: LoanMineOptions): Promise<boolean> {
+  // Before renting the tool and the proof of work (see mineNow).
+  if (!canMine(useSession.getState().wallet)) {
+    toast.error(MINING_BLOCKED_MESSAGE)
+    return false
+  }
   try {
     let assetIds: string[]
     let difficulty: number
@@ -33,7 +40,8 @@ export async function mineWithLoanedTool({ account, permission, tool, bagIds, la
     } else {
       // Always ask the chain which copy is next in line; the cached list can be a mine behind.
       const row = await readToolOvRow(tool.template_id)
-      if (!row?.next_asset_id) throw new Error('This tool was used recently. Please use another or wait until the cooldown expires')
+      if (!row?.next_asset_id)
+        throw new Error('This tool was used recently. Please use another or wait until the cooldown expires')
       assetIds = [String(row.next_asset_id)]
       difficulty = row.pow
       land = landId

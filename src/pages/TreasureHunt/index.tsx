@@ -1,17 +1,13 @@
 import { useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { Button } from '@/components/Button'
+import { MiningBlocked } from '@/components/MiningBlocked'
 import { RefreshIcon } from '@/components/icons'
 import { PageHeader } from '@/components/PageHeader'
-import {
-  refreshMining,
-  useEquippedTools,
-  useFinishedHunts,
-  useMiner,
-  usePlayer,
-  useTreasureHunts,
-  type TreasureHunt
-} from '@/data/queries'
+import { refreshMining, useEquippedTools, useMiner } from '@/data/mining'
+import { type TreasureHunt, useFinishedHunts, useTreasureHunts } from '@/data/treasureHunts'
+import { useMembership } from '@/data/player'
 import FinishFlagSVG from '@/icons/finish-flag'
 import ShardsSVG from '@/icons/shards'
 import TLMSVG from '@/icons/tlm'
@@ -20,7 +16,7 @@ import { landImage, tlmToNumber } from '@/lib/format'
 import { chainDate, cooldownLabel, formatDate, shortDuration, useNow } from '@/lib/time'
 import { mineReadyAt } from '@/mining/estimates'
 import { mineNow } from '@/mining/mineNow'
-import { useSession } from '@/state/session'
+import { useCanMine, useSession } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 
 import './TreasureHunt.css'
@@ -33,14 +29,15 @@ const VIEWS: { value: View; label: string }[] = [
 ]
 
 export default function TreasureHuntPage() {
-  const { account, permission } = useSession()
-  const player = usePlayer()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const player = useMembership()
   const hunts = useTreasureHunts()
   const finished = useFinishedHunts()
   const miner = useMiner(account)
   const tools = useEquippedTools(account)
   const now = useNow(1000)
   const [busy, setBusy] = useState<string | null>(null)
+  const canMine = useCanMine()
   const [view, setView] = useState<View>('active')
 
   const refreshing = hunts.isFetching || miner.isFetching || tools.isFetching
@@ -64,7 +61,9 @@ export default function TreasureHuntPage() {
       <article key={hunt.treasure_name} className={`hunt ${started ? 'is-live' : ''}`}>
         <div className="hunt__media">
           <img src={landImage(hunt.landName)} alt={hunt.landName} loading="lazy" />
-          <span className={`hunt__state num ${started ? 'is-live' : ''}`}>{started ? 'LIVE' : `starts in ${shortDuration(start - now)}`}</span>
+          <span className={`hunt__state num ${started ? 'is-live' : ''}`}>
+            {started ? 'LIVE' : `starts in ${shortDuration(start - now)}`}
+          </span>
         </div>
 
         <div className="hunt__body">
@@ -93,7 +92,7 @@ export default function TreasureHuntPage() {
             block
             color={started ? 'gradientYellow' : 'solidBlue'}
             isLoading={busy === hunt.treasure_name}
-            disabled={!!busy || mineLabel !== 'MINE'}
+            disabled={!canMine || !!busy || mineLabel !== 'MINE'}
             onClick={() => handleMine(hunt)}
           >
             <span className="num">{mineLabel}</span>
@@ -108,6 +107,8 @@ export default function TreasureHuntPage() {
       <PageHeader title="Treasure Hunt" image={publicUrl('/assets/background/bg-login.jpeg')} />
 
       <div className="page hunts">
+        <MiningBlocked />
+
         <section className="panel hunts__intro">
           <h2 className="hunts__intro-title">Treasure Hunt</h2>
           <p>

@@ -6,7 +6,8 @@ import { publicUrl } from '@/lib/publicUrl'
 
 import { queryClient } from './queryClient'
 import * as t from './tables'
-import type { BuilderPlayer, BuilderSettings, BuilderSwapPool, PlayerBuilding } from './types'
+import type { BuilderPlayer, BuilderSettings, BuilderSwapPool, PlayerBuilding } from './types/builder'
+import { builderKeys } from './keys'
 
 const MIN = 60_000
 const HOUR = 60 * MIN
@@ -23,21 +24,20 @@ export const buildingImage = (id: string) => publicUrl(`/assets/mcp/${id}.png`)
 // ---------------------------------------------------------------------------
 
 export const useBuilderSeason = () =>
-  useQuery({ queryKey: ['builder', 'season'], queryFn: t.readBuilderSeason, staleTime: 10 * MIN })
+  useQuery({ queryKey: builderKeys.season, queryFn: t.readBuilderSeason, staleTime: 10 * MIN })
 
 export const useBuilderSettings = () =>
-  useQuery({ queryKey: ['builder', 'settings'], queryFn: t.readBuilderSettings, staleTime: 10 * MIN })
+  useQuery({ queryKey: builderKeys.settings, queryFn: t.readBuilderSettings, staleTime: 10 * MIN })
 
-export const useSwapPool = () => useQuery({ queryKey: ['builder', 'swappool'], queryFn: t.readSwapPool, staleTime: 30_000 })
+export const useSwapPool = () => useQuery({ queryKey: builderKeys.swappool, queryFn: t.readSwapPool, staleTime: 30_000 })
 
-export const useBuildingDefs = () => useQuery({ queryKey: ['builder', 'buildings'], queryFn: t.readBuildingDefs, staleTime: HOUR })
+export const useBuildingDefs = () => useQuery({ queryKey: builderKeys.buildings, queryFn: t.readBuildingDefs, staleTime: HOUR })
 
-export const useBuilderBonuses = () =>
-  useQuery({ queryKey: ['builder', 'bonuses'], queryFn: t.readBuilderBonuses, staleTime: HOUR })
+export const useBuilderBonuses = () => useQuery({ queryKey: builderKeys.bonuses, queryFn: t.readBuilderBonuses, staleTime: HOUR })
 
 export const useBuilderPlayer = (account: string | null) =>
   useQuery({
-    queryKey: ['builder', 'player', account],
+    queryKey: builderKeys.player(account),
     queryFn: () => t.readBuilderPlayer(account!),
     enabled: !!account,
     staleTime: MIN
@@ -49,13 +49,13 @@ const LEADERBOARD_INDEX: Record<LeaderboardSort, number> = { mcp: 2, score: 3, r
 
 export const useBuilderLeaderboard = (sort: LeaderboardSort) =>
   useQuery({
-    queryKey: ['builder', 'leaderboard', sort],
+    queryKey: builderKeys.leaderboard(sort),
     queryFn: () => t.readBuilderLeaderboard(LEADERBOARD_INDEX[sort]),
     staleTime: MIN
   })
 
 export const useBuilderRanking = () =>
-  useQuery({ queryKey: ['builder', 'ranking'], queryFn: t.readBuilderRanking, staleTime: 10 * MIN })
+  useQuery({ queryKey: builderKeys.ranking, queryFn: t.readBuilderRanking, staleTime: 10 * MIN })
 
 export interface InventoryGroup {
   template_id: string
@@ -68,7 +68,7 @@ export interface InventoryGroup {
 /** The player's NFTs of one schema, one entry per template. */
 export function useSchemaInventory(account: string | null, schema: string | undefined) {
   return useQuery({
-    queryKey: ['builder', 'inventory', account, schema],
+    queryKey: builderKeys.inventory(account, schema),
     enabled: !!account && !!schema,
     staleTime: 5 * MIN,
     queryFn: async () => {
@@ -99,8 +99,8 @@ export function useSchemaInventory(account: string | null, schema: string | unde
 
 export function refreshBuilder() {
   return Promise.all(
-    ['player', 'settings', 'swappool', 'season', 'inventory'].map((key) =>
-      queryClient.invalidateQueries({ queryKey: ['builder', key] })
+    [builderKeys.playerAll, builderKeys.settings, builderKeys.swappool, builderKeys.season, builderKeys.inventoryAll].map(
+      (queryKey) => queryClient.invalidateQueries({ queryKey })
     )
   )
 }
@@ -145,7 +145,9 @@ export const cooldownEnd = (lastInteraction: string, seconds = 0) => +chainDate(
 
 /** Exploder uses today (UTC day, as the contract counts them). */
 export function exploderUses(building: PlayerBuilding, now: number) {
-  return Math.floor(+chainDate(building.last_interaction) / DAY_MS) === Math.floor(now / DAY_MS) ? building.todays_interactions : 0
+  return Math.floor(+chainDate(building.last_interaction) / DAY_MS) === Math.floor(now / DAY_MS)
+    ? building.todays_interactions
+    : 0
 }
 
 /** What the Exploder grants now; the first use of the day pays five times. */
@@ -192,4 +194,13 @@ export function qpToFillStorage(
   const remaining = gc - (max - current)
   if (remaining <= 0) return 0
   return Math.max(1, Math.round((product / remaining - mcp) / settings.mcpperqp))
+}
+
+/** Shard colour for a leaderboard position (0-based), as on the original leaderboard. */
+export function shardColor(index: number) {
+  if (index < 3) return '#e80066'
+  if (index < 10) return '#e69839'
+  if (index < 25) return '#9716ec'
+  if (index < 50) return '#2a74e6'
+  return '#9d9d9d'
 }

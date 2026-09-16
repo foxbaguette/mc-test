@@ -4,10 +4,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import { RARITY_COLORS, RARITY_ORDER, type Planet } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { MiningTypePicker } from '@/components/MiningTypePicker'
-import { useEquippedTools, useLandTypes, useMiner, useMineTrack, usePlanetMinCommission, useToolInventory } from '@/data/queries'
+import { useEquippedTools, useLandTypes, useMiner, useMineTrack, usePlanetMinCommission, useToolInventory } from '@/data/mining'
 import { landImage, planetImage, tlmToNumber } from '@/lib/format'
 import { addFavLand, addFavTools, setBagAction } from '@/mining/actions'
 import { publicUrl } from '@/lib/publicUrl'
+import { miningKeys, playerKeys } from '@/data/keys'
 
 import { useChainAction } from './useMemberAction'
 
@@ -72,10 +73,10 @@ export function Main() {
 
   const refreshTools = () =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['equippedTools', account] }),
-      queryClient.invalidateQueries({ queryKey: ['toolInventory', account] })
+      queryClient.invalidateQueries({ queryKey: miningKeys.equippedTools(account) }),
+      queryClient.invalidateQueries({ queryKey: miningKeys.toolInventory(account) })
     ])
-  const refreshMember = () => queryClient.invalidateQueries({ queryKey: ['member', account] })
+  const refreshMember = () => queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
 
   return (
     <>
@@ -107,7 +108,9 @@ export function Main() {
               color="gradientYellow"
               block
               disabled={busy || !miner.data}
-              onClick={() => run((a, p) => addFavLand(a, p, miner.data!.current_land), 'Current Land added to favorites', refreshMember)}
+              onClick={() =>
+                run((a, p) => addFavLand(a, p, miner.data!.current_land), 'Current Land added to favorites', refreshMember)
+              }
             >
               Add to favorites
             </Button>
@@ -144,7 +147,13 @@ export function Main() {
             color="gradientYellow"
             size="sm"
             disabled={busy || equipped.length === 0}
-            onClick={() => run((a, p) => addFavTools(a, p, equipped.map((t) => t.asset_id).join(',')), 'Current Tools added to favorites', refreshMember)}
+            onClick={() =>
+              run(
+                (a, p) => addFavTools(a, p, equipped.map((t) => t.asset_id).join(',')),
+                'Current Tools added to favorites',
+                refreshMember
+              )
+            }
           >
             Add current setup to favorites
           </Button>
@@ -154,8 +163,17 @@ export function Main() {
           {tools.isLoading
             ? [0, 1, 2].map((i) => <div key={i} className="skeleton tool-card__loading" />)
             : sortedEquipped.map((tool) => (
-                <div key={tool.asset_id} className="tool-card is-equipped" style={{ '--rarity': RARITY_COLORS[tool.rarity] } as React.CSSProperties}>
-                  <img src={publicUrl(`/assets/aw-nft-images/${tool.template_id}.webp`)} alt={tool.name} title={tool.name} loading="lazy" />
+                <div
+                  key={tool.asset_id}
+                  className="tool-card is-equipped"
+                  style={{ '--rarity': RARITY_COLORS[tool.rarity] } as React.CSSProperties}
+                >
+                  <img
+                    src={publicUrl(`/assets/aw-nft-images/${tool.template_id}.webp`)}
+                    alt={tool.name}
+                    title={tool.name}
+                    loading="lazy"
+                  />
                   <Button
                     color="ghost"
                     size="sm"
@@ -163,7 +181,12 @@ export function Main() {
                     disabled={busy}
                     onClick={() =>
                       run(
-                        (a, p) => setBagAction(a, p, equipped.filter((t) => t.asset_id !== tool.asset_id).map((t) => t.asset_id)),
+                        (a, p) =>
+                          setBagAction(
+                            a,
+                            p,
+                            equipped.filter((t) => t.asset_id !== tool.asset_id).map((t) => t.asset_id)
+                          ),
                         'Tool removed from current setup',
                         refreshTools
                       )
@@ -176,14 +199,27 @@ export function Main() {
           {inventory.isLoading
             ? [0, 1, 2, 3].map((i) => <div key={i} className="skeleton tool-card__loading" />)
             : unequipped.map((asset) => (
-                <div key={asset.asset_id} className="tool-card" style={{ '--rarity': RARITY_COLORS[asset.data.rarity] } as React.CSSProperties}>
-                  <img src={publicUrl(`/assets/aw-nft-images/${asset.template?.template_id}.webp`)} alt={asset.data.name} title={asset.data.name} loading="lazy" />
+                <div
+                  key={asset.asset_id}
+                  className="tool-card"
+                  style={{ '--rarity': RARITY_COLORS[asset.data.rarity] } as React.CSSProperties}
+                >
+                  <img
+                    src={publicUrl(`/assets/aw-nft-images/${asset.template?.template_id}.webp`)}
+                    alt={asset.data.name}
+                    title={asset.data.name}
+                    loading="lazy"
+                  />
                   <Button
                     size="sm"
                     block
                     disabled={busy || equipped.length >= 3}
                     onClick={() =>
-                      run((a, p) => setBagAction(a, p, [...equipped.map((t) => t.asset_id), asset.asset_id]), 'Tool added to current setup', refreshTools)
+                      run(
+                        (a, p) => setBagAction(a, p, [...equipped.map((t) => t.asset_id), asset.asset_id]),
+                        'Tool added to current setup',
+                        refreshTools
+                      )
                     }
                   >
                     Equip

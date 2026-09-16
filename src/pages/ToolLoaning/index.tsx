@@ -8,7 +8,6 @@ import { Lend } from './Lend'
 import { Mine } from './Mine'
 import { Wallet } from './Wallet'
 
-import '../Questing.css'
 import './ToolLoaning.css'
 
 type View = 'mine' | 'lend' | 'config'

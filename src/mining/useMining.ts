@@ -2,14 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import type { ButtonColor } from '@/components/Button'
-import { useFavorites, useMaximizerLand, type FavoriteLand } from '@/data/favorites'
-import { refreshMining, useEquippedTools, useMiner, usePlayer } from '@/data/queries'
+import { useFavorites, useMaximizerLand } from '@/data/favorites'
+import { refreshMining, useEquippedTools, useMiner } from '@/data/mining'
+import { useMembership } from '@/data/player'
 import { pickBestLoanTool, refreshToolLoaning, useLoanableTools, useLoanLand, useToolWallet } from '@/data/toolLoaning'
 import { tlmToNumber } from '@/lib/format'
 import { cooldownLabel, useNow } from '@/lib/time'
 import { useSession, type MiningType } from '@/state/session'
+import { canMine, MINING_BLOCKED_MESSAGE } from '@/wallet/session'
 
-import { mineReadyAt } from './estimates'
+import { mineReadyAt, pickFavoriteLand } from './estimates'
 import { mineWithLoanedTool } from './loan'
 import { mineNow } from './mineNow'
 
@@ -31,29 +33,15 @@ const ABOVE: Record<MiningType, string> = {
   red: 'Tool Loaning'
 }
 
-/** The favorite land to mine next: ready lands first, then by shards (green) or TLM (orange). */
-export function pickFavoriteLand(lands: FavoriteLand[], readyAt: (land: FavoriteLand) => number, type: MiningType, now: number) {
-  if (lands.length === 0) return null
-  let pool = lands.filter((land) => readyAt(land) <= now)
-  if (pool.length === 0) {
-    const soonest = Math.min(...lands.map(readyAt))
-    pool = lands.filter((land) => readyAt(land) === soonest)
-  }
-  const primary = (land: FavoriteLand) => (type === 'orange' ? land.estimatedTlm : land.shards)
-  const secondary = (land: FavoriteLand) => (type === 'orange' ? land.shards : land.estimatedTlm)
-  return [...pool].sort((a, b) => primary(b) - primary(a) || secondary(b) - secondary(a))[0]
-}
-
 /** State and actions behind the header's mine button. */
 export function useMining() {
   const navigate = useNavigate()
   const account = useSession((s) => s.account)
   const permission = useSession((s) => s.permission)
   const miningType = useSession((s) => s.miningType)
-  const player = usePlayer()
+  const player = useMembership()
   const miner = useMiner(account)
   const tools = useEquippedTools(account)
-  const favorites = useFavorites(account)
   const maximizer = useMaximizerLand(account, miningType === 'blue')
   const now = useNow(1000)
   const [busy, setBusy] = useState(false)
@@ -64,18 +52,27 @@ export function useMining() {
   const loanLandFor = useLoanLand(isLoan)
 
   const cannotMine = !player.isMember || player.flagged
+  // Anchor may sign in but not mine: the button stays off and says why.
+  const walletCanMine = useSession((s) => canMine(s.wallet))
   const usesFavorites = miningType === 'green' || miningType === 'orange'
-  const tick = Math.floor(now / 5000)
+  const favorites = useFavorites(usesFavorites ? account : null)
+  // The picks only need to move on every few seconds, not on every clock tick.
+  const coarseNow = Math.floor(now / 5000) * 5000
 
   const bestFavorite = useMemo(
     () =>
       usesFavorites
-        ? pickFavoriteLand(favorites.lands, (land) => mineReadyAt(land.delay, tools.data, miner.data?.last_mine), miningType, Date.now())
+        ? pickFavoriteLand(
+            favorites.lands,
+            (land) => mineReadyAt(land.delay, tools.data, miner.data?.last_mine),
+            miningType,
+            coarseNow
+          )
         : null,
-    [usesFavorites, favorites.lands, tools.data, miner.data, miningType, tick]
+    [usesFavorites, favorites.lands, tools.data, miner.data, miningType, coarseNow]
   )
 
-  const bestLoan = useMemo(() => (isLoan ? pickBestLoanTool(loan.tools, Date.now()) : null), [isLoan, loan.tools, tick])
+  const bestLoan = useMemo(() => (isLoan ? pickBestLoanTool(loan.tools, coarseNow) : null), [isLoan, loan.tools, coarseNow])
 
   const landDelay = miningType === 'blue' ? 15 : usesFavorites ? bestFavorite?.delay : miner.data?.land.delay
   const readyAt = isLoan ? (bestLoan?.readyAt ?? 0) : mineReadyAt(landDelay, tools.data, miner.data?.last_mine)
@@ -86,11 +83,11 @@ export function useMining() {
   // Play the Alien Worlds chime when the cooldown runs out.
   const previous = useRef(label)
   useEffect(() => {
-    if (previous.current !== 'MINE' && label === 'MINE' && !dataLoading) {
+    if (previous.current !== 'MINE' && label === 'MINE' && !dataLoading && walletCanMine) {
       void new Audio(MINE_SOUND).play().catch(() => undefined)
     }
     previous.current = label
-  }, [label, dataLoading])
+  }, [label, dataLoading, walletCanMine])
 
   async function refresh() {
     await Promise.all([
@@ -105,7 +102,7 @@ export function useMining() {
       navigate('/membership')
       return
     }
-    if (!account) return
+    if (!account || !walletCanMine) return
     setBusy(true)
 
     if (isLoan) {
@@ -124,8 +121,7 @@ export function useMining() {
 
     let landId: string | undefined
     if (miningType === 'blue') {
-      await maximizer.refetch()
-      landId = maximizer.best?.asset_id
+      landId = (await maximizer.refreshAndPick())?.asset_id
     } else if (usesFavorites) {
       landId = bestFavorite?.asset_id
     }
@@ -141,19 +137,21 @@ export function useMining() {
 
   const textBelow = cannotMine
     ? 'Become a member to use mine'
-    : isLoan
-      ? 'Tool Loaning'
-      : usesFavorites
-        ? (bestFavorite?.name ?? '')
-        : (miner.data?.land.name ?? '')
+    : !walletCanMine
+      ? MINING_BLOCKED_MESSAGE
+      : isLoan
+        ? 'Tool Loaning'
+        : usesFavorites
+          ? (bestFavorite?.name ?? '')
+          : (miner.data?.land.name ?? '')
 
   return {
     onClick,
     refresh,
     isBusy: !cannotMine && (busy || dataLoading),
-    isDisabled: !cannotMine && (busy || dataLoading || noLoanTool || label !== 'MINE'),
+    isDisabled: !cannotMine && (!walletCanMine || busy || dataLoading || noLoanTool || label !== 'MINE'),
     /** Cooldown over and nothing in the way: the moment to press it. */
-    isReady: !cannotMine && !busy && !dataLoading && !noLoanTool && label === 'MINE',
+    isReady: !cannotMine && walletCanMine && !busy && !dataLoading && !noLoanTool && label === 'MINE',
     isRefreshing: miner.isFetching || tools.isFetching || (isLoan && loan.isFetching),
     buttonColor: COLORS[miningType],
     buttonText: cannotMine ? 'Membership' : label,

@@ -1,4 +1,4 @@
-import { useAlePlayer } from '@/data/queries'
+import { useAlePlayer } from '@/data/player'
 import { useAccount } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 

@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useShallow } from 'zustand/react/shallow'
 
 import { DISCORD_URL } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { CheckSquareIcon } from '@/components/icons'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/Toaster'
-import { refreshPlayer, useMcSettings, usePlayer } from '@/data/queries'
+import { toast } from '@/components/toast'
+import { refreshPlayer, useMembership } from '@/data/player'
+import { useMcSettings } from '@/data/game'
 import DiscordSVG from '@/icons/discord'
 import MediumSVG from '@/icons/medium'
 import StarSVG from '@/icons/star'
@@ -39,7 +41,7 @@ const FREE_TIER = ['Tool Tactician']
 const MEMBER_TIER = ['Tool Tactician', 'On-Site Mining', 'Mine Maximizer', 'MCP for shard mining', 'Tool Loaning']
 
 export default function Membership() {
-  const player = usePlayer()
+  const player = useMembership()
   const settings = useMcSettings()
   const [searchParams] = useSearchParams()
   const [joining, setJoining] = useState(searchParams.has('ref') && !player.isMember)
@@ -165,7 +167,16 @@ function Badge({ state, children }: { state: 'active' | 'pending' | 'inactive' |
 
 function CrossIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D32C54" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#D32C54"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      aria-hidden
+    >
       <path d="m6 6 12 12M18 6 6 18" />
     </svg>
   )
@@ -192,7 +203,7 @@ function ReferralPanel({ account }: { account: string | null }) {
 }
 
 function JoinForm({ cost, onDone }: { cost: string; onDone: () => void }) {
-  const { account, permission } = useSession()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
   const [searchParams] = useSearchParams()
   const [referrer, setReferrer] = useState(searchParams.get('ref') ?? '')
   const [busy, setBusy] = useState(false)
@@ -238,8 +249,8 @@ function JoinForm({ cost, onDone }: { cost: string; onDone: () => void }) {
           <p className="member__lead">
             If you were referred by another player, please enter that player&apos;s WAX wallet in the field below. As a thank you,
             this player will earn bonus MC Points <StarSVG /> every time you spend them and receive TLM <TLMSVG /> each time you
-            mine using Tool Loaning. This bonus begins once you become a verified member and lasts for 180 days. Rest assured, this
-            comes at no additional cost to you.
+            mine using Tool Loaning. This bonus begins once you become a verified member and lasts for 180 days. Rest assured,
+            this comes at no additional cost to you.
           </p>
 
           <label className="member__field">
@@ -255,8 +266,8 @@ function JoinForm({ cost, onDone }: { cost: string; onDone: () => void }) {
 
           <p className="member__terms">
             Membership in Mission Control does not guarantee automatic verification. Accounts must fully comply with Alien
-            Worlds&apos; Terms of Service, and verification is only granted once the account is confirmed as the sole one in Mission
-            Control. Our team conducts regular checks to ensure ongoing compliance.
+            Worlds&apos; Terms of Service, and verification is only granted once the account is confirmed as the sole one in
+            Mission Control. Our team conducts regular checks to ensure ongoing compliance.
             <br />
             <br />
             If suspicious activity or potential breaches of the ToS are detected, access to key features will be restricted, and

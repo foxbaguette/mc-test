@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/Button'
-import { toast } from '@/components/Toaster'
+import { Modal } from '@/components/Modal'
+import { toast } from '@/components/toast'
 import {
   ADVENTURE_SCHEMAS,
   bestTeam,
@@ -15,16 +16,16 @@ import {
   useModUnlocks,
   type CardGroup
 } from '@/data/adventures'
-import { usePlayer } from '@/data/queries'
-import type { Adventure, AdvTemplate } from '@/data/types'
+import { usePlayer } from '@/data/player'
+import type { Adventure, AdvTemplate } from '@/data/types/adventures'
 import QuestSVG from '@/icons/quest'
 import StarSVG from '@/icons/star'
-import { chainDate, timeLeft } from '@/lib/time'
+import { chainDate, countdown, timeLeft } from '@/lib/time'
 import { joinAdventureAction, startAdventureWithNftsAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
 import { publicUrl } from '@/lib/publicUrl'
 
-import { AdventureImg, CardImg, countdown, ModRow, SponsorRibbon } from './shared'
+import { AdventureImg, CardImg, ModRow, SponsorRibbon } from './shared'
 
 type Templates = Map<number, AdvTemplate>
 
@@ -91,7 +92,8 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
   // Card art hashes from every inventory loaded so far, for the chosen cards shown in the slots.
   const imageOf = useMemo(() => {
     const map = new Map<number, string>()
-    for (const group of [...allInventory.groups, ...(inventory.data ?? [])]) if (group.image) map.set(group.template_id, group.image)
+    for (const group of [...allInventory.groups, ...(inventory.data ?? [])])
+      if (group.image) map.set(group.template_id, group.image)
     return map
   }, [allInventory.groups, inventory.data])
 
@@ -156,14 +158,22 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
   function toggleFilter(index: number) {
     setFilters((current) => (current.includes(index) ? current.filter((i) => i !== index) : [...current, index]))
     // Filtering only makes sense with the card picker open.
-    if (active === -1) setActive(Math.max(0, slots.findIndex((slot) => !slot)))
+    if (active === -1)
+      setActive(
+        Math.max(
+          0,
+          slots.findIndex((slot) => !slot)
+        )
+      )
   }
 
   async function start() {
     const ids = picked.map((slot) => slot.asset_id)
     const ok = await run(
       (a, p) =>
-        ids.length > 0 ? startAdventureWithNftsAction(a, p, adventure.adventureid, ids) : joinAdventureAction(a, p, adventure.adventureid),
+        ids.length > 0
+          ? startAdventureWithNftsAction(a, p, adventure.adventureid, ids)
+          : joinAdventureAction(a, p, adventure.adventureid),
       'Adventure started successfully',
       () => refreshAdventures(account)
     )
@@ -243,7 +253,6 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
               </button>
             ))}
           </div>
-
         </div>
 
         <div className="adv-board__mods">{[5, 6, 7, 8, 9].filter((i) => adventure.mods[i]).map(modRow)}</div>
@@ -292,7 +301,9 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
           )}
         </Button>
         <p>
-          {picked.length > 0 ? `NFTs can be claimed back after ${days} days` : 'To complete objectives, choose NFTs before starting.'}
+          {picked.length > 0
+            ? `NFTs can be claimed back after ${days} days`
+            : 'To complete objectives, choose NFTs before starting.'}
         </p>
       </footer>
 
@@ -329,7 +340,12 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
                       disabled={free.length === 0}
                       onClick={() => choose(group)}
                     >
-                      <CardImg templateId={group.template_id} template={templates.get(group.template_id)} image={group.image} alt={group.name} />
+                      <CardImg
+                        templateId={group.template_id}
+                        template={templates.get(group.template_id)}
+                        image={group.image}
+                        alt={group.name}
+                      />
                       {gain > 0 && <span className="adv-pick__gain num">+{gain}%</span>}
                       {group.assetIds.length > 1 && <span className="adv-pick__count num">×{free.length}</span>}
                     </button>
@@ -345,21 +361,8 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
 }
 
 function ConfirmStart({ busy, onConfirm, onClose }: { busy: boolean; onConfirm: () => void; onClose: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => ref.current?.showModal(), [])
-
   return (
-    <dialog
-      ref={ref}
-      className="adv-dialog"
-      onCancel={(e) => {
-        e.preventDefault()
-        if (!busy) onClose()
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current && !busy) onClose()
-      }}
-    >
+    <Modal className="adv-dialog" locked={busy} onClose={onClose}>
       <div className="adv-dialog__body">
         <h2 className="adv-dialog__title">Confirm</h2>
         <p>Are you sure that you want to start the adventure without NFTs?</p>
@@ -372,6 +375,6 @@ function ConfirmStart({ busy, onConfirm, onClose }: { busy: boolean; onConfirm: 
           </Button>
         </div>
       </div>
-    </dialog>
+    </Modal>
   )
 }

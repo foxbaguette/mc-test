@@ -15,7 +15,11 @@ const GATEWAYS = ['https://gateway.pinata.cloud', 'https://ipfs.filebase.io', 'h
 const CARD_SCHEMAS = new Set(['crew.worlds', 'arms.worlds', 'tool.worlds', 'level.worlds', 'faces.worlds'])
 
 // Must match adventureImageSlug() in src/data/adventures.ts.
-const slug = (image) => image.trim().replace(/\.[a-z0-9]+$/i, '').replace(/[^a-zA-Z0-9_-]+/g, '_')
+const slug = (image) =>
+  image
+    .trim()
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '_')
 
 async function rows(code, table) {
   const out = []
@@ -101,7 +105,9 @@ async function runAll(label, jobs, concurrency = 6) {
     }
   }
   await Promise.all(Array.from({ length: concurrency }, worker))
-  console.log(`${label}: ${jobs.length} referenced, ${counts.downloaded} downloaded, ${counts.skipped} already present, ${counts.failed} failed`)
+  console.log(
+    `${label}: ${jobs.length} referenced, ${counts.downloaded} downloaded, ${counts.skipped} already present, ${counts.failed} failed`
+  )
   if (failed.length) console.log(`  Failed:\n    ${failed.join('\n    ')}`)
 }
 

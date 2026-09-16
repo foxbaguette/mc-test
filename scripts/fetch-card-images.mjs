@@ -29,7 +29,9 @@ async function getJson(path) {
 async function templates(schema) {
   const out = []
   for (let page = 1; page <= 20; page++) {
-    const batch = await getJson(`/atomicassets/v1/templates?collection_name=alien.worlds&schema_name=${schema}&limit=1000&page=${page}`)
+    const batch = await getJson(
+      `/atomicassets/v1/templates?collection_name=alien.worlds&schema_name=${schema}&limit=1000&page=${page}`
+    )
     out.push(...batch)
     if (batch.length < 1000) break
   }
@@ -64,7 +66,10 @@ for (const schema of SCHEMAS) {
       continue
     }
     // Same format as the existing cards: 440px wide (2x the card size) webp.
-    await sharp(image).resize({ width: 440, withoutEnlargement: true }).webp({ quality: 82 }).toFile(join(TARGET, `${row.template_id}.webp`))
+    await sharp(image)
+      .resize({ width: 440, withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toFile(join(TARGET, `${row.template_id}.webp`))
     written++
     console.log(`  ${row.template_id} ${row.immutable_data.name}`)
   }

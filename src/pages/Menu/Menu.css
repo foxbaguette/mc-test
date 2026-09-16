@@ -2,29 +2,13 @@
   gap: 28px;
 }
 
-.menu-grid {
-  display: grid;
-  gap: 20px;
-  align-items: start;
-}
-
-/* Profile and Activity share one row height on desktop. */
-.menu-grid--play {
-  grid-template-columns: minmax(260px, 380px) 1fr;
-  align-items: stretch;
-}
-
-.menu-grid--two {
-  grid-template-columns: 1fr 1fr;
-}
-
 .menu-section {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Key/value list used by profile and weekly statistics */
+/* Key/value list used by weekly statistics */
 .stat-list {
   display: flex;
   flex-direction: column;
@@ -62,123 +46,6 @@
   height: 16px;
 }
 
-/* Profile */
-.profile__id {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.profile__avatar.avatar {
-  border-width: 3px;
-}
-
-.profile__names {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.profile__name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 20px;
-  white-space: nowrap;
-}
-
-.profile--join {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  border-color: rgba(255, 1, 255, 0.3);
-  background: linear-gradient(160deg, rgba(222, 29, 222, 0.14), rgba(0, 186, 255, 0.06));
-}
-
-.profile__perks {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-left: 18px;
-  color: var(--text-dim);
-}
-
-.profile__perks li::marker {
-  color: var(--pink);
-}
-
-/* Feeds: activity and sponsors */
-.feed {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  list-style: none;
-}
-
-.feed__loading {
-  height: 64px;
-}
-
-.feed__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px;
-  border-radius: var(--radius);
-  transition: background 0.15s ease;
-  animation: mc-rise 0.25s ease-out both;
-}
-
-.feed__item:hover {
-  background: var(--surface-2);
-}
-
-.feed__avatar {
-  position: relative;
-  flex: none;
-}
-
-.feed__level {
-  position: absolute;
-  right: -6px;
-  bottom: -4px;
-  display: grid;
-  place-items: center;
-  min-width: 24px;
-  height: 18px;
-  padding: 0 5px;
-  border: 2px solid var(--bg-2);
-  border-radius: 999px;
-  color: #fff;
-  font-family: var(--font-heading);
-  font-size: 9px;
-  font-weight: 700;
-}
-
-.feed__body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  min-width: 0;
-}
-
-.feed__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: 8px;
-}
-
-.feed__meta time {
-  font-size: 12px;
-}
-
-.feed__body p {
-  color: var(--text-dim);
-  font-size: 14px;
-}
-
 /* News */
 .news {
   display: grid;
@@ -197,7 +64,9 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .news__card:hover {
@@ -242,53 +111,13 @@
   -webkit-line-clamp: 3;
 }
 
-.news__link,
-.tutorial__link {
+.news__link {
   margin-top: auto;
   color: var(--pink);
   font-family: var(--font-heading);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
-}
-
-/* Tutorials */
-.tutorial__loading {
-  height: 380px;
-}
-
-.tutorial {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  transition: border-color 0.15s ease, transform 0.15s ease;
-}
-
-.tutorial:hover {
-  border-color: rgba(255, 1, 255, 0.45);
-  transform: translateY(-2px);
-}
-
-.tutorial__img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-}
-
-.tutorial__body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px 16px;
-}
-
-.tutorial__title {
-  font-size: 14px;
-  line-height: 1.35;
 }
 
 /* Weekly statistics and tips */
@@ -472,8 +301,6 @@
     gap: 20px;
   }
 
-  .menu-grid--play,
-  .menu-grid--two,
   .news,
   .weekly__body {
     grid-template-columns: 1fr;
@@ -509,7 +336,6 @@
   .weekly .weekly__prize strong {
     font-size: 20px;
   }
-
 }
 
 /* What the player can do, the one thing the home page is for. */
@@ -546,7 +372,10 @@
   border-radius: 3px 14px 14px 3px;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
   color: var(--text);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .next-card:hover {
@@ -623,7 +452,10 @@
     radial-gradient(120% 160% at 0 50%, rgba(255, 184, 0, 0.16), transparent 60%),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
   color: var(--text);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .ale-banner:hover {

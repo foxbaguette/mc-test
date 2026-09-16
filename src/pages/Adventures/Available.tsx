@@ -1,20 +1,18 @@
 import { Link } from 'react-router-dom'
 
 import { useModUnlocks } from '@/data/adventures'
-import type { Adventure } from '@/data/types'
+import type { Adventure } from '@/data/types/adventures'
 import QuestSVG from '@/icons/quest'
 import StarSVG from '@/icons/star'
-import { chainDate, timeLeft } from '@/lib/time'
+import { chainDate, countdown, timeLeft } from '@/lib/time'
 
-import { AdventureImg, countdown, ModGrid, Stat, SponsorRibbon } from './shared'
+import { AdventureImg, ModGrid, Stat, SponsorRibbon } from './shared'
 
 export function AvailableList({ items, now, nextAt }: { items: Adventure[]; now: number; nextAt: number }) {
   const unlocks = useModUnlocks()
 
   // A new adventure is created automatically; show how long that still takes.
-  const countdownBar = nextAt > now && (
-    <p className="adv-next num">Next adventure in {countdown(timeLeft(nextAt, now))}</p>
-  )
+  const countdownBar = nextAt > now && <p className="adv-next num">Next adventure in {countdown(timeLeft(nextAt, now))}</p>
 
   if (items.length === 0)
     return (

@@ -1,4 +1,3 @@
-
 const InformationSvgBuilder = () => {
   return (
     <svg

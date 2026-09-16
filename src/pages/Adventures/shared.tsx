@@ -3,12 +3,9 @@ import { useState, type ReactNode } from 'react'
 import { AW_IMAGE_URL } from '@/chain/config'
 import { LockIcon } from '@/components/icons'
 import { adventureImageSlug, formatAffixValue, type ModUnlocks } from '@/data/adventures'
-import type { Adventure, AdventureMod, AdvTemplate } from '@/data/types'
+import type { Adventure, AdventureMod, AdvTemplate } from '@/data/types/adventures'
 import Filter2SVG from '@/icons/filter2'
-import type { TimeLeft } from '@/lib/time'
 import { publicUrl } from '@/lib/publicUrl'
-
-export const countdown = (t: TimeLeft) => `${t.days}d ${t.hours}h ${t.minutes}min`
 
 /** Tries each source in turn when one fails to load. */
 function FallbackImg({ sources, alt = '', className }: { sources: string[]; alt?: string; className?: string }) {
@@ -102,7 +99,12 @@ export function ModRow({ mod, align, locked, unlockLevel, matched, filterActive,
           </span>
           <span className="adv-mod__pct num">+{mod.mod_value}%</span>
           {onFilter && (
-            <button className={`adv-mod__filter ${filterActive ? 'is-active' : ''}`} onClick={onFilter} aria-pressed={!!filterActive} aria-label="Filter">
+            <button
+              className={`adv-mod__filter ${filterActive ? 'is-active' : ''}`}
+              onClick={onFilter}
+              aria-pressed={!!filterActive}
+              aria-label="Filter"
+            >
               <Filter2SVG />
             </button>
           )}

@@ -1,18 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { DEFAULT_AVATAR } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
 import { Select } from '@/components/Select'
-import { toast } from '@/components/Toaster'
-import {
-  refreshVoting,
-  useCandidates,
-  useLastVote,
-  useVotePower,
-  VOTING_PLANET,
-  type Candidate
-} from '@/data/voting'
+import { toast } from '@/components/toast'
+import { refreshVoting, useCandidates, useLastVote, useVotePower, VOTING_PLANET, type Candidate } from '@/data/voting'
 import BoltSVG from '@/icons/bolt'
 import { castVoteActions } from '@/mining/actions'
 import { useSession } from '@/state/session'
@@ -27,7 +21,7 @@ const NONE = 'none'
 const BACKED_SEATS = 3
 
 export default function Voting() {
-  const { account, permission } = useSession()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
   const { candidates, isLoading, isFetching } = useCandidates()
   const power = useVotePower(account)
   const lastVote = useLastVote(account)
@@ -109,7 +103,13 @@ export default function Voting() {
             />
           </div>
 
-          <Button block size="lg" isLoading={busy} disabled={busy || power.current <= 0 || chosen.length === 0} onClick={castVote}>
+          <Button
+            block
+            size="lg"
+            isLoading={busy}
+            disabled={busy || power.current <= 0 || chosen.length === 0}
+            onClick={castVote}
+          >
             Cast Vote
           </Button>
         </section>

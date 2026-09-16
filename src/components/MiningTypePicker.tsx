@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow'
 import { Button } from '@/components/Button'
 import { COLORS } from '@/mining/useMining'
 import { MINING_OPTIONS, useSession } from '@/state/session'
@@ -6,7 +7,9 @@ import './MiningTypePicker.css'
 
 /** What the header's Mine button does, picked by looking at the button itself. */
 export function MiningTypePicker() {
-  const { miningType, setMiningType } = useSession()
+  const { miningType, setMiningType } = useSession(
+    useShallow((s) => ({ miningType: s.miningType, setMiningType: s.setMiningType }))
+  )
 
   return (
     <div className="mining-types" role="radiogroup" aria-label="Mining button type in header">

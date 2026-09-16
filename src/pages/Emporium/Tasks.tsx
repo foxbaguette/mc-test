@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom'
 import { Button } from '@/components/Button'
 import { ArrowLeftCircleIcon, HistoryIcon } from '@/components/icons'
 import { currentTaskPrice, nextProgressAt, refreshEmporium, useActiveTasks, useEmporiumConfig } from '@/data/emporium'
-import { usePlayer } from '@/data/queries'
-import type { EmporiumTask } from '@/data/types'
+import { usePlayer } from '@/data/player'
+import type { EmporiumTask } from '@/data/types/emporium'
 import ShardsSVG from '@/icons/shards'
 import { cooldownLabel, useNow } from '@/lib/time'
 import { finishTaskAction } from '@/mining/actions'
@@ -30,7 +30,11 @@ export function Tasks() {
     type === 'mcp' ? player.mcPoints : type === 'tlm' ? player.tlm : type === 'qp' ? player.rewardPoints : 0
 
   async function complete(task: EmporiumTask, price: number) {
-    const ok = await run((a, p) => finishTaskAction(a, p, task, price), 'Task completed successfully', () => refreshEmporium(account))
+    const ok = await run(
+      (a, p) => finishTaskAction(a, p, task, price),
+      'Task completed successfully',
+      () => refreshEmporium(account)
+    )
     if (ok) setConfirming(null)
   }
 
@@ -90,7 +94,12 @@ export function Tasks() {
                   <div className="zap-task__body">
                     {isConfirming ? (
                       <div className="zap-task__confirm">
-                        <button className="zap-task__cancel" onClick={() => setConfirming(null)} disabled={busy} aria-label="Back">
+                        <button
+                          className="zap-task__cancel"
+                          onClick={() => setConfirming(null)}
+                          disabled={busy}
+                          aria-label="Back"
+                        >
                           <ArrowLeftCircleIcon size={24} />
                         </button>
                         <p>
@@ -121,7 +130,9 @@ export function Tasks() {
                       block
                       color={isConfirming ? 'gradientYellow' : 'solidBlue'}
                       disabled={busy || !enough || wait > 0}
-                      onClick={isConfirming ? () => complete(task, price) : () => setConfirming({ id: task.task_id, since: Date.now() })}
+                      onClick={
+                        isConfirming ? () => complete(task, price) : () => setConfirming({ id: task.task_id, since: Date.now() })
+                      }
                     >
                       <span className="num">{isConfirming ? `Confirm${wait ? ` (${wait}) s` : ''}` : task.button}</span>
                     </Button>

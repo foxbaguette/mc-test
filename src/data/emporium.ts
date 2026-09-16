@@ -2,27 +2,27 @@ import { useQuery } from '@tanstack/react-query'
 
 import { chainDate } from '@/lib/time'
 
-import { refreshPlayer } from './queries'
+import { refreshPlayer } from './player'
 import { queryClient } from './queryClient'
 import { readActiveTasks, readCompletedTasks, readEmporiumConfig } from './tables'
-import type { EmporiumConfig, EmporiumTask } from './types'
+import type { EmporiumConfig, EmporiumTask } from './types/emporium'
+import { emporiumKeys } from './keys'
 
 const MIN = 60_000
 
 export const useEmporiumConfig = () =>
-  useQuery({ queryKey: ['emporium', 'config'], queryFn: readEmporiumConfig, staleTime: 60 * MIN })
+  useQuery({ queryKey: emporiumKeys.config, queryFn: readEmporiumConfig, staleTime: 60 * MIN })
 
 /** Active tasks; re-read every two minutes so tasks finished by other players disappear. */
 export const useActiveTasks = () =>
-  useQuery({ queryKey: ['emporium', 'active'], queryFn: readActiveTasks, staleTime: MIN, refetchInterval: 2 * MIN })
+  useQuery({ queryKey: emporiumKeys.active, queryFn: readActiveTasks, staleTime: MIN, refetchInterval: 2 * MIN })
 
-export const useTaskHistory = () =>
-  useQuery({ queryKey: ['emporium', 'history'], queryFn: readCompletedTasks, staleTime: MIN })
+export const useTaskHistory = () => useQuery({ queryKey: emporiumKeys.history, queryFn: readCompletedTasks, staleTime: MIN })
 
 export function refreshEmporium(account: string | null) {
   return Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['emporium', 'active'] }),
-    queryClient.invalidateQueries({ queryKey: ['emporium', 'history'] }),
+    queryClient.invalidateQueries({ queryKey: emporiumKeys.active }),
+    queryClient.invalidateQueries({ queryKey: emporiumKeys.history }),
     refreshPlayer(account)
   ])
 }

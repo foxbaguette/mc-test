@@ -4,16 +4,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import { RARITY_ORDER } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { WarningCircleIcon } from '@/components/icons'
-import { useToolInventory } from '@/data/queries'
+import { useToolInventory } from '@/data/mining'
 import { SHINE_ORDER, useStakedTools, useToolOv } from '@/data/toolLoaning'
-import { chainDate } from '@/lib/time'
+import { chainDate, formatDateNumeric } from '@/lib/time'
 import { stakeToolsAction, unstakeToolsAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { miningKeys, toolLoaningKeys } from '@/data/keys'
 
 import { ToolCard, ToolStats } from './Shared'
-
-const pad = (n: number) => String(n).padStart(2, '0')
-const dayMonthYear = (date: Date) => `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`
 
 /** Both sides of lending in one place: what is staked now, and what could be. */
 export function Lend() {
@@ -24,7 +22,8 @@ export function Lend() {
   const toolOv = useToolOv()
   const [pending, setPending] = useState<string | null>(null)
 
-  const invalidate = (...keys: unknown[][]) => Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })))
+  const invalidate = (...keys: (readonly unknown[])[]) =>
+    Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })))
 
   const stakeable = useMemo(
     () =>
@@ -58,16 +57,26 @@ export function Lend() {
 
   async function stake(assetId: string) {
     setPending(assetId)
-    await run((a, p) => stakeToolsAction(a, p, [assetId]), 'Tool staked', () =>
-      invalidate(['toolInventory', account], ['toolOv'], ['stakedTools', account])
+    await run(
+      (a, p) => stakeToolsAction(a, p, [assetId]),
+      'Tool staked',
+      () => invalidate(miningKeys.toolInventory(account), toolLoaningKeys.toolOv, toolLoaningKeys.stakedTools(account))
     )
     setPending(null)
   }
 
   async function unstake(assetId: string) {
     setPending(assetId)
-    await run((a, p) => unstakeToolsAction(a, p, [assetId]), 'Tool unstaked', () =>
-      invalidate(['stakedTools', account], ['toolOv'], ['toolWallet', account], ['toolInventory', account])
+    await run(
+      (a, p) => unstakeToolsAction(a, p, [assetId]),
+      'Tool unstaked',
+      () =>
+        invalidate(
+          toolLoaningKeys.stakedTools(account),
+          toolLoaningKeys.toolOv,
+          toolLoaningKeys.toolWallet(account),
+          miningKeys.toolInventory(account)
+        )
     )
     setPending(null)
   }
@@ -98,7 +107,7 @@ export function Lend() {
                       <dl className="tl-meta">
                         <div>
                           <dt>Since</dt>
-                          <dd className="num">{dayMonthYear(chainDate(tool.stakedat))}</dd>
+                          <dd className="num">{formatDateNumeric(chainDate(tool.stakedat))}</dd>
                         </div>
                         <div>
                           <dt>Total</dt>
@@ -111,7 +120,14 @@ export function Lend() {
                       </dl>
                     }
                   >
-                    <Button block size="sm" color="ghost" isLoading={pending === tool.asset_id} disabled={busy} onClick={() => unstake(tool.asset_id)}>
+                    <Button
+                      block
+                      size="sm"
+                      color="ghost"
+                      isLoading={pending === tool.asset_id}
+                      disabled={busy}
+                      onClick={() => unstake(tool.asset_id)}
+                    >
                       Unstake
                     </Button>
                   </ToolCard>
@@ -138,7 +154,13 @@ export function Lend() {
                 stats={<ToolStats power={ov.mining_power} nftPower={ov.nft_power} cooldown={ov.cooldown_seconds} />}
                 note={`Gain ${ov.owner_share / 10}% of all TLM mined with this tool.`}
               >
-                <Button block size="sm" isLoading={pending === asset.asset_id} disabled={busy} onClick={() => stake(asset.asset_id)}>
+                <Button
+                  block
+                  size="sm"
+                  isLoading={pending === asset.asset_id}
+                  disabled={busy}
+                  onClick={() => stake(asset.asset_id)}
+                >
                   Stake
                 </Button>
               </ToolCard>

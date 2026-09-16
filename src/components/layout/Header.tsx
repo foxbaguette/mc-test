@@ -2,24 +2,32 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { Avatar } from '@/components/Avatar'
-import { Button } from '@/components/Button'
 import { NetworkStatus } from '@/components/NetworkStatus'
-import { RefreshIcon } from '@/components/icons'
-import { useLevels, usePlayer, useWeeks } from '@/data/queries'
+import { useLevels, useWeeks } from '@/data/game'
+import { usePlayer } from '@/data/player'
 import QuestSVG from '@/icons/quest'
 import ShardsSVG from '@/icons/shards'
 import StarSVG from '@/icons/star'
 import TLMSVG from '@/icons/tlm'
 import { formatAmount, formatCompact } from '@/lib/format'
-import { useMining } from '@/mining/useMining'
 import { useSession } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
+
+import { MineWidget } from './MineWidget'
 
 import './Header.css'
 
 function GearIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
     </svg>
@@ -28,7 +36,15 @@ function GearIcon() {
 
 function HistoryIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M3 12a9 9 0 1 0 2.6-6.3" />
       <path d="M3 4v4h4" />
       <path d="M12 7v5l3.5 2" />
@@ -125,7 +141,6 @@ function AccountMenu() {
 export function Header() {
   const player = usePlayer()
   const { prizePool } = useWeeks()
-  const mining = useMining()
 
   return (
     <header className="topbar">
@@ -137,31 +152,7 @@ export function Header() {
           </Link>
         </div>
 
-        <div className="mine" aria-live="polite">
-          <button
-            className={`icon-btn mine__refresh ${mining.isRefreshing ? 'is-spinning' : ''}`}
-            disabled={!player.isFullMember}
-            onClick={mining.refresh}
-            aria-label="Refresh"
-          >
-            <RefreshIcon size={20} />
-          </button>
-          <div className="mine__body">
-            <span className="mine__above">{mining.textAbove}</span>
-            <Button
-              className={`mine__button ${mining.isReady ? 'btn--charged btn--soft is-ready' : ''}`}
-              onClick={mining.onClick}
-              disabled={mining.isDisabled}
-              color={mining.buttonColor}
-              isLoading={mining.isBusy}
-            >
-              <span className="num">{mining.buttonText}</span>
-            </Button>
-            <span className="mine__below" title={mining.textBelow}>
-              {mining.textBelow}
-            </span>
-          </div>
-        </div>
+        <MineWidget />
 
         <div className="topbar__end">
           <div className="balances">

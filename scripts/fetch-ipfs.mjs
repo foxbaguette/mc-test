@@ -39,7 +39,10 @@ async function rows(code, table, extra = {}) {
   return out
 }
 
-const hashOf = (avatar) => String(avatar ?? '').split(';')[0].trim()
+const hashOf = (avatar) =>
+  String(avatar ?? '')
+    .split(';')[0]
+    .trim()
 
 async function exists(path) {
   try {
@@ -93,5 +96,7 @@ for (const hash of hashes) {
   if (result === 'failed') failed.push(hash)
 }
 
-console.log(`IPFS images: ${hashes.size} referenced, ${counts.downloaded} downloaded, ${counts.skipped} already present, ${counts.failed} failed`)
+console.log(
+  `IPFS images: ${hashes.size} referenced, ${counts.downloaded} downloaded, ${counts.skipped} already present, ${counts.failed} failed`
+)
 if (failed.length) console.log(`Failed:\n  ${failed.join('\n  ')}`)

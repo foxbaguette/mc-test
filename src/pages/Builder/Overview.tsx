@@ -16,11 +16,11 @@ import {
   useBuilderSettings,
   useBuildingDefs
 } from '@/data/builder'
-import type { BuilderPlayer, BuilderSeason, BuilderSettings, BuildingDef, PlayerBuilding } from '@/data/types'
+import type { BuilderPlayer, BuilderSeason, BuilderSettings, BuildingDef, PlayerBuilding } from '@/data/types/builder'
 import LeaderBoardSvg from '@/icons/leaderboard'
 import ShardsSVG from '@/icons/shards'
 import StarSVG from '@/icons/star'
-import { chainDate, cooldownLabel, shortDuration, timeLeft } from '@/lib/time'
+import { chainDate, cooldownLabel, shortDuration, timeLeft, useNow } from '@/lib/time'
 import { exploderAction, upgradeBuildingAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
 
@@ -31,10 +31,11 @@ import { NftImg } from './shared'
 interface OverviewProps {
   player: BuilderPlayer
   season: BuilderSeason
-  now: number
 }
 
-export function Overview({ player, season, now }: OverviewProps) {
+export function Overview({ player, season }: OverviewProps) {
+  // Buttons, bars and cooldowns only need the second; the live counter ticks on its own.
+  const now = useNow()
   const settings = useBuilderSettings()
   const defs = useBuildingDefs()
   const { run, busy } = useChainAction()
@@ -71,7 +72,7 @@ export function Overview({ player, season, now }: OverviewProps) {
       <section className="builder-hud">
         <div className="builder-hud__plate builder-hud__storage">
           <p className="builder-hud__resources num">
-            Я {formatR(resources)} <small>/ {formatR(player.max_gamecurrency)}</small>
+            Я <LiveResources player={player} /> <small>/ {formatR(player.max_gamecurrency)}</small>
           </p>
           <div className={`builder-meter ${fill >= 100 ? 'is-full' : ''}`} aria-hidden>
             <span style={{ width: `${fill}%` }} />
@@ -135,10 +136,16 @@ export function Overview({ player, season, now }: OverviewProps) {
         </section>
       </div>
 
-      {opened && <BuildingDialog player={player} building={opened} now={now} onClose={() => setOpenId(null)} />}
+      {opened && <BuildingDialog player={player} building={opened} onClose={() => setOpenId(null)} />}
       {board && <LeaderboardDialog player={player} onClose={() => setBoard(false)} />}
     </>
   )
+}
+
+/** Resources count up continuously, so only this number re-renders ten times a second. */
+function LiveResources({ player }: { player: BuilderPlayer }) {
+  const now = useNow(100)
+  return <>{formatR(currentResources(player, now))}</>
 }
 
 interface CardProps {
@@ -156,7 +163,19 @@ interface CardProps {
   onExplode?: () => void
 }
 
-function BuildingCard({ building, def, resources, busy, pending, onUpgrade, onOpen, player, settings, now, onExplode }: CardProps) {
+function BuildingCard({
+  building,
+  def,
+  resources,
+  busy,
+  pending,
+  onUpgrade,
+  onOpen,
+  player,
+  settings,
+  now,
+  onExplode
+}: CardProps) {
   const locked = building.building_level === 0
   const cost = building.gamecurrency_upgrade_cost
   const affordable = resources >= cost
@@ -245,7 +264,15 @@ function BuildingCard({ building, def, resources, busy, pending, onUpgrade, onOp
 }
 
 /** One socket per slot the building can ever hold: filled, open or still locked. */
-function Sockets({ building, def, onOpen }: { building: PlayerBuilding; def: BuildingDef | undefined; onOpen: (id: string) => void }) {
+function Sockets({
+  building,
+  def,
+  onOpen
+}: {
+  building: PlayerBuilding
+  def: BuildingDef | undefined
+  onOpen: (id: string) => void
+}) {
   const levels = def?.slot_unlock_levels ?? []
   if (levels.length === 0) return null
   const staked = building.staked_template_ids

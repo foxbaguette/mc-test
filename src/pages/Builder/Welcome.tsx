@@ -2,16 +2,17 @@ import { useState } from 'react'
 
 import { Button } from '@/components/Button'
 import { refreshBuilder } from '@/data/builder'
-import type { BuilderSeason } from '@/data/types'
+import type { BuilderSeason } from '@/data/types/builder'
 import StarSVG from '@/icons/star'
-import { chainDate, timeLeft } from '@/lib/time'
+import { chainDate, timeLeft, useNow } from '@/lib/time'
 import { regPlayerAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import { PrevSeason } from './PrevSeason'
 
-export function Welcome({ season, now }: { season: BuilderSeason | null; now: number }) {
+export function Welcome({ season }: { season: BuilderSeason | null }) {
+  const now = useNow()
   const { run, busy } = useChainAction()
   const [tab, setTab] = useState<'new' | 'prev'>('new')
 
@@ -43,10 +44,20 @@ export function Welcome({ season, now }: { season: BuilderSeason | null; now: nu
       {showPrev && (
         <div className="builder__tabs">
           <div className="segmented" role="tablist" aria-label="Season">
-            <button role="tab" aria-selected={tab === 'new'} className={tab === 'new' ? 'is-active' : ''} onClick={() => setTab('new')}>
+            <button
+              role="tab"
+              aria-selected={tab === 'new'}
+              className={tab === 'new' ? 'is-active' : ''}
+              onClick={() => setTab('new')}
+            >
               New Season
             </button>
-            <button role="tab" aria-selected={tab === 'prev'} className={tab === 'prev' ? 'is-active' : ''} onClick={() => setTab('prev')}>
+            <button
+              role="tab"
+              aria-selected={tab === 'prev'}
+              className={tab === 'prev' ? 'is-active' : ''}
+              onClick={() => setTab('prev')}
+            >
               Previous Season
             </button>
           </div>
@@ -72,7 +83,12 @@ export function Welcome({ season, now }: { season: BuilderSeason | null; now: nu
             </p>
             <p>Ready? Then what are you waiting for?</p>
             {note && <p className="builder-welcome__note num">{note}</p>}
-            <Button size="lg" isLoading={busy} disabled={busy || disabled} onClick={() => run(regPlayerAction, '', refreshBuilder)}>
+            <Button
+              size="lg"
+              isLoading={busy}
+              disabled={busy || disabled}
+              onClick={() => run(regPlayerAction, '', refreshBuilder)}
+            >
               START NOW !
             </Button>
           </div>

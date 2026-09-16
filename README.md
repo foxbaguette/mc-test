@@ -1,6 +1,6 @@
 # Mission Control (rebuild)
 
-New front end for waxmissioncontrol.io: Vite + React 18 + TypeScript, WharfKit (WAX Cloud Wallet and Wombat only), TanStack Query, zustand.
+New front end for waxmissioncontrol.io: Vite + React 18 + TypeScript, WharfKit (WAX Cloud Wallet, Wombat and Anchor; Anchor cannot mine), TanStack Query, zustand.
 
 ```bash
 npm install
@@ -12,14 +12,14 @@ npm run images     # refresh local IPFS avatars/tutorial images and tool card im
 
 ## Structure
 
-| Folder | What lives there |
-| --- | --- |
-| `src/chain` | Contract names and node lists, the endpoint pool (probe, rank, rotate), RPC and AtomicAssets clients |
-| `src/data` | Table readers, React Query hooks, favorites and news loaders |
-| `src/mining` | Proof of work (worker), mine/setland actions, cooldown and yield estimates |
-| `src/wallet` | WharfKit session |
-| `src/components` | Design system pieces and the app shell (header, section nav, drawer) |
-| `src/pages` | Landing, Menu dashboard, Weekly Quests, Rewards, Daily Claim, Mining |
+| Folder           | What lives there                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| `src/chain`      | Contract names and node lists, the endpoint pool (probe, rank, rotate), RPC and AtomicAssets clients |
+| `src/data`       | Table readers, React Query hooks, favorites and news loaders                                         |
+| `src/mining`     | Proof of work (worker), mine/setland actions, cooldown and yield estimates                           |
+| `src/wallet`     | WharfKit session                                                                                     |
+| `src/components` | Design system pieces and the app shell (header, section nav, drawer)                                 |
+| `src/pages`      | Landing, Menu dashboard, Weekly Quests, Rewards, Daily Claim, Mining                                 |
 
 ## Notes
 

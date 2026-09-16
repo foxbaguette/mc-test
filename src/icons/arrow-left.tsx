@@ -1,4 +1,3 @@
-
 const ArrowLeftSVG = () => {
   return (
     <svg width="77" height="45" viewBox="0 0 77 45" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -7,14 +6,7 @@ const ArrowLeftSVG = () => {
         fill="url(#paint0_linear_163_2090)"
       />
       <defs>
-        <linearGradient
-          id="paint0_linear_163_2090"
-          x1="-18.9316"
-          y1="22"
-          x2="78.9842"
-          y2="22"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id="paint0_linear_163_2090" x1="-18.9316" y1="22" x2="78.9842" y2="22" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FF01FF" />
           <stop offset="0.605822" stopColor="#9136BC" />
           <stop offset="1" stopColor="#9136BC" stopOpacity="0" />

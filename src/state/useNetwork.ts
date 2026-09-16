@@ -17,7 +17,11 @@ function subscribe(fn: () => void) {
 
 /** Live view of which WAX nodes answered, and how fast. */
 export function useNetwork(): PoolStatus {
-  return useSyncExternalStore(subscribe, () => snapshot, () => snapshot)
+  return useSyncExternalStore(
+    subscribe,
+    () => snapshot,
+    () => snapshot
+  )
 }
 
 export function reprobe() {

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
-import { usePlayer, useWeeks } from '@/data/queries'
+import { usePlayer } from '@/data/player'
+import { useWeeks } from '@/data/game'
 import QuestSVG from '@/icons/quest'
 import TLMSVG from '@/icons/tlm'
 import { formatAmount } from '@/lib/format'
@@ -26,45 +27,45 @@ export function WeeklyStatistics() {
       </div>
 
       <div className="weekly__body">
-      <div className="weekly__prize">
-        <span>Prize Pool</span>
-        <strong className="num">
-          {formatAmount(prizePool)} <TLMSVG />
-        </strong>
-      </div>
+        <div className="weekly__prize">
+          <span>Prize Pool</span>
+          <strong className="num">
+            {formatAmount(prizePool)} <TLMSVG />
+          </strong>
+        </div>
 
-      <dl className="stat-list">
-        <div>
-          <dt>
-            Total <QuestSVG />
-          </dt>
-          <dd className="num">{totalPoints.toLocaleString('en-US')}</dd>
-        </div>
-        <div>
-          <dt>
-            Your <QuestSVG />
-          </dt>
-          <dd className="num">{player.rewardPoints.toLocaleString('en-US')}</dd>
-        </div>
-        <div>
-          <dt>
-            Last Week Total <QuestSVG />
-          </dt>
-          <dd className="num">{(lastWeek?.total_quest_points ?? 0).toLocaleString('en-US')}</dd>
-        </div>
-        <div>
-          <dt>
-            Current TLM per 100 <QuestSVG />
-          </dt>
-          <dd className="num">
-            {tlmPer100.toLocaleString('en-US', { maximumFractionDigits: 2 })} <TLMSVG />
-          </dd>
-        </div>
-        <div>
-          <dt>Week ends in</dt>
-          <dd className="num">{currentWeek ? durationLabel(chainDate(currentWeek.end_date), now) : '–'}</dd>
-        </div>
-      </dl>
+        <dl className="stat-list">
+          <div>
+            <dt>
+              Total <QuestSVG />
+            </dt>
+            <dd className="num">{totalPoints.toLocaleString('en-US')}</dd>
+          </div>
+          <div>
+            <dt>
+              Your <QuestSVG />
+            </dt>
+            <dd className="num">{player.rewardPoints.toLocaleString('en-US')}</dd>
+          </div>
+          <div>
+            <dt>
+              Last Week Total <QuestSVG />
+            </dt>
+            <dd className="num">{(lastWeek?.total_quest_points ?? 0).toLocaleString('en-US')}</dd>
+          </div>
+          <div>
+            <dt>
+              Current TLM per 100 <QuestSVG />
+            </dt>
+            <dd className="num">
+              {tlmPer100.toLocaleString('en-US', { maximumFractionDigits: 2 })} <TLMSVG />
+            </dd>
+          </div>
+          <div>
+            <dt>Week ends in</dt>
+            <dd className="num">{currentWeek ? durationLabel(chainDate(currentWeek.end_date), now) : '–'}</dd>
+          </div>
+        </dl>
       </div>
     </section>
   )

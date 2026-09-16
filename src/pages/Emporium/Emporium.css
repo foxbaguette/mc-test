@@ -13,7 +13,11 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   box-shadow: none;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .zap .btn:hover:not(:disabled) {
@@ -113,7 +117,10 @@
   font-family: var(--font-heading);
   font-size: 13px;
   letter-spacing: 0.06em;
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .zap-bar__history:hover {
@@ -134,7 +141,9 @@
   display: inline-flex;
   color: var(--text);
   opacity: 0.8;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .zap-back:hover {
@@ -173,7 +182,10 @@
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--border);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .zap-task::before {
@@ -196,7 +208,9 @@
 
 .zap-task.is-confirming {
   border-color: var(--yellow);
-  box-shadow: 0 0 0 1px var(--yellow), 0 12px 30px rgba(235, 179, 9, 0.15);
+  box-shadow:
+    0 0 0 1px var(--yellow),
+    0 12px 30px rgba(235, 179, 9, 0.15);
 }
 
 .zap-task__media {

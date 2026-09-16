@@ -1,23 +1,26 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useShallow } from 'zustand/react/shallow'
 
 import { CONTRACTS } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { MiningTypePicker } from '@/components/MiningTypePicker'
 import { NetworkStatus } from '@/components/NetworkStatus'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/Toaster'
-import { useLevels, usePlayer } from '@/data/queries'
+import { toast } from '@/components/toast'
+import { useLevels } from '@/data/game'
+import { useMembership } from '@/data/player'
 import { useSession } from '@/state/session'
 import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
 import { publicUrl } from '@/lib/publicUrl'
+import { playerKeys } from '@/data/keys'
 
 import './UserSettings.css'
 
 export default function UserSettings() {
   const queryClient = useQueryClient()
-  const { account, permission } = useSession()
-  const player = usePlayer()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const player = useMembership()
   const levels = useLevels()
   const member = player.member
 
@@ -52,7 +55,7 @@ export default function UserSettings() {
         { account: CONTRACTS.MEMBERS, name: 'setcpu', authorization, data: { wallet: account, freecpu: freeCpu } }
       ])
       toast.success('Settings updated successfully')
-      void queryClient.invalidateQueries({ queryKey: ['member', account] })
+      void queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
     } catch (err) {
       if (!isUserCancel(err)) toast.error(`Error updating settings: ${formatTransactError(err)}`)
     } finally {

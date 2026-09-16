@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { readBlogs } from './tables'
+import { newsKeys } from './keys'
 
 export interface Article {
   title: string
@@ -92,7 +93,7 @@ async function loadHomeNews(): Promise<Article[]> {
   return perAuthor
 }
 
-export const useHomeNews = () => useQuery({ queryKey: ['homeNews'], queryFn: loadHomeNews, staleTime: CACHE_TTL })
+export const useHomeNews = () => useQuery({ queryKey: newsKeys.home, queryFn: loadHomeNews, staleTime: CACHE_TTL })
 
 export interface NewsFeed {
   id: string
@@ -109,7 +110,8 @@ async function loadNews() {
   ]
 
   const lists = await Promise.all(feeds.map((feed) => readFeed(feed.url)))
-  const newest = (articles: Article[]) => [...articles].sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
+  const newest = (articles: Article[]) =>
+    [...articles].sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
 
   const byFeed: Record<string, Article[]> = { all: newest(lists.flat()) }
   feeds.forEach((feed, i) => {
@@ -119,4 +121,4 @@ async function loadNews() {
   return { feeds, byFeed }
 }
 
-export const useNews = () => useQuery({ queryKey: ['news'], queryFn: loadNews, staleTime: CACHE_TTL })
+export const useNews = () => useQuery({ queryKey: newsKeys.all, queryFn: loadNews, staleTime: CACHE_TTL })

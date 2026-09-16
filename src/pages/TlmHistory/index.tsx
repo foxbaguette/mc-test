@@ -5,12 +5,12 @@ import { RefreshIcon } from '@/components/icons'
 import { PageHeader } from '@/components/PageHeader'
 import { monthKey, shiftMonth, summarize, TLM_SOURCES, useTlmHistory, type TlmSource } from '@/data/tlmHistory'
 import TLMSVG from '@/icons/tlm'
+import { formatUtcDayTime, MONTHS } from '@/lib/time'
 import { useAccount } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 
 import './TlmHistory.css'
 
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const PAGE = 100
 
 const sourceMeta = new Map(TLM_SOURCES.map((source) => [source.id, source]))
@@ -29,13 +29,6 @@ function Amount({ value }: { value: number }) {
   )
 }
 
-/** "16 Sep, 14:02" in UTC, the month's own clock. */
-function formatWhen(at: number) {
-  const date = new Date(at)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(date.getUTCDate())} ${MONTH_NAMES[date.getUTCMonth()].slice(0, 3)}, ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`
-}
-
 export default function TlmHistory() {
   const account = useAccount()
   const current = monthKey(new Date())
@@ -44,12 +37,12 @@ export default function TlmHistory() {
   const [shown, setShown] = useState(PAGE)
 
   const history = useTlmHistory(account, month)
-  const transfers = useMemo(() => history.data ?? [], [history.data])
+  const transfers = useMemo(() => history.query.data ?? [], [history.query.data])
   const { total, bySource } = useMemo(() => summarize(transfers), [transfers])
   const visible = useMemo(() => (filter ? transfers.filter((t) => t.source === filter) : transfers), [transfers, filter])
 
   const [year, monthIndex] = month.split('-').map(Number)
-  const monthLabel = `${MONTH_NAMES[monthIndex - 1]} ${year}`
+  const monthLabel = `${MONTHS[monthIndex - 1]} ${year}`
   const progress = history.progress
   const percent = progress && progress.total > 0 ? Math.round((progress.loaded / progress.total) * 100) : 0
 
@@ -82,16 +75,16 @@ export default function TlmHistory() {
           </div>
 
           <button
-            className={`icon-btn ${history.isFetching ? 'is-spinning' : ''}`}
-            onClick={() => void history.refetch()}
-            disabled={history.isFetching}
+            className={`icon-btn ${history.query.isFetching ? 'is-spinning' : ''}`}
+            onClick={() => void history.query.refetch()}
+            disabled={history.query.isFetching}
             aria-label="Refresh"
           >
             <RefreshIcon />
           </button>
         </div>
 
-        {history.isLoading || (history.isFetching && !history.data) ? (
+        {history.query.isLoading || (history.query.isFetching && !history.query.data) ? (
           <div className="thist__loading" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
             <div className="thist__loading-head">
               <span>Loading {monthLabel}</span>
@@ -101,7 +94,7 @@ export default function TlmHistory() {
               <span style={{ width: `${progress?.total ? percent : 100}%` }} />
             </span>
           </div>
-        ) : history.isError ? (
+        ) : history.query.isError ? (
           <p className="thist__empty">Could not load the history. Try again with the refresh button.</p>
         ) : (
           <>
@@ -154,7 +147,7 @@ export default function TlmHistory() {
                   const source = sourceMeta.get(transfer.source)!
                   return (
                     <li key={transfer.id} className="thist__row" style={{ '--source': source.color } as CSSProperties}>
-                      <span className="thist__when num">{formatWhen(transfer.at)}</span>
+                      <span className="thist__when num">{formatUtcDayTime(transfer.at)}</span>
                       <span className="thist__what">
                         <span className="thist__from">
                           <span className="thist__chip">{source.label}</span>

@@ -6,13 +6,13 @@ import { RARITY_ORDER } from '@/chain/config'
 import { chainDate } from '@/lib/time'
 
 import { queryClient } from './queryClient'
-import { refreshPlayer, usePlayer } from './queries'
+import { refreshPlayer, useMembership } from './player'
 import * as t from './tables'
-import type { Adventure, AdventureMod, AdventureParticipation, AdvTemplate } from './types'
+import type { Adventure, AdventureMod, AdventureParticipation, AdvTemplate } from './types/adventures'
+import { adventureKeys } from './keys'
 
 const MIN = 60_000
 const HOUR = 60 * MIN
-
 
 export const ADVENTURE_SCHEMAS = [
   { schema: 'crew.worlds', label: 'Minions' },
@@ -24,14 +24,17 @@ export const ADVENTURE_SCHEMAS = [
 
 /** Local file name of an adventure's artwork. Must match scripts/fetch-adventure-images.mjs. */
 export const adventureImageSlug = (image: string) =>
-  image.trim().replace(/\.[a-z0-9]+$/i, '').replace(/[^a-zA-Z0-9_-]+/g, '_')
+  image
+    .trim()
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '_')
 
 // ---------------------------------------------------------------------------
 // Queries
 // ---------------------------------------------------------------------------
 
 export const useAdvTemplates = () =>
-  useQuery({ queryKey: ['adventures', 'templates'], queryFn: t.readAdvTemplates, staleTime: 6 * HOUR })
+  useQuery({ queryKey: adventureKeys.templates, queryFn: t.readAdvTemplates, staleTime: 6 * HOUR })
 
 export function useTemplateMap() {
   const templates = useAdvTemplates()
@@ -45,13 +48,13 @@ export interface Participation extends AdventureParticipation {
 /** Open adventures the player hasn't joined, and the player's own participations. */
 export function useAdventures(account: string | null) {
   const open = useQuery({
-    queryKey: ['adventures', 'open'],
+    queryKey: adventureKeys.open,
     queryFn: t.readOpenAdventures,
     staleTime: MIN,
     refetchInterval: 5 * MIN
   })
   const mine = useQuery({
-    queryKey: ['adventures', 'participants', account],
+    queryKey: adventureKeys.participants(account),
     queryFn: () => t.readParticipations(account!),
     enabled: !!account,
     staleTime: MIN
@@ -61,7 +64,7 @@ export function useAdventures(account: string | null) {
   const first = ids[0] ?? 0
   const last = ids[ids.length - 1] ?? 0
   const joined = useQuery({
-    queryKey: ['adventures', 'joined', first, last],
+    queryKey: adventureKeys.joined(first, last),
     queryFn: () => t.readAdventureRange(first, last),
     enabled: ids.length > 0,
     staleTime: 10 * MIN
@@ -88,8 +91,8 @@ export function useAdventures(account: string | null) {
 
 /** Which modifier slots the player's member level unlocks. */
 export function useModUnlocks() {
-  const levels = useQuery({ queryKey: ['adventures', 'levels'], queryFn: t.readLevelUnlocks, staleTime: HOUR })
-  const { member } = usePlayer()
+  const levels = useQuery({ queryKey: adventureKeys.levels, queryFn: t.readLevelUnlocks, staleTime: HOUR })
+  const { member } = useMembership()
   const level = member?.level ?? 1
   return useMemo(() => {
     const levelFor = (slot: number) => levels.data?.find((row) => row.modslot === slot)?.level ?? 1
@@ -110,7 +113,10 @@ export interface CardGroup {
 
 /** The player's NFTs of one schema, one entry per template, rarest first. */
 async function readInventory(account: string, schema: string) {
-  const assets = await atomic.getOwnedAssets<{ name?: string; rarity?: string; img?: string }>({ owner: account, schema_name: schema })
+  const assets = await atomic.getOwnedAssets<{ name?: string; rarity?: string; img?: string }>({
+    owner: account,
+    schema_name: schema
+  })
   const groups = new Map<number, CardGroup>()
   for (const asset of assets) {
     const id = Number(asset.template?.template_id)
@@ -133,7 +139,7 @@ async function readInventory(account: string, schema: string) {
 
 export function useAdventureInventory(account: string | null, schema: string) {
   return useQuery({
-    queryKey: ['adventures', 'inventory', account, schema],
+    queryKey: adventureKeys.inventory(account, schema),
     enabled: !!account,
     staleTime: 5 * MIN,
     queryFn: () => readInventory(account!, schema)
@@ -142,24 +148,26 @@ export function useAdventureInventory(account: string | null, schema: string) {
 
 /** Every schema at once, for auto pick. Same cache entries as the picker's own tab. */
 export function useAdventureInventories(account: string | null, enabled: boolean) {
-  const results = useQueries({
+  // combine keeps the merged list referentially stable until one of the schemas changes.
+  return useQueries({
     queries: ADVENTURE_SCHEMAS.map(({ schema }) => ({
-      queryKey: ['adventures', 'inventory', account, schema],
+      queryKey: adventureKeys.inventory(account, schema),
       enabled: enabled && !!account,
       staleTime: 5 * MIN,
       queryFn: () => readInventory(account!, schema)
-    }))
+    })),
+    combine: (results) => ({
+      groups: results.flatMap((result) => result.data ?? []),
+      isFetching: results.some((result) => result.isFetching)
+    })
   })
-
-  return {
-    groups: useMemo(() => results.flatMap((result) => result.data ?? []), [results.map((r) => r.dataUpdatedAt).join()]),
-    isFetching: results.some((result) => result.isFetching)
-  }
 }
 
 export function refreshAdventures(account: string | null) {
   return Promise.all([
-    ...['open', 'participants', 'joined', 'inventory'].map((key) => queryClient.invalidateQueries({ queryKey: ['adventures', key] })),
+    ...[adventureKeys.open, adventureKeys.participantsAll, adventureKeys.joinedAll, adventureKeys.inventoryAll].map((queryKey) =>
+      queryClient.invalidateQueries({ queryKey })
+    ),
     refreshPlayer(account)
   ])
 }
@@ -260,7 +268,7 @@ export const estimatedRp = (score: number, scoreTotal: number, reward: number) =
 
 /** How long after the newest adventure the next one appears; adventure.mc creates them automatically. */
 export const useAdventureSettings = () =>
-  useQuery({ queryKey: ['adventures', 'settings'], queryFn: t.readAdventureSettings, staleTime: 6 * HOUR })
+  useQuery({ queryKey: adventureKeys.settings, queryFn: t.readAdventureSettings, staleTime: 6 * HOUR })
 
 /** When the next adventure is due: the newest adventure's start plus that interval. */
 export function nextAdventureAt(adventures: Adventure[], autoCreateHours: number | undefined, now: number) {

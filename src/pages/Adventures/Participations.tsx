@@ -3,13 +3,13 @@ import { useState, type ReactNode } from 'react'
 import { Button } from '@/components/Button'
 import { CheckSquareIcon } from '@/components/icons'
 import { estimatedRp, refreshAdventures, type Participation } from '@/data/adventures'
-import type { AdvTemplate } from '@/data/types'
+import type { AdvTemplate } from '@/data/types/adventures'
 import QuestSVG from '@/icons/quest'
-import { chainDate, timeLeft } from '@/lib/time'
+import { chainDate, countdown, timeLeft } from '@/lib/time'
 import { claimAdventureAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
 
-import { AdventureImg, CardImg, countdown, SponsorRibbon, Stat } from './shared'
+import { AdventureImg, CardImg, SponsorRibbon, Stat } from './shared'
 
 type Templates = Map<number, AdvTemplate>
 
@@ -41,8 +41,10 @@ export function ClaimableList({ items, templates }: { items: Participation[]; te
 
   async function claim(p: Participation) {
     setPending(p.pid)
-    const ok = await run((a, perm) => claimAdventureAction(a, perm, p.adventureid), 'Adventure claimed successfully', () =>
-      refreshAdventures(account)
+    const ok = await run(
+      (a, perm) => claimAdventureAction(a, perm, p.adventureid),
+      'Adventure claimed successfully',
+      () => refreshAdventures(account)
     )
     if (ok) setClaimed((ids) => [...ids, p.pid])
     setPending(null)

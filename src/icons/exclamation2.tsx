@@ -1,4 +1,3 @@
-
 const Exclamation2SVG = ({ color = '#fff' }: { color?: string }) => {
   return (
     <svg width="7" height="22" viewBox="0 0 7 22" fill="none" xmlns="http://www.w3.org/2000/svg">

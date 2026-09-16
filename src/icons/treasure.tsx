@@ -1,4 +1,3 @@
-
 // Treasure chest (SVG Repo), cropped to the artwork so it matches the other menu icons in size.
 const TreasureSvg = ({ color = 'white' }: { color?: string }) => {
   return (

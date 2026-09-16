@@ -1,0 +1,80 @@
+import { describe, expect, it } from 'vitest'
+
+import type { FavoriteLand } from '@/data/favorites'
+import type { EquippedTool } from '@/data/types/mining'
+
+import { effectiveCommission, estimateTlm, mineReadyAt, pickFavoriteLand } from './estimates'
+
+const tool = (delay: number, last_use = 0) => ({ delay, last_use }) as unknown as EquippedTool
+
+describe('mineReadyAt', () => {
+  const lastMine = '2026-09-16T12:00:00'
+  const lastMineAt = Date.parse('2026-09-16T12:00:00Z')
+
+  it('uses the slowest tool fully with one tool', () => {
+    expect(mineReadyAt(10, [tool(600)], lastMine)).toBe(lastMineAt + 600_000)
+  })
+
+  it('adds half of the second tool with two tools', () => {
+    expect(mineReadyAt(10, [tool(300), tool(600)], lastMine)).toBe(lastMineAt + 750_000)
+  })
+
+  it('adds the second tool fully with three tools, ignoring the fastest', () => {
+    expect(mineReadyAt(10, [tool(100), tool(300), tool(600)], lastMine)).toBe(lastMineAt + 900_000)
+  })
+
+  it('scales by the land delay (10 = 1x)', () => {
+    expect(mineReadyAt(15, [tool(600)], lastMine)).toBe(lastMineAt + 900_000)
+  })
+
+  it('counts from the latest tool use when it is after the last mine', () => {
+    const later = lastMineAt / 1000 + 60
+    expect(mineReadyAt(10, [tool(600, later)], lastMine)).toBe(later * 1000 + 600_000)
+  })
+})
+
+describe('estimateTlm', () => {
+  it('caps each rarity share at 80% of its pool', () => {
+    expect(estimateTlm({ Common: 1_000_000 }, 10, { Common: 50 })).toBe(40)
+  })
+
+  it('adds the rarities together', () => {
+    expect(estimateTlm({ Common: 100, Rare: 200 }, 10, { Common: 10, Rare: 20 })).toBeCloseTo(0.1 * 10 + 0.2 * 20)
+  })
+
+  it('is 0 without pools', () => {
+    expect(estimateTlm({ Common: 100 }, 10, undefined)).toBe(0)
+  })
+})
+
+describe('effectiveCommission', () => {
+  it('never goes below the planet minimum', () => {
+    expect(effectiveCommission(0.02, 0.05)).toBe(0.05)
+    expect(effectiveCommission(0.2, 0.05)).toBe(0.2)
+  })
+})
+
+describe('pickFavoriteLand', () => {
+  const land = (asset_id: string, readyAt: number, estimatedTlm: number, shards: number) =>
+    ({ asset_id, readyAt, estimatedTlm, shards }) as unknown as FavoriteLand & { readyAt: number }
+  const readyAt = (l: FavoriteLand) => (l as FavoriteLand & { readyAt: number }).readyAt
+
+  const lands = [land('a', 0, 5, 1), land('b', 0, 2, 9), land('c', 100, 50, 50)]
+
+  it('prefers ready lands, by shards for green', () => {
+    expect(pickFavoriteLand(lands, readyAt, 'green', 10)?.asset_id).toBe('b')
+  })
+
+  it('prefers ready lands, by TLM for orange', () => {
+    expect(pickFavoriteLand(lands, readyAt, 'orange', 10)?.asset_id).toBe('a')
+  })
+
+  it('falls back to the soonest land when none is ready', () => {
+    const waiting = [land('a', 500, 5, 1), land('b', 200, 1, 1)]
+    expect(pickFavoriteLand(waiting, readyAt, 'green', 10)?.asset_id).toBe('b')
+  })
+
+  it('is null without lands', () => {
+    expect(pickFavoriteLand([], readyAt, 'green', 10)).toBeNull()
+  })
+})

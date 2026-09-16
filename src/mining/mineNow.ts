@@ -1,8 +1,10 @@
-import { toast } from '@/components/Toaster'
-import { refreshMining, refreshPlayer } from '@/data/queries'
+import { toast } from '@/components/toast'
+import { refreshMining } from '@/data/mining'
+import { refreshPlayer } from '@/data/player'
 import { readMiner } from '@/data/tables'
-import type { EquippedTool } from '@/data/types'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+import type { EquippedTool } from '@/data/types/mining'
+import { useSession } from '@/state/session'
+import { canMine, formatTransactError, isUserCancel, MINING_BLOCKED_MESSAGE, transact } from '@/wallet/session'
 
 import { mineActions } from './actions'
 import { computeNonce } from './nonce'
@@ -18,6 +20,11 @@ interface MineOptions {
 
 /** Proof of work, sign, broadcast, then report what the mine paid. Resolves true on success. */
 export async function mineNow({ account, permission, tools, landId }: MineOptions): Promise<boolean> {
+  // Before the proof of work: no point computing a nonce that may not be sent.
+  if (!canMine(useSession.getState().wallet)) {
+    toast.error(MINING_BLOCKED_MESSAGE)
+    return false
+  }
   try {
     const miner = await readMiner(account)
     const difficulty = (tools ?? []).reduce((sum, tool) => sum + Number(tool.pow ?? 0), 0)

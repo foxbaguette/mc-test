@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 import { queryClient } from './queryClient'
-import { refreshPlayer, useMember, useUserPoints } from './queries'
+import { refreshPlayer, useMember, useUserPoints } from './player'
 import { readDaoCandidates, readPlanetCandidates, readVoteBlocklist, readVoteHistory, readVotingConfig } from './tables'
-import type { CandidateProfile } from './types'
+import type { CandidateProfile } from './types/voting'
+import { votingKeys } from './keys'
 
 const MIN = 60_000
 const HOUR = 60 * MIN
@@ -31,10 +32,15 @@ async function fetchProfiles(planet: string): Promise<CandidateProfile[]> {
 
 /** Active candidates of the planet with the votes Mission Control cast for them, most votes first. */
 export function useCandidates(planet: string = VOTING_PLANET) {
-  const dao = useQuery({ queryKey: ['voting', 'dao', planet], queryFn: () => readDaoCandidates(planet), staleTime: 10 * MIN })
-  const votes = useQuery({ queryKey: ['voting', 'votes', planet], queryFn: () => readPlanetCandidates(planet), staleTime: MIN })
-  const blocked = useQuery({ queryKey: ['voting', 'blocklist'], queryFn: readVoteBlocklist, staleTime: HOUR })
-  const profiles = useQuery({ queryKey: ['voting', 'profiles', planet], queryFn: () => fetchProfiles(planet), staleTime: 30 * MIN, retry: 1 })
+  const dao = useQuery({ queryKey: votingKeys.dao(planet), queryFn: () => readDaoCandidates(planet), staleTime: 10 * MIN })
+  const votes = useQuery({ queryKey: votingKeys.votes(planet), queryFn: () => readPlanetCandidates(planet), staleTime: MIN })
+  const blocked = useQuery({ queryKey: votingKeys.blocklist, queryFn: readVoteBlocklist, staleTime: HOUR })
+  const profiles = useQuery({
+    queryKey: votingKeys.profiles(planet),
+    queryFn: () => fetchProfiles(planet),
+    staleTime: 30 * MIN,
+    retry: 1
+  })
 
   const candidates = useMemo<Candidate[]>(() => {
     const blockedWallets = new Set((blocked.data ?? []).map((row) => row.wallet))
@@ -68,7 +74,7 @@ export function useCandidates(planet: string = VOTING_PLANET) {
  * History only reaches back about a month; an older vote yields an empty list.
  */
 export function useLastVote(account: string | null, planet: string = VOTING_PLANET) {
-  const history = useQuery({ queryKey: ['voting', 'history'], queryFn: readVoteHistory, enabled: !!account, staleTime: MIN })
+  const history = useQuery({ queryKey: votingKeys.history, queryFn: readVoteHistory, enabled: !!account, staleTime: MIN })
 
   const wallets = useMemo(() => {
     const mine = (history.data ?? []).filter((row) => row.voter === account && row.planet === planet)
@@ -86,7 +92,7 @@ export function useLastVote(account: string | null, planet: string = VOTING_PLAN
 
 /** Vote power: what was claimed plus the shards earned since, capped by the contract maximum. */
 export function useVotePower(account: string | null) {
-  const config = useQuery({ queryKey: ['voting', 'config'], queryFn: readVotingConfig, staleTime: HOUR })
+  const config = useQuery({ queryKey: votingKeys.config, queryFn: readVotingConfig, staleTime: HOUR })
   const member = useMember(account)
   const points = useUserPoints(account)
 
@@ -98,5 +104,5 @@ export function useVotePower(account: string | null) {
 }
 
 export function refreshVoting(account: string | null) {
-  return Promise.all([queryClient.invalidateQueries({ queryKey: ['voting'] }), refreshPlayer(account)])
+  return Promise.all([queryClient.invalidateQueries({ queryKey: votingKeys.all }), refreshPlayer(account)])
 }

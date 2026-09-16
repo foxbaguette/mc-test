@@ -1,4 +1,3 @@
-
 const TriliumVaultSVG = ({ color = 'white' }: { color: string }) => {
   return (
     <svg width="44" height="45" viewBox="0 0 44 45" fill="none" xmlns="http://www.w3.org/2000/svg">

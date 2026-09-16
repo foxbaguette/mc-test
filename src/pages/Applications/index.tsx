@@ -8,8 +8,8 @@ import { RefreshIcon } from '@/components/icons'
 import { PageHeader } from '@/components/PageHeader'
 import { Select } from '@/components/Select'
 import { refreshApplications, useFlagReasons, usePendingApplications, useSupportLog } from '@/data/applications'
-import { usePlayerSupport } from '@/data/queries'
-import type { Member } from '@/data/types'
+import { usePlayerSupport } from '@/data/player'
+import type { Member } from '@/data/types/player'
 import { chainDate, formatDateTimeShort } from '@/lib/time'
 import { approveMemberAction, delayMemberAction, flagMemberAction } from '@/mining/actions'
 import { useChainAction } from '@/pages/AwMining/useMemberAction'
@@ -86,7 +86,8 @@ function ApplicationCard({ member }: { member: Member }) {
     setText(value === CUSTOM ? '' : ((reasons.data ?? [])[Number(value)]?.flag_reason ?? ''))
   }
 
-  const act = (build: (account: string, permission: string) => AnyAction, message: string) => run(build, message, refreshApplications)
+  const act = (build: (account: string, permission: string) => AnyAction, message: string) =>
+    run(build, message, refreshApplications)
   const lastAction = log.data?.[0]
 
   return (
@@ -107,7 +108,13 @@ function ApplicationCard({ member }: { member: Member }) {
         >
           <img src={publicUrl('/assets/icons/atomic.png')} alt="" />
         </a>
-        <a className="apl__link" href={`https://waxblock.io/account/${member.wallet}`} target="_blank" rel="noreferrer" aria-label="WAXBlock">
+        <a
+          className="apl__link"
+          href={`https://waxblock.io/account/${member.wallet}`}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="WAXBlock"
+        >
           <img src={publicUrl('/assets/icons/cube.png')} alt="" />
         </a>
       </header>
@@ -134,7 +141,13 @@ function ApplicationCard({ member }: { member: Member }) {
       )}
 
       <div className="apl__reason">
-        <Select value={reason} options={options} onChange={pickReason} borderColors={['#FFB31F', '#FFB800']} ariaLabel="Flag reason" />
+        <Select
+          value={reason}
+          options={options}
+          onChange={pickReason}
+          borderColors={['#FFB31F', '#FFB800']}
+          ariaLabel="Flag reason"
+        />
         <textarea
           className="apl__text"
           rows={2}
@@ -145,7 +158,12 @@ function ApplicationCard({ member }: { member: Member }) {
       </div>
 
       <div className="apl__actions">
-        <Button size="sm" color="gradientGreen" disabled={busy} onClick={() => act((a, p) => approveMemberAction(a, p, member.wallet), 'Approved')}>
+        <Button
+          size="sm"
+          color="gradientGreen"
+          disabled={busy}
+          onClick={() => act((a, p) => approveMemberAction(a, p, member.wallet), 'Approved')}
+        >
           Approve
         </Button>
         <Button

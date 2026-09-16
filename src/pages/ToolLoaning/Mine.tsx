@@ -1,25 +1,28 @@
 import { useMemo, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import { RARITY_ORDER } from '@/chain/config'
 import { Button } from '@/components/Button'
+import { MiningBlocked } from '@/components/MiningBlocked'
 import { RefreshIcon } from '@/components/icons'
-import { useEquippedTools } from '@/data/queries'
+import { useEquippedTools } from '@/data/mining'
 import { refreshToolLoaning, useLoanableTools, useLoanLand, type LoanTool } from '@/data/toolLoaning'
 import PersonSVG from '@/icons/person'
 import SettingsSVG from '@/icons/settings'
 import { cooldownLabel, useNow } from '@/lib/time'
 import { mineWithLoanedTool } from '@/mining/loan'
-import { useSession } from '@/state/session'
+import { useCanMine, useSession } from '@/state/session'
 
 import { ToolCard, ToolStats } from './Shared'
 
 export function Mine() {
-  const { account, permission } = useSession()
+  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
   const loan = useLoanableTools(account)
   const equipped = useEquippedTools(account)
   const landFor = useLoanLand()
   const now = useNow(1000)
   const [mining, setMining] = useState<number | null>(null)
+  const canMine = useCanMine()
 
   // What can be mined with right now comes first, then the rarest and the strongest.
   const tools = useMemo(
@@ -50,6 +53,7 @@ export function Mine() {
 
   return (
     <section className="tl-section">
+      <MiningBlocked />
       <div className="tl-section__head">
         <h2 className="tl-section__title">
           LOAN TOOLS
@@ -94,7 +98,7 @@ export function Mine() {
                   size="sm"
                   color={isReady ? 'gradientYellow' : 'solidBlue'}
                   isLoading={mining === tool.template_id}
-                  disabled={mining !== null || !isReady}
+                  disabled={!canMine || mining !== null || !isReady}
                   onClick={() => handleMine(tool)}
                 >
                   {isReady ? (
