@@ -4,12 +4,10 @@
   flex-direction: column;
   gap: 10px;
   padding: 18px 22px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid #ff4f6b;
-  border-radius: 3px 14px 14px 3px;
-  background:
-    radial-gradient(60% 220% at 0 50%, rgba(255, 79, 107, 0.14), transparent 60%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: radial-gradient(60% 220% at 0 50%, rgba(255, 79, 107, 0.14), transparent 60%), var(--plate-face);
 }
 
 .crash__title {

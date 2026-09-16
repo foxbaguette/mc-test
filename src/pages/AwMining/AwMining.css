@@ -1,38 +1,5 @@
-/* Actions are plates, as on Adventures and the outpost, each in its own colour. */
-.mining .btn:not(.mining-type__preview) {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 22%, transparent),
-    color-mix(in srgb, var(--btn-accent) 7%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
-
-  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
-  border-left: 2px solid var(--btn-accent);
-  border-radius: 12px;
-  letter-spacing: 0.08em;
-  box-shadow: none;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-
-.mining .btn:not(.mining-type__preview):hover:not(:disabled) {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 38%, transparent),
-    color-mix(in srgb, var(--btn-accent) 14%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
-
-  border-color: var(--btn-accent);
-  filter: none;
-}
-
-.mining .btn:not(.mining-type__preview):disabled {
-  opacity: 0.6;
+.mining .btn {
+  --plate-case: none;
 }
 
 .mining {
@@ -139,9 +106,9 @@
   gap: 6px;
   min-height: 80px;
   padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.22);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
 }
 
@@ -181,9 +148,9 @@
   flex-direction: column;
   gap: 8px;
   padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid var(--rarity, var(--border-2));
-  border-radius: 3px 14px 14px 3px;
+  border-radius: var(--plate-radius);
   background: linear-gradient(180deg, color-mix(in srgb, var(--rarity, transparent) 12%, transparent), var(--surface) 55%);
   transition:
     box-shadow 0.2s ease,

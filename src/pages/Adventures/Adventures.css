@@ -892,9 +892,9 @@
   gap: 2px;
   min-width: 180px;
   padding: 8px 18px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.22);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
   font-family: var(--font-heading);
   text-align: left;

@@ -25,7 +25,7 @@ export default function AwMining() {
     <>
       <PageHeader title="Alien Worlds Mining" image={publicUrl('/assets/background/bg-aw-mining.webp')} />
 
-      <div className="page mining">
+      <div className="page mining plates">
         <div className="mining__nav">
           <div className="segmented" role="tablist">
             {VIEWS.map((v) => (

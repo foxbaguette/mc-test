@@ -10,12 +10,10 @@
   flex-direction: column;
   gap: 14px;
   padding: 14px 18px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid var(--yellow);
-  border-radius: 3px 14px 14px 3px;
-  background:
-    radial-gradient(50% 160% at 0 0, rgba(246, 168, 0, 0.1), transparent 65%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: radial-gradient(50% 160% at 0 0, rgba(246, 168, 0, 0.1), transparent 65%), var(--plate-face);
 }
 
 .tactician__setup-head {
@@ -70,9 +68,9 @@
   gap: 8px;
   min-width: 0;
   padding: 10px 12px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: rgba(0, 0, 0, 0.18);
   transition: border-color 0.2s ease;
 }
@@ -170,9 +168,9 @@
   gap: 2px;
   min-width: 0;
   padding: 14px 18px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 3px 14px 14px 3px;
+  border-radius: var(--plate-radius);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
 }
 
@@ -265,7 +263,7 @@
 .tactician__land-row:not(.tactician__land-row--head) {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-left: 2px solid rgba(255, 255, 255, 0.14);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
   transition:
     border-color 0.15s ease,

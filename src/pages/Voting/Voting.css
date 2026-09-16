@@ -4,42 +4,8 @@
   gap: 18px;
 }
 
-/* Plate buttons, as in Adventures and Mining. */
 .vote .btn {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 22%, transparent),
-    color-mix(in srgb, var(--btn-accent) 7%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
-
-  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
-  border-left: 2px solid var(--btn-accent);
-  border-radius: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  box-shadow: none;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-
-.vote .btn:hover:not(:disabled) {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 38%, transparent),
-    color-mix(in srgb, var(--btn-accent) 14%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
-
-  border-color: var(--btn-accent);
-  filter: none;
-}
-
-.vote .btn:disabled {
-  opacity: 0.6;
+  --plate-tracking: 0.1em;
 }
 
 /* Vote power: the figure over a thin charge meter. */
@@ -106,10 +72,10 @@
   gap: 12px;
   min-width: 0;
   padding: 14px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 3px 14px 14px 3px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: var(--plate-face);
   transition:
     border-color 0.2s ease,
     background 0.2s ease;
@@ -118,9 +84,7 @@
 .vote__pick.is-chosen {
   border-color: rgba(246, 168, 0, 0.3);
   border-left-color: var(--yellow);
-  background:
-    radial-gradient(60% 120% at 0 0, rgba(246, 168, 0, 0.12), transparent 70%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  background: radial-gradient(60% 120% at 0 0, rgba(246, 168, 0, 0.12), transparent 70%), var(--plate-face);
 }
 
 .vote__pick-head {
@@ -229,7 +193,7 @@
 .vote__row:not(.vote__row--head) {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-left: 2px solid rgba(255, 255, 255, 0.14);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
   transition:
     border-color 0.15s ease,
@@ -327,7 +291,7 @@
 
 .vote__skeleton {
   height: 56px;
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
 }
 
 @media (max-width: 800px) {

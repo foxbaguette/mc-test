@@ -129,7 +129,7 @@
   padding: 12px 16px;
   border: 1px solid rgba(246, 168, 0, 0.28);
   border-left: 2px solid var(--yellow);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(246, 168, 0, 0.16), rgba(246, 168, 0, 0.03));
 }
 
@@ -160,17 +160,15 @@
 .weekly.panel,
 .tip.panel {
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 3px 14px 14px 3px;
+  border: 1px solid var(--plate-edge);
+  border-radius: var(--plate-radius);
   box-shadow: none;
 }
 
 .weekly.panel {
   padding: 14px 20px 16px;
   border-left: 2px solid var(--yellow);
-  background:
-    radial-gradient(70% 200% at 0 50%, rgba(246, 168, 0, 0.14), transparent 60%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  background: radial-gradient(70% 200% at 0 50%, rgba(246, 168, 0, 0.14), transparent 60%), var(--plate-face);
 }
 
 .weekly .panel__head {
@@ -267,9 +265,7 @@
   gap: 2px 14px;
   padding: 12px 20px;
   border-left: 2px solid var(--blue);
-  background:
-    radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.13), transparent 60%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  background: radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.13), transparent 60%), var(--plate-face);
 }
 
 .tip .panel__head {
@@ -367,9 +363,9 @@
   gap: 1px 12px;
   padding: 12px 14px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.22);
-  border-radius: 3px 14px 14px 3px;
+  border-radius: var(--plate-radius);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
   color: var(--text);
   transition:
@@ -445,12 +441,10 @@
   gap: 20px;
   padding: 14px 20px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid #ffb800;
-  border-radius: 3px 14px 14px 3px;
-  background:
-    radial-gradient(120% 160% at 0 50%, rgba(255, 184, 0, 0.16), transparent 60%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: radial-gradient(120% 160% at 0 50%, rgba(255, 184, 0, 0.16), transparent 60%), var(--plate-face);
   color: var(--text);
   transition:
     border-color 0.2s ease,

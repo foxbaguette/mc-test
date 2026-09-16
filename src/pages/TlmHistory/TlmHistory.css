@@ -74,12 +74,10 @@
   flex-direction: column;
   gap: 10px;
   padding: 18px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid var(--blue);
-  border-radius: 3px 14px 14px 3px;
-  background:
-    radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.12), transparent 60%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.12), transparent 60%), var(--plate-face);
 }
 
 .thist__loading-head {
@@ -144,10 +142,8 @@
   padding: 16px 20px;
   border: 1px solid rgba(246, 168, 0, 0.28);
   border-left: 2px solid var(--yellow);
-  border-radius: 3px 14px 14px 3px;
-  background:
-    radial-gradient(80% 160% at 0 50%, rgba(246, 168, 0, 0.16), transparent 65%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: radial-gradient(80% 160% at 0 50%, rgba(246, 168, 0, 0.16), transparent 65%), var(--plate-face);
 }
 
 .thist__total strong {
@@ -187,9 +183,9 @@
   gap: 5px;
   min-width: 0;
   padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid var(--source);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, color-mix(in srgb, var(--source) 12%, transparent), rgba(255, 255, 255, 0.012));
   color: var(--text);
   text-align: left;
@@ -262,7 +258,7 @@
   padding: 9px 16px 9px 14px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-left: 2px solid var(--source);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01));
 }
 
@@ -344,10 +340,10 @@
 
 .thist__empty {
   padding: 16px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 3px 14px 14px 3px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: var(--plate-face);
   color: var(--text-dim);
 }
 

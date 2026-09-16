@@ -32,19 +32,8 @@ export default defineConfig({
     target: 'es2022',
     outDir: 'dist',
     emptyOutDir: true,
-    chunkSizeWarningLimit: 700,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          wharfkit: [
-            '@wharfkit/session',
-            '@wharfkit/web-renderer',
-            '@wharfkit/wallet-plugin-anchor',
-            '@wharfkit/wallet-plugin-cloudwallet',
-            '@wharfkit/wallet-plugin-wombat'
-          ]
-        }
-      }
-    }
+    // WharfKit is imported dynamically (src/wallet/session.ts) and split by Rollup on its own. A forced
+    // manual chunk would also collect shared helpers the entry needs and load the wallet at startup.
+    chunkSizeWarningLimit: 700
   }
 })

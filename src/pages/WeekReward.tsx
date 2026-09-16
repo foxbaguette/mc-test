@@ -82,7 +82,7 @@ export default function WeekReward() {
     <>
       <PageHeader title="Weekly Rewards" image={publicUrl('/assets/background/bg-week-rewards.jpeg')} />
 
-      <div className="page week-reward">
+      <div className="page week-reward plates">
         <div className="callout">
           <InfoCircleIcon size={20} />
           <p>Rewards are available for a maximum of 4 weeks. Any unclaimed rewards are returned to Mission Control.</p>

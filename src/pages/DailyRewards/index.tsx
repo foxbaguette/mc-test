@@ -124,7 +124,7 @@ export default function DailyRewards() {
 
           <Button
             size="lg"
-            className="daily__spin"
+            className="daily__spin btn--plate"
             isLoading={busy}
             disabled={busy || spinning || onCooldown || player.isLoading}
             onClick={handleSpin}

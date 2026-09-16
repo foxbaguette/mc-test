@@ -1,43 +1,6 @@
-/* Actions are plates, as on Adventures, each in the colour it already carries. */
 .builder .btn,
 .bmodal .btn {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 22%, transparent),
-    color-mix(in srgb, var(--btn-accent) 7%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
-
-  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
-  border-left: 2px solid var(--btn-accent);
-  border-radius: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  box-shadow: none;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-
-.builder .btn:hover:not(:disabled),
-.bmodal .btn:hover:not(:disabled) {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 38%, transparent),
-    color-mix(in srgb, var(--btn-accent) 14%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
-
-  border-color: var(--btn-accent);
-  filter: none;
-}
-
-/* Not being able to afford an upgrade yet is the common state here: keep it readable. */
-.builder .btn:disabled,
-.bmodal .btn:disabled {
-  opacity: 0.6;
+  --plate-tracking: 0.1em;
 }
 
 .builder {
@@ -143,9 +106,9 @@
   justify-content: center;
   gap: 4px;
   padding: 8px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.22);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
 }
 

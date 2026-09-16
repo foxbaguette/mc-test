@@ -31,7 +31,7 @@ export default function News() {
     <>
       <PageHeader title="News" image={publicUrl('/assets/background/bg-news.jpeg')} />
 
-      <div className="page feed">
+      <div className="page feed plates">
         <div className="feed__bar">
           <Select value={feedId} options={options} onChange={setFeedId} ariaLabel="Blog" />
         </div>

@@ -106,7 +106,7 @@ export default function TreasureHuntPage() {
     <>
       <PageHeader title="Treasure Hunt" image={publicUrl('/assets/background/bg-login.jpeg')} />
 
-      <div className="page hunts">
+      <div className="page hunts plates">
         <MiningBlocked />
 
         <section className="panel hunts__intro">

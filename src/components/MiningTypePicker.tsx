@@ -21,7 +21,7 @@ export function MiningTypePicker() {
           className={`mining-type ${miningType === option.value ? 'is-selected' : ''}`}
           onClick={() => setMiningType(option.value)}
         >
-          <Button asSpan color={COLORS[option.value]} size="sm" className="mining-type__preview">
+          <Button asSpan color={COLORS[option.value]} size="sm" className="mining-type__preview btn--no-plate">
             MINE
           </Button>
           <span className="mining-type__label">{option.label}</span>

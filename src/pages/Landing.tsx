@@ -5,7 +5,7 @@ import { DISCORD_URL } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { toast } from '@/components/toast'
 import { useSession } from '@/state/session'
-import { formatTransactError } from '@/wallet/session'
+import { formatTransactError, preloadWallet } from '@/wallet/session'
 import { publicUrl } from '@/lib/publicUrl'
 
 import './Landing.css'
@@ -79,7 +79,14 @@ export default function Landing() {
           <img src={publicUrl('/assets/icons/mission-control.png')} alt="" />
           <span>HOME</span>
         </a>
-        <Button onClick={handleLogin} isLoading={busy} disabled={busy} className="landing__nav-cta">
+        <Button
+          onClick={handleLogin}
+          onPointerEnter={preloadWallet}
+          onFocus={preloadWallet}
+          isLoading={busy}
+          disabled={busy}
+          className="landing__nav-cta btn--plate"
+        >
           PLAY
         </Button>
       </header>
@@ -91,7 +98,15 @@ export default function Landing() {
             <img className="landing__hero-logo" src={publicUrl('/assets/icons/mission-control.png')} alt="" />
             <h1>Mission Control</h1>
             <p>Games and Quests in the Alien Worlds Metaverse</p>
-            <Button size="lg" onClick={handleLogin} isLoading={busy} disabled={busy} className="landing__hero-cta btn--charged">
+            <Button
+              size="lg"
+              onClick={handleLogin}
+              onPointerEnter={preloadWallet}
+              onFocus={preloadWallet}
+              isLoading={busy}
+              disabled={busy}
+              className="landing__hero-cta btn--charged"
+            >
               PLAY
             </Button>
           </div>
@@ -135,7 +150,7 @@ export default function Landing() {
               <p>Use your Alien Worlds NFTs, win some TLM, join our community and just have fun.</p>
               <p>Mission Control offers games, tools, lore and more.</p>
               <a href={DISCORD_URL} target="_blank" rel="noreferrer" className="landing__discord">
-                <Button asSpan color="ghost">
+                <Button asSpan color="ghost" className="btn--plate">
                   JOIN DISCORD
                 </Button>
               </a>

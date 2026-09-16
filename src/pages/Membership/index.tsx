@@ -61,7 +61,7 @@ export default function Membership() {
     <>
       <PageHeader title="Membership" image={publicUrl('/assets/background/bg-member.jpeg')} />
 
-      <div className="page member">
+      <div className="page member plates">
         <h2 className="member__intro">{intro}</h2>
 
         {player.isMember && !player.flagged && <ReferralPanel account={player.account} />}
@@ -227,7 +227,7 @@ function JoinForm({ cost, onDone }: { cost: string; onDone: () => void }) {
     <>
       <PageHeader title="Membership" image={publicUrl('/assets/background/bg-member.jpeg')} />
 
-      <div className="page member">
+      <div className="page member plates">
         <h2 className="member__intro">JOIN MISSION CONTROL</h2>
         <p className="member__lead">By becoming a member you will instantly unlock:</p>
 

@@ -48,7 +48,7 @@ export default function MineMax() {
     <>
       <PageHeader title="Mine Maximizer" image={publicUrl('/assets/background/mine-bg.jpeg')} />
 
-      <div className="page maxi">
+      <div className="page maxi plates">
         <MiningBlocked />
 
         <section className="maxi-bar">

@@ -4,44 +4,6 @@
   gap: 20px;
 }
 
-/* Plate buttons, as in Adventures and Mining. */
-.maxi .btn {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 22%, transparent),
-    color-mix(in srgb, var(--btn-accent) 7%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
-
-  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
-  border-left: 2px solid var(--btn-accent);
-  border-radius: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  box-shadow: none;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-
-.maxi .btn:hover:not(:disabled) {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 38%, transparent),
-    color-mix(in srgb, var(--btn-accent) 14%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
-
-  border-color: var(--btn-accent);
-  filter: none;
-}
-
-.maxi .btn:disabled {
-  opacity: 0.6;
-}
-
 /* Equipped tools: one plate per tool, edged in its rarity. */
 .maxi-bar {
   display: flex;
@@ -66,16 +28,16 @@
   gap: 12px;
   min-width: 0;
   padding: 8px 18px 8px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid var(--rarity, var(--border-2));
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, color-mix(in srgb, var(--rarity, #fff) 14%, transparent), rgba(255, 255, 255, 0.015));
 }
 
 .maxi-tool--skeleton {
   width: 200px;
   height: 64px;
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
 }
 
 .maxi-tool__img {
@@ -133,7 +95,7 @@
 
 .maxi-planet--skeleton {
   height: 270px;
-  border-radius: 3px 14px 14px 3px;
+  border-radius: var(--plate-radius);
 }
 
 .maxi-planet {
@@ -145,9 +107,9 @@
   min-width: 0;
   padding: 20px 12px 12px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 3px 14px 14px 3px;
+  border-radius: var(--plate-radius);
   background:
     radial-gradient(60% 40% at 50% 22%, rgba(0, 186, 255, 0.08), transparent 70%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));

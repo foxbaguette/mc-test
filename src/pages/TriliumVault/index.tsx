@@ -93,7 +93,7 @@ export default function TriliumVault() {
     <>
       <PageHeader title="The Vault" image={publicUrl('/assets/background/bg-the-vault.webp')} />
 
-      <div className="page vault">
+      <div className="page vault plates">
         <section className={`vault__summary ${totalReady > 0 ? 'is-ready' : ''}`}>
           <div className="vault__summary-data">
             <p className="vault__summary-label">Claimable now</p>
@@ -344,7 +344,7 @@ function DepositDialog({ points, busy, onClose, onConfirm }: DepositDialogProps)
   const fee = Math.ceil(points * 0.1)
 
   return (
-    <Modal className="vault-dialog" locked={busy} onClose={onClose}>
+    <Modal className="vault-dialog plates" locked={busy} onClose={onClose}>
       <div className="vault-dialog__body">
         <button className="icon-btn vault-dialog__close" onClick={onClose} disabled={busy} aria-label="Close">
           ×

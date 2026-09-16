@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -40,12 +40,17 @@ function PublicOnly({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-function Private({ children }: { children: ReactNode }) {
+/** Layout route for the signed-in app: waits for the restored session, sends visitors to the landing page. */
+function PrivateLayout() {
   const { account, restored } = useSession(useShallow((s) => ({ account: s.account, restored: s.restored })))
   const location = useLocation()
   if (!restored) return <Loading />
   if (!account) return <Navigate to={`/?redirect=${encodeURIComponent(location.pathname.slice(1))}`} replace />
-  return <AuthLayout>{children}</AuthLayout>
+  return (
+    <AuthLayout>
+      <Outlet />
+    </AuthLayout>
+  )
 }
 
 export function App() {
@@ -64,159 +69,29 @@ export function App() {
                 </PublicOnly>
               }
             />
-            <Route
-              path="/menu"
-              element={
-                <Private>
-                  <Menu />
-                </Private>
-              }
-            />
-            <Route
-              path="/questing"
-              element={
-                <Private>
-                  <Questing />
-                </Private>
-              }
-            />
-            <Route
-              path="/week-reward"
-              element={
-                <Private>
-                  <WeekReward />
-                </Private>
-              }
-            />
-            <Route
-              path="/daily-rewards"
-              element={
-                <Private>
-                  <DailyRewards />
-                </Private>
-              }
-            />
-            <Route
-              path="/aw-mining"
-              element={
-                <Private>
-                  <AwMining />
-                </Private>
-              }
-            />
-            <Route
-              path="/tlm-history"
-              element={
-                <Private>
-                  <TlmHistory />
-                </Private>
-              }
-            />
+            {/* Every page behind sign-in shares the session check and the app layout. */}
+            <Route element={<PrivateLayout />}>
+              <Route path="/menu" element={<Menu />} />
+              <Route path="/questing" element={<Questing />} />
+              <Route path="/week-reward" element={<WeekReward />} />
+              <Route path="/daily-rewards" element={<DailyRewards />} />
+              <Route path="/aw-mining" element={<AwMining />} />
+              <Route path="/tlm-history" element={<TlmHistory />} />
+              <Route path="/user-settings" element={<UserSettings />} />
+              <Route path="/treasure-hunt" element={<TreasureHuntPage />} />
+              <Route path="/tool-loaning" element={<ToolLoaning />} />
+              <Route path="/builder/*" element={<Builder />} />
+              <Route path="/adventures/*" element={<Adventures />} />
+              <Route path="/mine-max" element={<MineMax />} />
+              <Route path="/emporium/*" element={<Emporium />} />
+              <Route path="/applications" element={<Applications />} />
+              <Route path="/voting" element={<Voting />} />
+              <Route path="/trilium-vault" element={<TriliumVault />} />
+              <Route path="/tool-tactician" element={<ToolTactician />} />
+              <Route path="/membership" element={<Membership />} />
+              <Route path="/news" element={<News />} />
+            </Route>
             <Route path="/mine-history" element={<Navigate to="/tlm-history" replace />} />
-            <Route
-              path="/user-settings"
-              element={
-                <Private>
-                  <UserSettings />
-                </Private>
-              }
-            />
-            <Route
-              path="/treasure-hunt"
-              element={
-                <Private>
-                  <TreasureHuntPage />
-                </Private>
-              }
-            />
-            <Route
-              path="/tool-loaning"
-              element={
-                <Private>
-                  <ToolLoaning />
-                </Private>
-              }
-            />
-            <Route
-              path="/builder/*"
-              element={
-                <Private>
-                  <Builder />
-                </Private>
-              }
-            />
-            <Route
-              path="/adventures/*"
-              element={
-                <Private>
-                  <Adventures />
-                </Private>
-              }
-            />
-            <Route
-              path="/mine-max"
-              element={
-                <Private>
-                  <MineMax />
-                </Private>
-              }
-            />
-            <Route
-              path="/emporium/*"
-              element={
-                <Private>
-                  <Emporium />
-                </Private>
-              }
-            />
-            <Route
-              path="/applications"
-              element={
-                <Private>
-                  <Applications />
-                </Private>
-              }
-            />
-            <Route
-              path="/voting"
-              element={
-                <Private>
-                  <Voting />
-                </Private>
-              }
-            />
-            <Route
-              path="/trilium-vault"
-              element={
-                <Private>
-                  <TriliumVault />
-                </Private>
-              }
-            />
-            <Route
-              path="/tool-tactician"
-              element={
-                <Private>
-                  <ToolTactician />
-                </Private>
-              }
-            />
-            <Route
-              path="/membership"
-              element={
-                <Private>
-                  <Membership />
-                </Private>
-              }
-            />
-            <Route
-              path="/news"
-              element={
-                <Private>
-                  <News />
-                </Private>
-              }
-            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

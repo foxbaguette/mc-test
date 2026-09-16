@@ -4,12 +4,10 @@
   align-items: center;
   gap: 12px;
   padding: 12px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid var(--blue);
-  border-radius: 3px 14px 14px 3px;
-  background:
-    radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.13), transparent 60%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-radius: var(--plate-radius);
+  background: radial-gradient(60% 220% at 0 50%, rgba(0, 186, 255, 0.13), transparent 60%), var(--plate-face);
   color: var(--text-dim);
   font-size: 14px;
   line-height: 1.5;
@@ -25,26 +23,10 @@
   margin-top: -8px;
 }
 
-/* Plate buttons, as in Adventures and Builder. */
 .week-reward .btn {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 22%, transparent),
-    color-mix(in srgb, var(--btn-accent) 7%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
-
+  --plate-tracking: 0.06em;
+  --plate-case: none;
   justify-content: space-between;
-  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
-  border-left: 2px solid var(--btn-accent);
-  border-radius: 12px;
-  letter-spacing: 0.06em;
-  box-shadow: none;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
 }
 
 .week-reward .btn .btn__label {
@@ -52,22 +34,6 @@
   justify-content: center;
   gap: 8px;
   font-size: 15px;
-}
-
-.week-reward .btn:hover:not(:disabled) {
-  --btn-bg: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--btn-accent) 38%, transparent),
-    color-mix(in srgb, var(--btn-accent) 14%, transparent)
-  );
-  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
-
-  border-color: var(--btn-accent);
-  filter: none;
-}
-
-.week-reward .btn:disabled {
-  opacity: 0.6;
 }
 
 .week-cards {
@@ -86,9 +52,9 @@
   min-height: 320px;
   padding: 18px 18px 20px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--plate-edge);
   border-left: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 3px 14px 14px 3px;
+  border-radius: var(--plate-radius);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
 }
 
@@ -164,7 +130,7 @@
   padding: 10px 14px;
   border: 1px solid rgba(246, 168, 0, 0.22);
   border-left: 2px solid var(--yellow);
-  border-radius: 3px 12px 12px 3px;
+  border-radius: var(--plate-radius-sm);
   background: linear-gradient(90deg, rgba(246, 168, 0, 0.14), rgba(246, 168, 0, 0.03));
 }
 

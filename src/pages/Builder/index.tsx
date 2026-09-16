@@ -27,7 +27,7 @@ export default function Builder() {
     <>
       <PageHeader title="Outpost Builder" image={publicUrl('/assets/background/bg-mcp-builder.jpeg')} />
 
-      <div className="page builder">
+      <div className="page builder plates">
         {season.isLoading || player.isLoading ? (
           <>
             <div className="skeleton builder-skel--top" />

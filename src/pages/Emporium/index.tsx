@@ -12,7 +12,7 @@ export default function Emporium() {
   return (
     <>
       <PageHeader title="Zapp’s Zap Emporium" image={publicUrl('/assets/background/bg-emporium.webp')} />
-      <div className="page zap">
+      <div className="page zap plates">
         <Routes>
           <Route index element={<Tasks />} />
           <Route path="history" element={<History />} />

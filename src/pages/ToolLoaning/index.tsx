@@ -26,7 +26,7 @@ export default function ToolLoaning() {
     <>
       <PageHeader title="Tool Loaning" image={publicUrl('/assets/background/bg-tool-loaning.jpeg')} />
 
-      <div className="page loaning">
+      <div className="page loaning plates">
         <Wallet />
 
         <div className="loaning__nav">

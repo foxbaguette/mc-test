@@ -29,7 +29,7 @@ interface DialogProps {
 /** Everything the outpost opens stays on the overview, in a console panel over it. */
 export function BuilderDialog({ title, className = '', onClose, children }: DialogProps) {
   return (
-    <Modal className={`bmodal ${className}`} label={title} onClose={onClose}>
+    <Modal className={`bmodal plates ${className}`} label={title} onClose={onClose}>
       <div className="bmodal__body">
         <header className="bmodal__head">
           <h2 className="bmodal__title">{title}</h2>

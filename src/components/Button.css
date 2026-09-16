@@ -204,6 +204,53 @@
 }
 
 /*
+ * Plate buttons: a tinted face with an accent edge, in the colour the button already carries.
+ * A whole screen opts in with .plates on its container, a single button with .btn--plate, and
+ * .btn--no-plate keeps one button in a plate screen as it is. Screens tune the lettering through
+ * --plate-tracking and --plate-case.
+ */
+:is(.plates .btn:not(:where(.btn--no-plate)), .btn.btn--plate) {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 22%, transparent),
+    color-mix(in srgb, var(--btn-accent) 7%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 78%, #fff);
+
+  border: 1px solid color-mix(in srgb, var(--btn-accent) 45%, transparent);
+  border-left: 2px solid var(--btn-accent);
+  border-radius: 12px;
+  letter-spacing: var(--plate-tracking, 0.08em);
+  text-transform: var(--plate-case, uppercase);
+  box-shadow: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+/* A plate inside a link lights up with the link. */
+:is(.plates .btn:not(:where(.btn--no-plate)), .btn.btn--plate):hover:not(:disabled),
+.plates a:hover .btn:not(:where(.btn--no-plate)),
+a:hover .btn.btn--plate {
+  --btn-bg: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--btn-accent) 38%, transparent),
+    color-mix(in srgb, var(--btn-accent) 14%, transparent)
+  );
+  --btn-color: color-mix(in srgb, var(--btn-accent) 35%, #fff);
+
+  border-color: var(--btn-accent);
+  filter: none;
+}
+
+/* Waiting (a cooldown, not enough currency yet) is a normal state on these screens: keep the label readable. */
+:is(.plates .btn:not(:where(.btn--no-plate)), .btn.btn--plate):disabled {
+  opacity: 0.6;
+}
+
+/*
  * "This is the thing to press": a light travelling around the rim, a shine
  * crossing the face and a glow that breathes. Ported from Alien Legends, where
  * the dungeon and tavern buttons use it, so the two sites read as one family.

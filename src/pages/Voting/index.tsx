@@ -72,7 +72,7 @@ export default function Voting() {
     <>
       <PageHeader title="Eyeke Voting" image={publicUrl('/assets/background/bg-voting.jpeg')} />
 
-      <div className="page vote">
+      <div className="page vote plates">
         <div className="vote__power">
           <p className="vote__power-value num">
             {power.current.toLocaleString('en-US')} / {power.max.toLocaleString('en-US')} <BoltSVG type={2} />

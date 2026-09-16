@@ -97,7 +97,7 @@ function DepositDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Modal className="tl-dialog" locked={busy} onClose={onClose}>
+    <Modal className="tl-dialog plates" locked={busy} onClose={onClose}>
       <div className="tl-dialog__body">
         <header className="tl-dialog__head">
           <h2 className="tl-dialog__title">Deposited TLM</h2>

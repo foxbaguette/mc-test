@@ -9,6 +9,12 @@
   --border: rgba(255, 255, 255, 0.08);
   --border-2: rgba(255, 255, 255, 0.16);
 
+  /* Plates, the game-screen panels: hairline edge, 2px accent edge on the left, clipped left corners. */
+  --plate-radius: 3px 14px 14px 3px;
+  --plate-radius-sm: 3px 12px 12px 3px;
+  --plate-edge: rgba(255, 255, 255, 0.07);
+  --plate-face: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+
   /* Text */
   --text: #f2f5f9;
   --text-dim: #a9b5c4;
