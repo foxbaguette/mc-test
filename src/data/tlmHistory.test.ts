@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { monthKey, monthRange, shiftMonth, sourceOf, summarize, type TlmTransfer } from './tlmHistory'
+import { labelOf, monthKey, monthRange, shiftMonth, sourceOf, summarize, type TlmTransfer } from './tlmHistory'
 
 describe('sourceOf', () => {
   it.each([
@@ -18,11 +18,34 @@ describe('sourceOf', () => {
     ['naron.world', 'aw'],
     ['naron.dac', 'aw'],
     ['arkhive.lore', 'aw'],
+    ['alienhelpers', 'aw'],
     ['swap.alcor', 'other'],
     ['tlmsplitting', 'other'],
     ['5thba.wam', 'other']
   ])('%s → %s', (from, source) => {
     expect(sourceOf(from)).toBe(source)
+  })
+})
+
+describe('labelOf', () => {
+  it.each([
+    ['miss.pdef', 'Mission division reward', 'Mission reward'],
+    ['magordefense', 'Land TLM payout 1099512958821', 'Land payout'],
+    ['magordefense', 'Payout from PVP reward', 'PvP reward'],
+    ['magordefense', 'Reward planetary defense', 'Mission reward'],
+    ['quests.ale', 'Alien Legends Quest Reward', 'Quest completed'],
+    ['pools.ale', 'Player Mining Reward', 'Mining reward'],
+    ['missions.mc', 'Mission Control: Week 42 claimed', 'Weekly Rewards'],
+    ['planetaworld', 'Treasure reward: ninja', 'Treasure Hunt'],
+    ['m.federation', 'ALIEN WORLDS - Mined Trilium', 'Mining'],
+    ['m.federation', 'ALIEN WORLDS - Mined Trilium Profit Share', 'Landowner share'],
+    ['swap.alcor', 'Swap tokenOut - Pool ID 12', 'Swap'],
+    ['swap.taco', 'liquidity withdraw', 'Liquidity'],
+    ['alienhelpers', 'Alien Worlds Official 👾', 'Alien Helpers'],
+    ['cosmicclasht', 'Drone Racing 3 - Final', 'Drone Racing 3 - Final'],
+    ['5thba.wam', '', '5thba.wam']
+  ])('%s "%s" → %s', (from, memo, label) => {
+    expect(labelOf(from, memo)).toBe(label)
   })
 })
 
@@ -50,6 +73,7 @@ describe('summarize', () => {
     trxId: '',
     at: 0,
     from: '',
+    label: '',
     amount,
     memo: '',
     source

@@ -151,16 +151,16 @@ export default function TlmHistory() {
                       <span className="thist__what">
                         <span className="thist__from">
                           <span className="thist__chip">{source.label}</span>
+                          {/* What it was for; the game's own memo and the sender on hover. */}
                           <a
-                            className="num"
                             href={`https://waxblock.io/transaction/${transfer.trxId}`}
                             target="_blank"
                             rel="noreferrer"
+                            title={[transfer.memo, transfer.from].filter(Boolean).join(' · ')}
                           >
-                            {transfer.from}
+                            {transfer.label}
                           </a>
                         </span>
-                        {transfer.memo && <span className="thist__memo">{transfer.memo}</span>}
                       </span>
                       <span className="thist__amount num">
                         <span>

@@ -43,9 +43,63 @@ export function sourceOf(from: string): TlmSource {
   if (from.endsWith('.pdef') || from === 'magordefense' || from === 'botplanetary') return 'pdef'
   if (from === NARON_REWARDS) return 'naron'
   // Mining (m.federation), land ratings, inflation, staking and teleport refunds, planet DAOs, the Arkhive.
-  if (from === 'm.federation' || from === 'federation' || from === 'awlndratings' || /\.(worlds|world|dac|lore)$/.test(from))
+  if (
+    from === 'm.federation' ||
+    from === 'federation' ||
+    from === 'awlndratings' ||
+    // The official Alien Worlds helper account (its memo: "Alien Worlds Official").
+    from === 'alienhelpers' ||
+    /\.(worlds|world|dac|lore)$/.test(from)
+  )
     return 'aw'
   return 'other'
+}
+
+/**
+ * What a transfer was for, from who sent it and the memo the game wrote. The first rule that
+ * matches wins; `memo` narrows a sender that pays for several things.
+ */
+const LABELS: { from: string | RegExp; memo?: RegExp; label: string }[] = [
+  // Planetary Defense
+  { from: 'miss.pdef', label: 'Mission reward' },
+  { from: 'magordefense', memo: /land/i, label: 'Land payout' },
+  { from: 'magordefense', memo: /pvp/i, label: 'PvP reward' },
+  { from: 'magordefense', label: 'Mission reward' },
+  { from: 'botplanetary', label: 'War reward' },
+  // Alien Legends
+  { from: 'quests.ale', label: 'Quest completed' },
+  { from: 'pools.ale', label: 'Mining reward' },
+  { from: 'lands.ale', label: 'Land reward' },
+  { from: 'players.ale', label: 'Player rewards' },
+  { from: 'recovery.ale', label: 'Candle recovery' },
+  // Mission Control
+  { from: 'missions.mc', label: 'Weekly Rewards' },
+  { from: 'tools.mc', label: 'Tool Loaning earnings' },
+  { from: 'emporium.mc', label: 'Zapp’s task' },
+  { from: 'game.mc', label: 'Outpost Builder' },
+  { from: 'admin.mc', memo: /developer/i, label: 'Developer rewards' },
+  { from: 'planetaworld', label: 'Treasure Hunt' },
+  // Naron Rewards (paid in NAR)
+  { from: NARON_REWARDS, label: 'Mining reward' },
+  // Alien Worlds
+  { from: 'm.federation', memo: /profit share/i, label: 'Landowner share' },
+  { from: 'm.federation', label: 'Mining' },
+  { from: 'awlndratings', label: 'Landowner allocation' },
+  { from: 'arkhive.lore', label: 'Arkhive adventure' },
+  { from: 'lore.worlds', label: 'TokeLore voting' },
+  { from: 'stake.worlds', memo: /refund/i, label: 'Stake refund' },
+  { from: 'alienhelpers', label: 'Alien Helpers' },
+  // Exchanges
+  { from: /^swap\./, memo: /liquidity|fee/i, label: 'Liquidity' },
+  { from: /^swap\./, label: 'Swap' }
+]
+
+/** A label for the transfer: a known game's, else the memo it came with, else who sent it. */
+export function labelOf(from: string, memo: string): string {
+  const rule = LABELS.find(
+    (r) => (typeof r.from === 'string' ? r.from === from : r.from.test(from)) && (!r.memo || r.memo.test(memo))
+  )
+  return rule?.label ?? (memo.trim() || from)
 }
 
 export interface TlmTransfer {
@@ -53,6 +107,8 @@ export interface TlmTransfer {
   trxId: string
   at: number
   from: string
+  /** What the transfer was for, in the player's words where the game is known. */
+  label: string
   amount: number
   memo: string
   source: TlmSource
@@ -118,6 +174,7 @@ const toTransfer = (action: TransferAction): TlmTransfer => {
     trxId: action.trx_id,
     at: historyTime(action.timestamp),
     from: data.from,
+    label: labelOf(data.from, data.memo ?? ''),
     amount: data.amount ?? Number(data.quantity?.split(' ')[0] ?? 0),
     memo: data.memo ?? '',
     source: sourceOf(data.from)

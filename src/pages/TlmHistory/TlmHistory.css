@@ -308,14 +308,6 @@
   white-space: nowrap;
 }
 
-.thist__memo {
-  overflow: hidden;
-  color: var(--text-faint);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .thist__amount {
   display: inline-flex;
   align-items: center;
