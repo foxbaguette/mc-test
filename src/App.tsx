@@ -15,6 +15,7 @@ const WeekReward = lazy(() => import('@/pages/WeekReward'))
 const DailyRewards = lazy(() => import('@/pages/DailyRewards'))
 const AwMining = lazy(() => import('@/pages/AwMining'))
 const TlmHistory = lazy(() => import('@/pages/TlmHistory'))
+const ShardHistory = lazy(() => import('@/pages/ShardHistory'))
 const UserSettings = lazy(() => import('@/pages/UserSettings'))
 const TreasureHuntPage = lazy(() => import('@/pages/TreasureHunt'))
 const ToolLoaning = lazy(() => import('@/pages/ToolLoaning'))
@@ -78,6 +79,7 @@ export function App() {
               <Route path="/daily-rewards" element={<DailyRewards />} />
               <Route path="/aw-mining" element={<AwMining />} />
               <Route path="/tlm-history" element={<TlmHistory />} />
+              <Route path="/shard-history" element={<ShardHistory />} />
               <Route path="/user-settings" element={<UserSettings />} />
               <Route path="/treasure-hunt" element={<TreasureHuntPage />} />
               <Route path="/tool-loaning" element={<ToolLoaning />} />

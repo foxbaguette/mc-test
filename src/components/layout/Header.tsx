@@ -87,6 +87,9 @@ function AccountMenu() {
           <button role="menuitem" onClick={() => navigate('/tlm-history')}>
             <HistoryIcon /> TLM History
           </button>
+          <button role="menuitem" onClick={() => navigate('/shard-history')}>
+            <HistoryIcon /> Shard History
+          </button>
           <button role="menuitem" onClick={() => navigate('/user-settings')}>
             <GearIcon /> Settings
           </button>

@@ -126,6 +126,10 @@ export const tlmHistoryKeys = {
   month: (account: Account, month: string) => ['tlmHistory', account, month] as const
 }
 
+export const shardHistoryKeys = {
+  month: (account: Account, month: string) => ['shardHistory', account, month] as const
+}
+
 export const pdKeys = {
   all: ['pd'] as const,
   member: (account: Account) => ['pd', 'member', account] as const,

@@ -61,6 +61,35 @@ export async function getActions<D>(
   return { total: json.total?.value ?? json.actions.length, actions: json.actions }
 }
 
+/** An action in Hyperion's compact form (`simple=true`), under half the size of the full one. */
+export interface SimpleAction<D> {
+  block: number
+  /** UTC without a zone marker; see historyTime. */
+  timestamp: string
+  contract: string
+  action: string
+  transaction_id: string
+  data: D
+}
+
+/** One page of `get_actions` in the compact form, with the exact total rather than a capped one. */
+export async function getSimpleActions<D>(
+  node: string,
+  params: Params,
+  { timeoutMs = DEFAULT_TIMEOUT_MS, signal }: { timeoutMs?: number; signal?: AbortSignal } = {}
+): Promise<{ total: number; actions: SimpleAction<D>[] }> {
+  const json = await withTimeout(timeoutMs, signal, (combined) =>
+    getJson<{ total?: { value: number }; simple_actions?: SimpleAction<D>[] }>(
+      node,
+      '/v2/history/get_actions',
+      { ...params, simple: 'true', track: 'true' },
+      combined
+    )
+  )
+  if (!Array.isArray(json.simple_actions)) throw new Error(`No actions from ${node}`)
+  return { total: json.total?.value ?? json.simple_actions.length, actions: json.simple_actions }
+}
+
 /**
  * Runs a multi-request read against one node at a time, moving to the next node if any
  * request fails, so every page of one read comes from the same node's index. A cancelled
