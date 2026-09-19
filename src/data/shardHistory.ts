@@ -277,8 +277,7 @@ export function useShardHistory(account: string | null, key: string) {
     meta: { silentError: true },
     // A past month never changes; the current one is refreshed by hand.
     staleTime: key === monthKey(new Date()) ? 5 * 60_000 : Infinity,
-    queryFn: ({ signal }) =>
-      readMonth(account!, key, signal, (next) => useProgress.setState({ [progressId]: next }))
+    queryFn: ({ signal }) => readMonth(account!, key, signal, (next) => useProgress.setState({ [progressId]: next }))
   })
 
   return { query, progress }
