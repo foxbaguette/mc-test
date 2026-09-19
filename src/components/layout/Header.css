@@ -386,3 +386,18 @@
   min-height: 28px;
   font-size: 12px;
 }
+
+/* The next mine's estimated TLM, beside the mode above the button. */
+.mine__estimate {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  color: var(--yellow);
+  letter-spacing: 0.02em;
+}
+
+.mine__estimate svg {
+  width: 10px;
+  height: 10px;
+}

@@ -2,8 +2,18 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import type { ButtonColor } from '@/components/Button'
+import type { Planet } from '@/chain/config'
 import { useFavorites, useMaximizerLand } from '@/data/favorites'
-import { refreshMining, useEquippedTools, useMiner } from '@/data/mining'
+import {
+  refreshMining,
+  useEquippedTools,
+  useLandTypes,
+  useLivePools,
+  useMiner,
+  usePlanetMinCommission,
+  usePlanetPools,
+  useSuggestedLands
+} from '@/data/mining'
 import { useMembership } from '@/data/player'
 import { pickBestLoanTool, refreshToolLoaning, useLoanableTools, useLoanLand, useToolWallet } from '@/data/toolLoaning'
 import { tlmToNumber } from '@/lib/format'
@@ -11,7 +21,14 @@ import { cooldownLabel, useNow } from '@/lib/time'
 import { useSession, type MiningType } from '@/state/session'
 import { canMine } from '@/wallet/session'
 
-import { mineReadyAt, pickFavoriteLand } from './estimates'
+import {
+  bestSuggestedLand,
+  effectiveCommission,
+  estimateTlm,
+  mineReadyAt,
+  miningPowerByRarity,
+  pickFavoriteLand
+} from './estimates'
 import { mineWithLoanedTool } from './loan'
 import { mineNow } from './mineNow'
 
@@ -73,6 +90,52 @@ export function useMining() {
   )
 
   const bestLoan = useMemo(() => (isLoan ? pickBestLoanTool(loan.tools, coarseNow) : null), [isLoan, loan.tools, coarseNow])
+
+  // What the next mine should pay, on the pools as last read: the current land, the favourite the
+  // button would pick, or the Mine Maximizer's best. Loaned tools pay by the loan, so no estimate.
+  const estimating = !isLoan && !cannotMine
+  const landTypes = useLandTypes(estimating)
+  const pools = usePlanetPools(estimating)
+  const planetMin = usePlanetMinCommission(estimating)
+  const suggested = useSuggestedLands(estimating && miningType === 'blue')
+  // The planets this mode's estimate depends on, kept current every few seconds while in view.
+  const livePlanets = (
+    miningType === 'blue'
+      ? (suggested.data ?? []).map((row) => row.planet)
+      : usesFavorites
+        ? favorites.lands.map((land) => land.planetName)
+        : [miner.data?.land.planetName ?? '']
+  )
+    .filter(Boolean)
+    .map((planet) => planet.toLowerCase() as Planet)
+  useLivePools(livePlanets, estimating)
+  const estimatedTlm = useMemo(() => {
+    if (!estimating) return null
+    if (usesFavorites) return bestFavorite?.estimatedTlm ?? null
+    const power = miningPowerByRarity(tools.data)
+    if (miningType === 'blue') {
+      if (!suggested.data || !pools.data) return null
+      return bestSuggestedLand(power, suggested.data, landTypes.data, pools.data, planetMin.data)?.value ?? null
+    }
+    const land = miner.data?.land
+    if (!land || !pools.data) return null
+    const planet = land.planetName?.toLowerCase() as Planet
+    const landType = landTypes.data?.find((l) => l.landtype_id === land.cardid)
+    const commission = effectiveCommission(land.commission / 10000, planetMin.data?.[planet] ?? 0)
+    const gross = estimateTlm(power, landType?.mining_power_mod ?? 0, pools.data[planet])
+    return gross - gross * commission
+  }, [
+    estimating,
+    usesFavorites,
+    bestFavorite,
+    miningType,
+    suggested.data,
+    pools.data,
+    landTypes.data,
+    planetMin.data,
+    tools.data,
+    miner.data
+  ])
 
   const landDelay = miningType === 'blue' ? 15 : usesFavorites ? bestFavorite?.delay : miner.data?.land.delay
   const readyAt = isLoan ? (bestLoan?.readyAt ?? 0) : mineReadyAt(landDelay, tools.data, miner.data?.last_mine)
@@ -163,6 +226,8 @@ export function useMining() {
     buttonColor: COLORS[miningType],
     buttonText: cannotMine ? 'Membership' : label,
     textAbove,
+    /** TLM the next mine should pay, before any bonus; null where there is no estimate. */
+    estimatedTlm,
     textBelow
   }
 }

@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button'
+import TLMSVG from '@/icons/tlm'
 import { RefreshIcon } from '@/icons/ui'
 import { useMembership } from '@/data/player'
 import { useMining } from '@/mining/useMining'
@@ -22,7 +23,14 @@ export function MineWidget() {
         <RefreshIcon size={20} />
       </button>
       <div className="mine__body">
-        <span className="mine__above">{mining.textAbove}</span>
+        <span className="mine__above">
+          {mining.textAbove}
+          {mining.estimatedTlm !== null && (
+            <span className="mine__estimate num" title="Estimated TLM for the next mine, on the current pools">
+              ≈ {mining.estimatedTlm.toFixed(4)} <TLMSVG />
+            </span>
+          )}
+        </span>
         <Button
           className={`mine__button ${mining.isReady ? 'btn--charged btn--soft is-ready' : ''}`}
           onClick={mining.onClick}

@@ -57,6 +57,38 @@ export function usePlanetPools(enabled = true) {
   })
 }
 
+/** How often the planets the mine button depends on are read again. */
+const LIVE_POOLS_MS = 5_000
+
+/**
+ * Keeps the pools of `planets` current for the mine button: read every few seconds (each read goes
+ * to the next node in the rotation, like every chain read), only while the tab is in view, and
+ * merged into the shared pools so every estimate on screen moves with them.
+ */
+export function useLivePools(planets: Planet[], enabled: boolean) {
+  const wanted = [...new Set(planets)].sort()
+  return useQuery({
+    queryKey: [...miningKeys.planetPools, 'live', wanted.join(',')],
+    enabled: enabled && wanted.length > 0,
+    refetchInterval: LIVE_POOLS_MS,
+    staleTime: LIVE_POOLS_MS,
+    meta: { silentError: true },
+    queryFn: async () => {
+      const entries = await Promise.all(
+        wanted.map(async (planet) => {
+          const pools = await t.readPlanetPools(planet)
+          return [planet, Object.fromEntries((pools?.pool_buckets ?? []).map((b) => [b.key, tlmToNumber(b.value)]))] as const
+        })
+      )
+      const fresh = Object.fromEntries(entries) as Partial<Record<Planet, Record<string, number>>>
+      queryClient.setQueryData<Record<Planet, Record<string, number>>>(miningKeys.planetPools, (all) =>
+        all ? { ...all, ...fresh } : undefined
+      )
+      return fresh
+    }
+  })
+}
+
 export function useMiner(account: string | null) {
   return useQuery({
     queryKey: miningKeys.miner(account),
