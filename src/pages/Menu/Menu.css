@@ -714,3 +714,75 @@
     -webkit-line-clamp: 2;
   }
 }
+
+/* Weekly statistics: a header that opens and closes the panel; closed, it shows the prize pool. */
+.weekly .weekly__toggle {
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The body lays itself out as a grid, which would override [hidden]. */
+.weekly .weekly__body[hidden] {
+  display: none;
+}
+
+.weekly.is-open .weekly__toggle {
+  margin-bottom: 10px;
+}
+
+.weekly__toggle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.weekly__glance {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.weekly__glance strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 16px;
+}
+
+.weekly__glance strong svg {
+  width: 15px;
+  height: 15px;
+}
+
+.weekly__chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--text-dim);
+  transition: transform 0.2s ease;
+}
+
+.weekly.is-open .weekly__chevron {
+  transform: rotate(90deg);
+}
+
+.weekly__toggle:hover .weekly__chevron {
+  color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .weekly.is-open .weekly__toggle {
+    margin-bottom: 6px;
+  }
+
+  .weekly__glance strong {
+    font-size: 14px;
+  }
+}

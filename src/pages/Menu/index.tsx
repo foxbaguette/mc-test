@@ -6,14 +6,14 @@ import { WeeklyStatistics } from './WeeklyStatistics'
 
 import './Menu.css'
 
-/** Home dashboard: the week's numbers, then what the player can act on. */
+/** Home dashboard: what the player can act on first, then the week's numbers and the news. */
 export default function Menu() {
   return (
     <div className="page menu">
-      <WeeklyStatistics />
       <NextUp />
       <AlienLegends />
       <DidYouKnow />
+      <WeeklyStatistics />
       <News />
     </div>
   )
