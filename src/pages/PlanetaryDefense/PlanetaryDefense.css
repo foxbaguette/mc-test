@@ -54,6 +54,26 @@
   .pd-grid--missions > .pd-card > .pd-card__team {
     grid-row: 4 / span 3;
   }
+
+  /* Between missions, the message fills the card below the header, as tall as Land Defense. */
+  .pd-grid--missions > .pd-card > .pd-idle {
+    grid-row: 2 / span 5;
+    align-self: stretch;
+  }
+}
+
+/* Between missions: the message, and the way to the last one's results. */
+.pd-idle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+.pd-idle .pd-empty {
+  padding: 0;
 }
 
 /* Cards */

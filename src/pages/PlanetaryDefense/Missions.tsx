@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { Button } from '@/components/Button'
 import { Select } from '@/components/Select'
@@ -22,6 +22,7 @@ import {
   usePdRequests,
   usePdSupports
 } from '@/data/planetaryDefense'
+import { useMemberTags } from '@/data/player'
 import type { PdOwner } from '@/data/types/planetaryDefense'
 import ShardsSVG from '@/icons/shards'
 import TLMSVG from '@/icons/tlm'
@@ -56,18 +57,30 @@ export function AttackMission() {
   const now = useClockFor([deadline, readyAt])
   const state = mission ? missionState(mission, now) : null
   const cooling = readyAt > now
+  // Whether the player opened the last mission's results while none is running.
+  const [showLast, setShowLast] = useState(false)
 
   if (missions.isLoading) return <div className="skeleton pd-card--skeleton" />
 
-  if (!mission)
+  const live = state === 'live'
+
+  // Between missions: say so, with the last one's results a click away.
+  if (!mission || (!live && !showLast))
     return (
-      <section className="pd-card">
-        <p className="pd-card__eyebrow">Attack Mission</p>
-        <p className="pd-empty">No attack mission yet</p>
+      <section className="pd-card pd-card--attack">
+        <header className="pd-card__head">
+          <p className="pd-card__eyebrow">Attack Mission</p>
+        </header>
+        <div className="pd-idle">
+          <p className="pd-empty">No mission is currently running</p>
+          {mission && (
+            <Button color="ghost" className="pd-idle__action" onClick={() => setShowLast(true)}>
+              View last mission results
+            </Button>
+          )}
+        </div>
       </section>
     )
-
-  const live = state === 'live'
   const rewardTlm = tlmToNumber(mission.reward)
   const points = myPart?.attack_points ?? 0
   const share = missionShare(points, mission.total_attack_points, rewardTlm, mission.shards)
@@ -126,19 +139,26 @@ export function AttackMission() {
             Last attack <Ticking render={(tick) => `${shortDuration(tick - myPart.last_participation_time * 1000)} ago`} />
           </p>
         )}
-        <Button
-          color="gradientOrange"
-          className="pd-action"
-          isLoading={pending === 'attack'}
-          disabled={busy || !live || attack <= 0 || cooling}
-          onClick={() =>
-            run((a, p) => pdAttackAction(a, p, mission.mission_name), 'Attack sent', refreshPlanetaryDefense, 'attack')
-          }
-        >
-          <span className="num">
-            {live && cooling ? <Ticking render={(tick) => cooldownLabel(readyAt, tick, 'Attack')} /> : 'Attack'}
-          </span>
-        </Button>
+        {live ? (
+          <Button
+            color="gradientOrange"
+            className="pd-action"
+            isLoading={pending === 'attack'}
+            disabled={busy || attack <= 0 || cooling}
+            onClick={() =>
+              run((a, p) => pdAttackAction(a, p, mission.mission_name), 'Attack sent', refreshPlanetaryDefense, 'attack')
+            }
+          >
+            <span className="num">
+              {cooling ? <Ticking render={(tick) => cooldownLabel(readyAt, tick, 'Attack')} /> : 'Attack'}
+            </span>
+          </Button>
+        ) : (
+          // The mission is over: nothing to attack, only the way back.
+          <Button color="ghost" className="pd-idle__action" onClick={() => setShowLast(false)}>
+            Close
+          </Button>
+        )}
       </div>
     </section>
   )
@@ -231,6 +251,7 @@ function WarlordTeam() {
 
   const team = (supports.data ?? []).find((row) => row.owner_address === account)
   const open = (requests.data ?? []).filter((r) => isOpenRequest(r, now))
+  const nameOf = useNameOf()
 
   return (
     <div className="pd-team">
@@ -244,7 +265,9 @@ function WarlordTeam() {
         <ul className="pd-list">
           {open.map((request) => (
             <li key={request.request_id} className="pd-row">
-              <span className="pd-row__name">{request.player}</span>
+              <span className="pd-row__name">
+                <Name wallet={request.player} nameOf={nameOf} />
+              </span>
               <span className="pd-row__actions">
                 <Button
                   size="sm"
@@ -289,7 +312,9 @@ function WarlordTeam() {
             const request = acceptedRequest(requests.data ?? [], player, account ?? '')
             return (
               <li key={player} className="pd-row">
-                <span className="pd-row__name">{player}</span>
+                <span className="pd-row__name">
+                  <Name wallet={player} nameOf={nameOf} />
+                </span>
                 <Button
                   size="sm"
                   color="ghost"
@@ -315,16 +340,32 @@ function WarlordTeam() {
   )
 }
 
+/**
+ * A player's name as shown: their gamertag when they are a Mission Control member (members.mc,
+ * read once for everyone), otherwise the wallet.
+ */
+function useNameOf() {
+  const tags = useMemberTags().data
+  return useCallback((wallet: string) => tags?.get(wallet) ?? wallet, [tags])
+}
+
+/** A player's name with the wallet on hover when the name is a gamertag. */
+function Name({ wallet, nameOf }: { wallet: string; nameOf: (wallet: string) => string }) {
+  const name = nameOf(wallet)
+  return <span title={name === wallet ? undefined : wallet}>{name}</span>
+}
+
 /** A supporter's team: whose, how strong, and the way out. */
 function SupporterTeam({ warlord, score, size }: { warlord: string; score: number; size: number }) {
   const { run, busy, pending, account } = useTransaction()
   const requests = usePdRequests(account, 'player')
   const request = acceptedRequest(requests.data ?? [], account ?? '', warlord)
+  const nameOf = useNameOf()
 
   return (
     <div className="pd-team">
       <div className="pd-plates">
-        <Plate label="Your warlord" value={warlord} accent />
+        <Plate label="Your warlord" value={<Name wallet={warlord} nameOf={nameOf} />} accent />
         <Plate label="Team defense" value={score.toLocaleString('en-US')} />
         <Plate label="Supporters" value={String(size)} />
       </div>
@@ -351,6 +392,7 @@ function FindWarlord({ owners }: { owners: PdOwner[] }) {
   const requests = usePdRequests(account, 'player')
   const now = useClockFor([])
   const [choice, setChoice] = useState('')
+  const nameOf = useNameOf()
 
   const waiting = (requests.data ?? []).find((r) => isOpenRequest(r, now))
 
@@ -363,15 +405,15 @@ function FindWarlord({ owners }: { owners: PdOwner[] }) {
       .sort((a, b) => (b.team?.total_defense_score ?? 0) - (a.team?.total_defense_score ?? 0))
       .map(({ owner, team }) => ({
         value: owner.owner_address,
-        label: `${owner.owner_address} · ${owner.numberofland} lands · ${(team?.total_defense_score ?? 0).toLocaleString('en-US')} def`
+        label: `${nameOf(owner.owner_address)} · ${owner.numberofland} lands · ${(team?.total_defense_score ?? 0).toLocaleString('en-US')} def`
       }))
-  }, [owners, supports.data])
+  }, [owners, supports.data, nameOf])
 
   if (waiting)
     return (
       <div className="pd-team">
         <div className="pd-plates">
-          <Plate label="Request sent to" value={waiting.warlord} accent />
+          <Plate label="Request sent to" value={<Name wallet={waiting.warlord} nameOf={nameOf} />} accent />
           <Plate
             label="Expires in"
             value={<Ticking render={(tick) => shortDuration(+chainDate(waiting.expiration_time) - tick)} />}
