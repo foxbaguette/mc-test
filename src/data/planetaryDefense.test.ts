@@ -4,10 +4,17 @@ import {
   acceptedRequest,
   attackCooldownMs,
   attackReadyAt,
+  chestInfo,
+  chestPayout,
+  decayedVotePower,
   currentMission,
   effectivePower,
   isOpenRequest,
+  missionShare,
   missionState,
+  nextPayoutAt,
+  votePowerBonus,
+  pvpContributions,
   pvpJoinable,
   pvpSide,
   teamOf
@@ -151,5 +158,76 @@ describe('pvp', () => {
 
   it('closes a phase once its time is up', () => {
     expect(pvpJoinable(round('defense', { defense_end_time: NOW / 1000 - 1 }), 'a.wam', NOW)).toBeNull()
+  })
+})
+
+describe('pvp contributions', () => {
+  const version = (defense_list: string[], attack_list: string[], defense_score: number, attack_score: number) => ({
+    timestamp: '',
+    present: 1,
+    data: { defense_list, attack_list, defense_score: String(defense_score), attack_score: String(attack_score) }
+  })
+
+  it('credits each join with what it added to its side, largest first', () => {
+    const history = [
+      version([], [], 0, 0),
+      version(['a'], [], 432, 0),
+      version(['a'], [], 432, 0), // a rewrite that changes nothing
+      version(['a', 'b'], [], 1432, 0),
+      version(['a', 'b'], ['x'], 1432, 250)
+    ]
+    expect(pvpContributions(history)).toEqual({
+      defense: [
+        { player: 'b', score: 1000 },
+        { player: 'a', score: 432 }
+      ],
+      attack: [{ player: 'x', score: 250 }]
+    })
+  })
+
+  it('adds up to the side totals', () => {
+    const history = [version([], [], 0, 0), version(['a'], [], 10, 0), version(['a', 'b', 'c'], [], 40, 0)]
+    const { defense } = pvpContributions(history)
+    expect(defense.reduce((sum, c) => sum + c.score, 0)).toBe(40)
+  })
+})
+
+describe('chests and mission shares', () => {
+  it('names chest levels and their protection', () => {
+    expect(chestInfo(0)).toEqual({ name: 'Base Chest', protection: 0 })
+    expect(chestInfo(3)).toEqual({ name: 'Reinforced Chest', protection: 7.5 })
+    expect(chestInfo(16)).toEqual({ name: 'Ultimate Chest', protection: 40 })
+  })
+
+  it('splits rewards by share of attack points', () => {
+    expect(missionShare(7687, 4_000_000, 100_000, 200_000)).toEqual({
+      share: 7687 / 4_000_000,
+      tlm: 100_000 * (7687 / 4_000_000),
+      shards: 200_000 * (7687 / 4_000_000)
+    })
+    expect(missionShare(5, 0, 100, 100)).toEqual({ share: 0, tlm: 0, shards: 0 })
+  })
+})
+
+describe('chest payouts', () => {
+  it('pays out on the 1st and 16th at 00:01 UTC', () => {
+    expect(nextPayoutAt(Date.UTC(2026, 8, 19, 12))).toBe(Date.UTC(2026, 9, 1, 0, 1))
+    expect(nextPayoutAt(Date.UTC(2026, 8, 3))).toBe(Date.UTC(2026, 8, 16, 0, 1))
+    expect(nextPayoutAt(Date.UTC(2026, 11, 20))).toBe(Date.UTC(2027, 0, 1, 0, 1))
+    expect(nextPayoutAt(Date.UTC(2026, 8, 16, 0, 0, 30))).toBe(Date.UTC(2026, 8, 16, 0, 1))
+  })
+
+  it('halves vote power every month since the last vote', () => {
+    const voted = Date.UTC(2026, 0, 1)
+    expect(decayedVotePower(200_000, voted, voted + 2_629_800_000)).toBeCloseTo(100_000)
+    expect(decayedVotePower(200_000, 0, voted)).toBe(0)
+  })
+
+  it('follows the guide: 200,000 VP gives 7%, a level 4 chest 10%, plus the 1% base', () => {
+    expect(votePowerBonus(200_000)).toBe(7)
+    expect(votePowerBonus(0)).toBe(0)
+    expect(votePowerBonus(20_000_000)).toBe(20)
+    // The guide's example: 6,000 PDT in a level 4 chest with 200,000 VP pays 1,080 PDT.
+    expect(chestPayout(6_000, 4, 7)).toBeCloseTo(1_080)
   })
 })

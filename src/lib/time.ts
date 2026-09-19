@@ -152,3 +152,17 @@ export function formatUtcDayTime(at: number): string {
 export function formatDateTimeShort(date: Date): string {
   return `${pad(date.getDate())} ${MONTHS_SHORT[date.getMonth()]} ${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
+
+/** How long ago a moment was, in the largest unit that fits: "5 min ago", "3 days ago", "2 months ago". */
+export function timeAgo(then: number, now = Date.now()): string {
+  const minutes = Math.max(0, Math.floor((now - then) / 60_000))
+  const unit = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'} ago`
+  if (minutes < 60) return minutes < 1 ? 'just now' : `${minutes} min ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return unit(hours, 'hour')
+  const days = Math.floor(hours / 24)
+  if (days < 31) return unit(days, 'day')
+  const months = Math.floor(days / 30.44)
+  if (months < 12) return unit(months, 'month')
+  return unit(Math.floor(months / 12), 'year')
+}

@@ -24,7 +24,8 @@ export const playerKeys = {
   userPoints: (account: Account) => ['userPoints', account] as const,
   tlm: (account: Account) => ['tlm', account] as const,
   userWeeklies: (account: Account) => ['userWeeklies', account] as const,
-  support: (account: Account) => ['support', account] as const
+  support: (account: Account) => ['support', account] as const,
+  gamertag: (account: Account) => ['gamertag', account] as const
 }
 
 export const miningKeys = {
@@ -136,5 +137,8 @@ export const pdKeys = {
   defense: ['pd', 'defense'] as const,
   defenseWins: ['pd', 'defenseWins'] as const,
   pvp: ['pd', 'pvp'] as const,
-  chest: (landId: string | undefined) => ['pd', 'chest', landId] as const
+  pvpRoster: (id: number | undefined) => ['pd', 'pvpRoster', id] as const,
+  lands: (account: Account) => ['pd', 'lands', account] as const,
+  votePower: (account: Account) => ['pd', 'votePower', account] as const,
+  defenseWinTimes: ['pd', 'defenseWinTimes'] as const
 }

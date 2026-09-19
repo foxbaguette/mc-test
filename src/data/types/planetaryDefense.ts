@@ -102,9 +102,11 @@ export interface PdPvp {
   rewards: string
 }
 
+/** A land's chest: PDT (1 PDT = 1 TLM) waiting to be paid out, and how well it is protected. */
 export interface PdChest {
   land_id: string
   owner: string
   chest_level: number
+  /** PDT held, in whole tokens. */
   TLM: number
 }

@@ -10,6 +10,7 @@ import {
   currentMission,
   effectivePower,
   isOpenRequest,
+  missionShare,
   missionState,
   refreshPlanetaryDefense,
   teamOf,
@@ -38,7 +39,7 @@ import { useTransaction } from '@/wallet/useTransaction'
 
 import { Meter, Plate } from './shared'
 
-/** The current attack mission: progress, rewards, the player's part and the Attack button. */
+/** The current attack mission: progress, rewards, the player's share, their stats and the Attack button. */
 export function AttackMission() {
   const { run, busy, pending, account } = useTransaction()
   const missions = usePdMissions()
@@ -67,6 +68,10 @@ export function AttackMission() {
     )
 
   const live = state === 'live'
+  const rewardTlm = tlmToNumber(mission.reward)
+  const points = myPart?.attack_points ?? 0
+  const share = missionShare(points, mission.total_attack_points, rewardTlm, mission.shards)
+
   return (
     <section className={`pd-card pd-card--attack ${live ? 'is-live' : ''}`}>
       <header className="pd-card__head">
@@ -82,21 +87,37 @@ export function AttackMission() {
         </span>
       </header>
 
-      <h2 className="pd-card__title">{mission.mission_name}</h2>
+      <div className="pd-card__top">
+        <h2 className="pd-card__title">{mission.mission_name}</h2>
+        <Meter value={mission.total_attack_points} max={mission.target_attack_points} tone="attack" />
+      </div>
 
-      <Meter value={mission.total_attack_points} max={mission.target_attack_points} tone="attack" />
+      <Rewards tlm={rewardTlm} shards={mission.shards} />
 
-      <div className="pd-plates">
-        <Plate
-          label="Reward"
-          value={tlmToNumber(mission.reward).toLocaleString('en-US', { maximumFractionDigits: 2 })}
-          icon={<TLMSVG />}
-          accent
-        />
-        <Plate label="Shards" value={mission.shards.toLocaleString('en-US')} icon={<ShardsSVG color="#ebb309" />} />
-        <Plate label="Your attack points" value={(myPart?.attack_points ?? 0).toLocaleString('en-US')} />
-        <Plate label="Your attack power" value={attack.toLocaleString('en-US')} />
-        <Plate label="Your move cost" value={moveCost.toLocaleString('en-US')} />
+      {/* What the player brought, and what it is worth: rewards are split by share of attack points. */}
+      <div className={`pd-mine ${points > 0 ? 'is-in' : ''}`}>
+        <div className="pd-mine__head">
+          <span className="pd-mine__label">Your contribution</span>
+          <span className="pd-mine__share num">{formatShare(share.share)}</span>
+        </div>
+        <strong className="pd-mine__points num">{points.toLocaleString('en-US')}</strong>
+        <span className="pd-mine__bar" aria-hidden>
+          <span style={{ width: `${Math.min(100, share.share * 100)}%` }} />
+        </span>
+        <div className="pd-mine__earn num">
+          <span>
+            <TLMSVG /> {state === 'ended' ? 0 : share.tlm.toLocaleString('en-US', { maximumFractionDigits: 2 })} TLM
+          </span>
+          <span>
+            <ShardsSVG color="#ebb309" />{' '}
+            {state === 'ended' ? 0 : share.shards.toLocaleString('en-US', { maximumFractionDigits: 0 })} Shards
+          </span>
+        </div>
+      </div>
+
+      <div className="pd-plates pd-plates--stats">
+        <Plate label="Attack power" value={attack.toLocaleString('en-US')} />
+        <Plate label="Move cost" value={moveCost.toLocaleString('en-US')} />
         <Plate label="Cooldown" value={shortDuration(attackCooldownMs(moveCost))} />
       </div>
 
@@ -121,6 +142,31 @@ export function AttackMission() {
         </Button>
       </div>
     </section>
+  )
+}
+
+const formatShare = (share: number) => `${(share * 100).toFixed(share >= 0.1 ? 1 : 2)}%`
+
+/** A mission's rewards: the TLM and shards it pays out, set apart from the player's own figures. */
+function Rewards({ tlm, shards }: { tlm: number; shards?: number }) {
+  return (
+    <div className="pd-rewards">
+      <span className="pd-rewards__label">Rewards</span>
+      <div className="pd-rewards__items">
+        <span className="pd-reward num">
+          <TLMSVG />
+          <strong>{tlm.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong>
+          <small>TLM</small>
+        </span>
+        {shards !== undefined && (
+          <span className="pd-reward num">
+            <ShardsSVG color="#ebb309" />
+            <strong>{shards.toLocaleString('en-US')}</strong>
+            <small>Shards</small>
+          </span>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -149,24 +195,31 @@ export function LandDefense() {
         {mission && <span className="pd-state is-live">Live</span>}
       </header>
 
-      {mission ? (
-        <>
-          <h2 className="pd-card__title">{mission.mission_name}</h2>
-          <Meter value={team?.total_defense_score ?? 0} max={target} tone="defense" />
-        </>
-      ) : (
-        <p className="pd-empty">No defense mission running</p>
-      )}
+      <div className="pd-card__top">
+        {mission ? (
+          <>
+            <h2 className="pd-card__title">{mission.mission_name}</h2>
+            <Meter value={team?.total_defense_score ?? 0} max={target} tone="defense" />
+          </>
+        ) : (
+          <p className="pd-empty">No defense mission running</p>
+        )}
+      </div>
 
-      {power.isLoading || supports.isLoading ? (
-        <div className="skeleton pd-team--skeleton" />
-      ) : isWarlord ? (
-        <WarlordTeam />
-      ) : team ? (
-        <SupporterTeam warlord={team.owner_address} score={team.total_defense_score} size={team.supporters.length} />
-      ) : (
-        <FindWarlord owners={owners.data ?? []} />
-      )}
+      {/* Keeps the rows lined up with the attack card when there is no defense reward to show. */}
+      {mission ? <Rewards tlm={mission.rewards} /> : <div className="pd-rewards--none" />}
+
+      <div className="pd-card__team">
+        {power.isLoading || supports.isLoading ? (
+          <div className="skeleton pd-team--skeleton" />
+        ) : isWarlord ? (
+          <WarlordTeam />
+        ) : team ? (
+          <SupporterTeam warlord={team.owner_address} score={team.total_defense_score} size={team.supporters.length} />
+        ) : (
+          <FindWarlord owners={owners.data ?? []} />
+        )}
+      </div>
     </section>
   )
 }

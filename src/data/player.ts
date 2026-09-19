@@ -148,3 +148,14 @@ export function refreshPlayer(account: string | null) {
     )
   )
 }
+
+/** The gamertag a wallet chose in Alien Worlds, or null when it never set one. */
+export const useGamertag = (account: string | null | undefined) =>
+  useQuery({
+    queryKey: playerKeys.gamertag(account ?? null),
+    queryFn: async () => (await t.readGamertag(account!))?.tag || null,
+    enabled: !!account,
+    staleTime: HOUR,
+    // A missing tag just shows the wallet instead.
+    meta: { silentError: true }
+  })

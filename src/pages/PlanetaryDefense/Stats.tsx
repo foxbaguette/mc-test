@@ -3,35 +3,51 @@ import { useMemo } from 'react'
 import {
   attackCooldownMs,
   effectivePower,
-  teamOf,
+  missionShare,
   usePdDefenseWins,
+  usePdDefenseWinTimes,
+  usePdMissions,
   usePdPlayerMissions,
-  usePdPower,
-  usePdSupports
+  usePdPower
 } from '@/data/planetaryDefense'
 import ShardsSVG from '@/icons/shards'
-import { formatDate, shortDuration } from '@/lib/time'
+import TLMSVG from '@/icons/tlm'
+import { tlmToNumber } from '@/lib/format'
+import { shortDuration, timeAgo, useNow } from '@/lib/time'
 import { useAccount } from '@/state/session'
 
 import { Plate } from './shared'
 
-/** The player's power, role and record in attack and defense missions. */
+const fmt = (n: number, digits = 2) => n.toLocaleString('en-US', { maximumFractionDigits: digits })
+
+/** The player's power, and what their attack missions and defense wins earned. */
 export function PlayerStats() {
   const account = useAccount()
   const power = usePdPower(account)
-  const supports = usePdSupports()
-  const missions = usePdPlayerMissions(account)
+  const missions = usePdMissions()
+  const mine = usePdPlayerMissions(account)
   const wins = usePdDefenseWins()
+  const winTimes = usePdDefenseWinTimes()
+  // "5 min ago" style labels only need to move on once a minute.
+  const now = useNow(60_000)
 
-  const row = power.data?.owner ?? power.data?.player
-  const stats = effectivePower(row, !!power.data?.inForge)
-  const isWarlord = !!power.data?.owner
-  const team = account ? teamOf(supports.data ?? [], account) : null
+  const stats = effectivePower(power.data?.owner ?? power.data?.player, !!power.data?.inForge)
 
-  const attacks = useMemo(
-    () => [...(missions.data ?? [])].sort((a, b) => b.last_participation_time - a.last_participation_time),
-    [missions.data]
-  )
+  // Each attack mission the player took part in, newest first, with their share of its rewards.
+  // Rewards only come when the mission reaches its target; a live mission shows what it would pay.
+  const attacks = useMemo(() => {
+    const byName = new Map((missions.data ?? []).map((m) => [m.mission_name, m]))
+    return [...(mine.data ?? [])]
+      .sort((a, b) => b.last_participation_time - a.last_participation_time)
+      .map((row) => {
+        const mission = byName.get(row.mission_name)
+        const paid = !!mission?.is_completed
+        const share = mission
+          ? missionShare(row.attack_points, mission.total_attack_points, tlmToNumber(mission.reward), mission.shards)
+          : null
+        return { row, tlm: paid ? (share?.tlm ?? 0) : 0, shards: paid ? (share?.shards ?? 0) : 0, paid }
+      })
+  }, [missions.data, mine.data])
 
   // Defense wins the player shared in: shards[0] is the warlord's, shards[i + 1] supporter i's.
   const defenses = useMemo(
@@ -46,9 +62,6 @@ export function PlayerStats() {
     [wins.data, account]
   )
 
-  const totalAttackPoints = attacks.reduce((sum, a) => sum + a.attack_points, 0)
-  const totalDefenseShards = defenses.reduce((sum, d) => sum + d.shards, 0)
-
   if (power.isLoading) return <div className="skeleton pd-card--skeleton" />
 
   return (
@@ -56,40 +69,41 @@ export function PlayerStats() {
       <section className="pd-card">
         <header className="pd-card__head">
           <p className="pd-card__eyebrow">Player Stats</p>
-          {power.data?.inForge && <span className="pd-state is-live">Forge</span>}
+          {power.data?.inForge && (
+            <span
+              className="pd-state is-live"
+              title="Your Forge equips weapons and shields to your crew, raising attack and defense"
+            >
+              Forge · weapons equipped
+            </span>
+          )}
         </header>
 
-        <div className="pd-plates pd-plates--stats">
-          <Plate label="Attack" value={stats.attack.toLocaleString('en-US')} accent />
-          <Plate label="Defense" value={stats.defense.toLocaleString('en-US')} accent />
-          <Plate label="Move cost" value={stats.moveCost.toLocaleString('en-US')} />
+        <div className="pd-plates pd-plates--stats pd-plates--four">
+          <Plate label="Attack" value={fmt(stats.attack, 0)} accent />
+          <Plate label="Defense" value={fmt(stats.defense, 0)} accent />
+          <Plate label="Move cost" value={fmt(stats.moveCost, 0)} />
           <Plate label="Attack cooldown" value={shortDuration(attackCooldownMs(stats.moveCost))} />
-          <Plate
-            label="Role"
-            value={isWarlord ? `Warlord · ${stats.lands} lands` : team ? `Supporter of ${team.owner_address}` : 'No team'}
-          />
-          <Plate label="Attack points, all missions" value={totalAttackPoints.toLocaleString('en-US')} />
-          <Plate
-            label="Shards from defense"
-            value={totalDefenseShards.toLocaleString('en-US')}
-            icon={<ShardsSVG color="#ebb309" />}
-          />
         </div>
       </section>
 
       <section className="pd-card">
         <p className="pd-card__eyebrow">Attack Missions</p>
-        {missions.isLoading ? (
+        {mine.isLoading || missions.isLoading ? (
           <div className="skeleton pd-team--skeleton" />
         ) : attacks.length === 0 ? (
           <p className="pd-empty">No attacks yet</p>
         ) : (
           <ul className="pd-list">
-            {attacks.map((a) => (
-              <li key={a.id} className="pd-row">
-                <span className="pd-row__name">{a.mission_name}</span>
-                <span className="pd-row__meta num">{formatDate(new Date(a.last_participation_time * 1000))}</span>
-                <span className="pd-row__value num">{a.attack_points.toLocaleString('en-US')}</span>
+            {attacks.map(({ row, tlm, shards, paid }) => (
+              <li key={row.id} className={`pd-row pd-earn ${paid ? '' : 'is-unpaid'}`}>
+                <span className="pd-row__name">{timeAgo(row.last_participation_time * 1000, now)}</span>
+                <span className="pd-earn__amount num">
+                  {fmt(tlm)} <TLMSVG />
+                </span>
+                <span className="pd-earn__amount num">
+                  {fmt(shards, 0)} <ShardsSVG color="#ebb309" />
+                </span>
               </li>
             ))}
           </ul>
@@ -104,15 +118,17 @@ export function PlayerStats() {
           <p className="pd-empty">No defense wins yet</p>
         ) : (
           <ul className="pd-list">
-            {defenses.map(({ win, shards }) => (
-              <li key={win.id} className="pd-row">
-                <span className="pd-row__name">{win.mission_name}</span>
-                <span className="pd-row__meta">{win.owner_address === account ? 'Warlord' : win.owner_address}</span>
-                <span className="pd-row__value num">
-                  {shards.toLocaleString('en-US')} <ShardsSVG color="#ebb309" />
-                </span>
-              </li>
-            ))}
+            {defenses.map(({ win, shards }) => {
+              const at = winTimes.data?.get(String(win.id))
+              return (
+                <li key={win.id} className="pd-row pd-earn">
+                  <span className="pd-row__name">{at ? timeAgo(at, now) : '—'}</span>
+                  <span className="pd-earn__amount num">
+                    {fmt(shards, 0)} <ShardsSVG color="#ebb309" />
+                  </span>
+                </li>
+              )
+            })}
           </ul>
         )}
       </section>

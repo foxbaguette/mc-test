@@ -111,3 +111,90 @@ export function getTransaction<D>(
     controller.abort()
   })
 }
+
+/** One stored version of a table row: the row as it was after a change. */
+export interface TableDelta<D> {
+  timestamp: string
+  present: number
+  data: D
+}
+
+const DELTA_PAGE = 100
+
+/**
+ * Every version of one table row, oldest first, paged from a single node. Hyperion keeps a row's
+ * past states, which is how figures the contract only stores as totals can be taken apart.
+ */
+export function getRowHistory<D>(
+  code: string,
+  table: string,
+  primaryKey: string | number,
+  signal?: AbortSignal
+): Promise<TableDelta<D>[]> {
+  return withHistoryNode(async (node) => {
+    const rows: TableDelta<D>[] = []
+    for (let skip = 0; skip < 50 * DELTA_PAGE; skip += DELTA_PAGE) {
+      const page = await withTimeout(DEFAULT_TIMEOUT_MS, signal, (combined) =>
+        getJson<{ deltas?: TableDelta<D>[] }>(
+          node,
+          '/v2/history/get_deltas',
+          { code, scope: code, table, primary_key: primaryKey, sort: 'asc', limit: DELTA_PAGE, skip },
+          combined
+        )
+      )
+      if (!Array.isArray(page.deltas)) throw new Error(`No deltas from ${node}`)
+      rows.push(...page.deltas)
+      if (page.deltas.length < DELTA_PAGE) break
+    }
+    return rows
+  }, signal)
+}
+
+/**
+ * Every stored change to a whole table (all rows), oldest first. Nodes index history unevenly (one
+ * may hold a third of what another does), so each is asked for its count and the fullest is read.
+ */
+export async function getTableHistory<D>(
+  code: string,
+  table: string,
+  signal?: AbortSignal,
+  maxPages = 20
+): Promise<(TableDelta<D> & { primary_key: string })[]> {
+  type Answer = { total?: { value: number }; deltas?: (TableDelta<D> & { primary_key: string })[] }
+  const base = { code, scope: code, table, sort: 'asc', limit: DELTA_PAGE }
+
+  const counted = await Promise.all(
+    HISTORY_NODES.map((node) =>
+      withTimeout(DEFAULT_TIMEOUT_MS, signal, (combined) =>
+        getJson<Answer>(node, '/v2/history/get_deltas', { ...base, limit: 1 }, combined)
+      )
+        .then((answer) => ({ node, total: answer.total?.value ?? -1 }))
+        .catch(() => ({ node, total: -1 }))
+    )
+  )
+  const nodes = counted
+    .filter((c) => c.total >= 0)
+    .sort((a, b) => b.total - a.total)
+    .map((c) => c.node)
+
+  let lastError: unknown = new Error('No history node answered')
+  for (const node of nodes) {
+    signal?.throwIfAborted()
+    try {
+      const rows: (TableDelta<D> & { primary_key: string })[] = []
+      for (let page = 0; page < maxPages; page++) {
+        const answer = await withTimeout(DEFAULT_TIMEOUT_MS, signal, (combined) =>
+          getJson<Answer>(node, '/v2/history/get_deltas', { ...base, skip: page * DELTA_PAGE }, combined)
+        )
+        if (!Array.isArray(answer.deltas)) throw new Error(`No deltas from ${node}`)
+        rows.push(...answer.deltas)
+        if (answer.deltas.length < DELTA_PAGE) break
+      }
+      return rows
+    } catch (err) {
+      if (signal?.aborted) throw err
+      lastError = err
+    }
+  }
+  throw lastError
+}
