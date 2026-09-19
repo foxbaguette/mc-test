@@ -26,7 +26,9 @@ export const playerKeys = {
   userWeeklies: (account: Account) => ['userWeeklies', account] as const,
   support: (account: Account) => ['support', account] as const,
   /** Every Mission Control member's gamertag, by wallet. */
-  memberTags: ['memberTags'] as const
+  memberTags: ['memberTags'] as const,
+  /** Today's daily spins across all members. */
+  dailySpins: ['dailySpins'] as const
 }
 
 export const miningKeys = {

@@ -6,6 +6,8 @@
 }
 
 .daily__stage {
+  /* Its own layer, so the spotlight behind the wheel stays behind the wheel only. */
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -84,7 +86,7 @@
   position: absolute;
   top: -10px;
   left: 50%;
-  z-index: 3;
+  z-index: 4;
   width: 26px;
   height: 32px;
   background: linear-gradient(180deg, #ffd873, var(--yellow));
@@ -131,5 +133,419 @@
   .daily__spin.btn {
     width: min(100%, 320px);
     min-height: 52px;
+  }
+}
+
+/* A spotlight on the wheel: light in the site's blue, fading out into the page. */
+.daily__wheel::before {
+  content: '';
+  position: absolute;
+  inset: -32%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(0, 186, 255, 0.16) 0%,
+    rgba(0, 186, 255, 0.06) 38%,
+    rgba(145, 54, 188, 0.04) 52%,
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+/* Bulbs around the rim: a slow twinkle, a chase while spinning, the prize's colour on a win. */
+.wheel-lights {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.wheel-lights__arm {
+  position: absolute;
+  inset: 0;
+}
+
+.wheel-lights__bulb {
+  position: absolute;
+  top: 0.2%;
+  left: 50%;
+  width: 3.3%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ffe6a3;
+  box-shadow: 0 0 6px 1px rgba(255, 208, 115, 0.75);
+  opacity: 0.35;
+  transform: translateX(-50%);
+}
+
+.wheel-lights.is-idle .wheel-lights__bulb {
+  animation: bulb-twinkle 2.4s ease-in-out infinite;
+}
+
+.wheel-lights.is-idle .wheel-lights__arm:nth-child(odd) .wheel-lights__bulb {
+  animation-delay: -1.2s;
+}
+
+.wheel-lights.is-spinning .wheel-lights__bulb {
+  animation: bulb-chase 0.9s linear infinite;
+  animation-delay: calc(var(--i) * 0.9s / var(--n));
+}
+
+.wheel-lights.is-won .wheel-lights__bulb {
+  background: color-mix(in srgb, var(--win) 55%, #fff);
+  box-shadow: 0 0 8px 2px var(--win);
+  animation: bulb-flash 0.42s ease-in-out 6 alternate;
+  opacity: 1;
+}
+
+@keyframes bulb-twinkle {
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes bulb-chase {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  8% {
+    opacity: 1;
+  }
+}
+
+@keyframes bulb-flash {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Sparks from the pointer when the wheel lands, in the prize's colour. */
+.win-sparks {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.win-sparks__spark {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--win) 60%, #fff);
+  box-shadow: 0 0 10px 2px var(--win);
+  opacity: 0;
+  animation: spark-fly 0.95s ease-out var(--delay) forwards;
+}
+
+@keyframes spark-fly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheel-lights .wheel-lights__bulb,
+  .win-sparks__spark {
+    animation: none;
+  }
+
+  .win-sparks {
+    display: none;
+  }
+}
+
+/* Side panels: the prizes with their odds, and where the player stands. */
+.daily__side-title {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.daily__prizes,
+.daily__status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--plate-edge);
+  border-radius: var(--plate-radius);
+  background: var(--plate-face);
+}
+
+.daily__prizes {
+  border-left: 2px solid var(--yellow);
+}
+
+.daily__status-card {
+  gap: 14px;
+  border-left: 2px solid var(--blue);
+}
+
+.daily__prizes ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.daily__prizes li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--prize);
+  border-radius: var(--plate-radius-sm);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--prize) 16%, transparent), rgba(255, 255, 255, 0.01));
+}
+
+.daily__prize-amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.daily__prize-amount svg,
+.daily__status-card strong svg {
+  width: 14px;
+  height: 14px;
+}
+
+.daily__prize-chance {
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.daily__status-card > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.daily__status-card strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-heading);
+  font-size: 18px;
+}
+
+/*
+ * Desktop: the wheel in the middle; on its left the player's standing and the prizes, on its right
+ * today's lucky spins. Both sides fill the page's width and stand as tall as the wheel.
+ */
+@media (min-width: 1100px) {
+  .daily {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: stretch;
+    column-gap: clamp(24px, 3vw, 56px);
+  }
+
+  .daily__side--left .daily__prizes,
+  .daily__side--right .daily__lucky {
+    flex: 1;
+  }
+
+  /* The prize rows share the card's height, so it holds no empty space. */
+  .daily__side--left .daily__prizes ul {
+    flex: 1;
+  }
+
+  .daily__side--left .daily__prizes li {
+    flex: 1;
+    max-height: 64px;
+  }
+}
+
+/* Narrower: the wheel first, the prizes as a row of chips under it; the rest is on the page already. */
+@media (max-width: 1099px) {
+  .daily__stage {
+    order: 0;
+  }
+
+  .daily__prizes {
+    order: 1;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .daily__prizes ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .daily__prizes li {
+    gap: 8px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border-left-width: 1px;
+    border-color: color-mix(in srgb, var(--prize) 45%, transparent);
+  }
+
+  .daily__prize-amount {
+    font-size: 12px;
+  }
+
+  .daily__prize-chance {
+    font-size: 11px;
+  }
+
+  /* The prizes join the page's column; the standing and today's spins are left out here. */
+  .daily__side.daily__side--left {
+    display: contents;
+  }
+
+  .daily__side--left .daily__status-card,
+  .daily__side.daily__side--right {
+    display: none;
+  }
+}
+
+/* The columns beside the wheel. */
+.daily__side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.daily__side .daily__status-card {
+  width: 100%;
+}
+
+.daily__lucky {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--plate-edge);
+  border-left: 2px solid var(--pink);
+  border-radius: var(--plate-radius);
+  background: radial-gradient(80% 120% at 0 0, rgba(255, 1, 255, 0.08), transparent 60%), var(--plate-face);
+}
+
+.daily__lucky-sum {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.daily__lucky-sum svg,
+.daily__lucky-reward svg {
+  width: 12px;
+  height: 12px;
+}
+
+.daily__lucky ul {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.daily__lucky li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name reward'
+    'when reward';
+  align-items: center;
+  column-gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.daily__lucky li:last-child {
+  border-bottom: 0;
+}
+
+.daily__lucky-name {
+  grid-area: name;
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily__lucky-when {
+  grid-area: when;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.daily__lucky-reward {
+  grid-area: reward;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--yellow);
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Wide screens: a bigger wheel on a platform of light, with room around it. */
+@media (min-width: 1100px) {
+  .daily {
+    padding-top: 20px;
+    padding-bottom: 28px;
+  }
+
+  .daily__wheel {
+    width: min(500px, 54vh);
+  }
+
+  .daily__wheel::after {
+    content: '';
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    bottom: -13%;
+    z-index: -1;
+    height: 14%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0, 186, 255, 0.28), rgba(0, 186, 255, 0.06) 55%, transparent 72%);
+    pointer-events: none;
+  }
+
+  .daily__prizes li {
+    padding: 8px 12px;
+  }
+
+  .daily__prize-amount {
+    font-size: 15px;
   }
 }

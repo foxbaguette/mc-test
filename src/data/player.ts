@@ -153,6 +153,46 @@ export function refreshPlayer(account: string | null) {
  * Every Mission Control member's gamertag, by wallet, from members.mc: the whole member table in
  * three reads (about 0.5 MB compressed), rather than one lookup per player. Only the tags are kept.
  */
+export interface DailySpin {
+  wallet: string
+  /** The member's gamertag, or the wallet when they have none. */
+  name: string
+  reward: number
+  at: number
+}
+
+/** A daily spin worth showing off: this many MC Points or more. */
+const BIG_SPIN = 1000
+
+/**
+ * Today's daily spins across Mission Control (UTC day), from the member table: how many members
+ * spun, the MC Points they won, and the big wins. Each member keeps only their last spin, which is
+ * today's for anyone who spun today. The whole table in three reads, at most every ten minutes.
+ */
+export const useDailySpinsToday = (enabled = true) =>
+  useQuery({
+    queryKey: playerKeys.dailySpins,
+    queryFn: async () => {
+      const members = await t.readAllMembers()
+      const now = new Date()
+      const dayStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+      const spins: DailySpin[] = members.flatMap((m) => {
+        const at = m.last_bgaction ? +chainDate(m.last_bgaction) : 0
+        if (at < dayStart) return []
+        const reward = Number(m.stats?.find((s) => s.key === 'LastDailyReward')?.value ?? 0)
+        return [{ wallet: m.wallet, name: m.playertag || m.wallet, reward, at }]
+      })
+      return {
+        count: spins.length,
+        total: spins.reduce((sum, spin) => sum + spin.reward, 0),
+        big: spins.filter((spin) => spin.reward >= BIG_SPIN).sort((a, b) => b.reward - a.reward || b.at - a.at)
+      }
+    },
+    enabled,
+    staleTime: 10 * 60_000,
+    meta: { silentError: true }
+  })
+
 export const useMemberTags = (enabled = true) =>
   useQuery({
     queryKey: playerKeys.memberTags,
