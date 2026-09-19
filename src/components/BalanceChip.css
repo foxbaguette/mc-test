@@ -1,0 +1,65 @@
+.balance-chip {
+  cursor: help;
+}
+
+.balance-chip:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* The explanation card: a small plate over everything, including the drawer and menus. */
+.balance-tip {
+  position: fixed;
+  z-index: 1000;
+  width: min(260px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius);
+  background: var(--bg-3);
+  box-shadow: var(--shadow);
+  pointer-events: none;
+  animation: balance-tip-in 0.12s ease-out;
+}
+
+.balance-tip__title {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.balance-tip__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-dim);
+  white-space: normal;
+}
+
+@keyframes balance-tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+.balance-tip.is-above {
+  animation-name: balance-tip-in-above;
+}
+
+@keyframes balance-tip-in-above {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balance-tip {
+    animation: none;
+  }
+}

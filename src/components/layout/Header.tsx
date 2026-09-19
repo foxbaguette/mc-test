@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { Avatar } from '@/components/Avatar'
+import { BalanceChip } from '@/components/BalanceChip'
 import { NetworkStatus } from '@/components/NetworkStatus'
 import { useDismiss } from '@/components/useDismiss'
 import { useLevels, useWeeks } from '@/data/game'
@@ -67,18 +68,18 @@ function AccountMenu() {
             </span>
           </div>
           <div className="account__balances">
-            <span className="chip" title="Reward Points">
+            <BalanceChip kind="rewardPoints">
               <QuestSVG /> {balance(player.rewardPoints, player.failed.rewardPoints)}
-            </span>
-            <span className="chip" title="MC Points">
+            </BalanceChip>
+            <BalanceChip kind="mcPoints">
               <StarSVG /> {balance(player.mcPoints, player.failed.mcPoints)}
-            </span>
-            <span className="chip">
+            </BalanceChip>
+            <BalanceChip kind="shards">
               <ShardsSVG color="#F6A800" /> {balance(player.redeemablePoints, player.failed.redeemablePoints)}
-            </span>
-            <span className="chip" title="TLM">
+            </BalanceChip>
+            <BalanceChip kind="tlm">
               <TLMSVG /> {balance(player.tlm, player.failed.tlm)}
-            </span>
+            </BalanceChip>
           </div>
           <div className="account__net">
             <NetworkStatus />
@@ -116,18 +117,18 @@ export function Header() {
 
         <div className="topbar__end">
           <div className="balances">
-            <span className="chip" title="Reward Points">
+            <BalanceChip kind="rewardPoints">
               <QuestSVG /> {balance(player.rewardPoints, player.failed.rewardPoints)}
-            </span>
-            <span className="chip" title="MC Points">
+            </BalanceChip>
+            <BalanceChip kind="mcPoints">
               <StarSVG /> {balance(player.mcPoints, player.failed.mcPoints)}
-            </span>
-            <span className="chip balances__optional">
+            </BalanceChip>
+            <BalanceChip kind="shards" className="balances__optional">
               <ShardsSVG color="#F6A800" /> {balance(player.redeemablePoints, player.failed.redeemablePoints)}
-            </span>
-            <span className="chip" title="TLM">
+            </BalanceChip>
+            <BalanceChip kind="tlm">
               <TLMSVG /> {balance(player.tlm, player.failed.tlm)}
-            </span>
+            </BalanceChip>
           </div>
 
           <Link to="/week-reward" className="prize">

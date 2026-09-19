@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { Avatar } from '@/components/Avatar'
+import { BalanceChip } from '@/components/BalanceChip'
 import { NetworkStatus } from '@/components/NetworkStatus'
 import { useDismiss } from '@/components/useDismiss'
 import { usePlayer } from '@/data/player'
@@ -62,18 +63,18 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
         </div>
 
         <div className="drawer__balances">
-          <span className="chip" title="Reward Points">
+          <BalanceChip kind="rewardPoints">
             <QuestSVG /> {player.rewardPoints.toLocaleString('en-US')}
-          </span>
-          <span className="chip" title="MC Points">
+          </BalanceChip>
+          <BalanceChip kind="mcPoints">
             <StarSVG /> {player.mcPoints.toLocaleString('en-US')}
-          </span>
-          <span className="chip">
+          </BalanceChip>
+          <BalanceChip kind="shards">
             <ShardsSVG color="#F6A800" /> {formatAmount(player.redeemablePoints, 1)}
-          </span>
-          <span className="chip" title="TLM">
+          </BalanceChip>
+          <BalanceChip kind="tlm">
             <TLMSVG /> {formatAmount(player.tlm, 2)}
-          </span>
+          </BalanceChip>
         </div>
 
         <button className="drawer__prize" onClick={() => navigate('/week-reward')}>
