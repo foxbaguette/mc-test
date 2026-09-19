@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { RARITY_COLORS } from '@/chain/config'
 import { AsyncIconButton, Button } from '@/components/Button'
 import { MiningBlocked } from '@/components/MiningBlocked'
+import { Select } from '@/components/Select'
 import { useFavorites, type FavoriteLand } from '@/data/favorites'
 import { refreshMining, useEquippedTools, useMiner } from '@/data/mining'
 import HearthBrokenSVG from '@/icons/hearth-broken'
@@ -23,6 +24,26 @@ import { miningKeys, playerKeys } from '@/data/keys'
 import { useTransaction } from '@/wallet/useTransaction'
 import { RefreshIcon } from '@/icons/ui'
 
+type LandSort = 'ready' | 'tlm' | 'shards'
+
+const SORT_OPTIONS: { value: LandSort; label: string }[] = [
+  { value: 'ready', label: 'Ready first' },
+  { value: 'tlm', label: 'Estimated TLM' },
+  { value: 'shards', label: 'Estimated Shards' }
+]
+
+/** The player's chosen order for their favourite lands, kept in their browser. */
+const SORT_KEY = 'favorite-lands-sort'
+
+function savedSort(): LandSort {
+  try {
+    const saved = localStorage.getItem(SORT_KEY)
+    return SORT_OPTIONS.some((o) => o.value === saved) ? (saved as LandSort) : 'ready'
+  } catch {
+    return 'ready'
+  }
+}
+
 export function Favorites() {
   const queryClient = useQueryClient()
   const { run, busy, account, permission } = useTransaction()
@@ -37,12 +58,31 @@ export function Favorites() {
     (set) => set.assetIds.length === equippedIds.length && set.assetIds.every((id) => equippedIds.includes(id))
   )
 
+  const [sort, setSort] = useState<LandSort>(savedSort)
+
   const readyAt = (land: FavoriteLand) => mineReadyAt(land.delay, tools.data, miner.data?.last_mine)
   // Re-render when a land's cooldown ends, to re-sort; the countdowns tick on their own.
   const now = useClockFor(favorites.lands.map(readyAt))
   const withReady = favorites.lands.map((land) => ({ land, at: readyAt(land), isReady: readyAt(land) <= now }))
   const ready = withReady.filter((l) => l.isReady).sort((a, b) => b.land.delay - a.land.delay)
   const waiting = withReady.filter((l) => !l.isReady).sort((a, b) => a.land.delay - b.land.delay)
+  // Ready first: lands to mine now, then the rest by how soon they are ready. Or the best estimate first.
+  // Ties go to the other estimate.
+  const sorted =
+    sort === 'tlm'
+      ? [...withReady].sort((a, b) => b.land.estimatedTlm - a.land.estimatedTlm || b.land.shards - a.land.shards)
+      : sort === 'shards'
+        ? [...withReady].sort((a, b) => b.land.shards - a.land.shards || b.land.estimatedTlm - a.land.estimatedTlm)
+        : [...ready, ...waiting]
+
+  function chooseSort(next: LandSort) {
+    setSort(next)
+    try {
+      localStorage.setItem(SORT_KEY, next)
+    } catch {
+      // Without storage the order holds for this visit only.
+    }
+  }
 
   const refreshMember = () => queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
 
@@ -119,13 +159,22 @@ export function Favorites() {
           <h2 className="panel__title">
             Land Favorites <span className="chip num">{favorites.lands.length}/30</span>
           </h2>
-          <button
-            className={`icon-btn ${favorites.isFetching ? 'is-spinning' : ''}`}
-            onClick={() => Promise.all([refreshMining(account), favorites.refetch()])}
-            aria-label="Refresh"
-          >
-            <RefreshIcon />
-          </button>
+          <div className="land-sort">
+            <Select
+              value={sort}
+              options={SORT_OPTIONS}
+              onChange={chooseSort}
+              ariaLabel="Sort lands"
+              className="land-sort__select"
+            />
+            <button
+              className={`icon-btn ${favorites.isFetching ? 'is-spinning' : ''}`}
+              onClick={() => Promise.all([refreshMining(account), favorites.refetch()])}
+              aria-label="Refresh"
+            >
+              <RefreshIcon />
+            </button>
+          </div>
         </div>
 
         <div className="land-grid land-grid--wide">
@@ -134,7 +183,7 @@ export function Favorites() {
           ) : favorites.lands.length === 0 ? (
             <p className="empty">You don't have any favorite land</p>
           ) : (
-            [...ready, ...waiting].map(({ land, at, isReady }) => (
+            sorted.map(({ land, at, isReady }) => (
               <article key={land.asset_id} className={`land-tile ${isReady ? 'is-ready' : ''}`}>
                 <div className="land-tile__media">
                   <img src={landImage(land.landName)} alt={land.landName} loading="lazy" />

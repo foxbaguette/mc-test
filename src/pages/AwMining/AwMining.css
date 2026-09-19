@@ -802,3 +802,56 @@
     height: 34px;
   }
 }
+
+/* Land Favorites: the order, beside refresh. A slim control, not a form field. */
+.land-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.land-sort .select {
+  min-width: 170px;
+  height: 40px;
+}
+
+.land-sort .select select {
+  padding: 0 38px 0 14px;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .land-sort {
+    gap: 6px;
+  }
+
+  .land-sort .select {
+    --select-c1: rgba(255, 255, 255, 0.12);
+    --select-c2: rgba(255, 255, 255, 0.12);
+
+    min-width: 0;
+    height: 34px;
+    border-radius: 999px;
+  }
+
+  .land-sort .select select {
+    padding: 0 32px 0 12px;
+    border-radius: 999px;
+    background: rgba(5, 16, 30, 0.6);
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .land-sort .select__arrow {
+    right: 12px;
+    width: 10px;
+    height: 10px;
+  }
+
+  .land-sort .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+}
