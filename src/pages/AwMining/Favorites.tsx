@@ -75,8 +75,12 @@ export function Favorites() {
         ? [...withReady].sort((a, b) => b.land.shards - a.land.shards || b.land.estimatedTlm - a.land.estimatedTlm)
         : [...ready, ...waiting]
 
+  const refreshLands = () => Promise.all([refreshMining(account), favorites.refetch()])
+
+  // A new order is sorted by fresh estimates: switching refreshes them, like the button beside it.
   function chooseSort(next: LandSort) {
     setSort(next)
+    void refreshLands()
     try {
       localStorage.setItem(SORT_KEY, next)
     } catch {
@@ -169,7 +173,7 @@ export function Favorites() {
             />
             <button
               className={`icon-btn ${favorites.isFetching ? 'is-spinning' : ''}`}
-              onClick={() => Promise.all([refreshMining(account), favorites.refetch()])}
+              onClick={refreshLands}
               aria-label="Refresh"
             >
               <RefreshIcon />

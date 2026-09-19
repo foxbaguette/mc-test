@@ -123,7 +123,14 @@ export function useMining() {
     if (miningType === 'blue') {
       landId = (await maximizer.refreshAndPick())?.asset_id
     } else if (usesFavorites) {
-      landId = bestFavorite?.asset_id
+      // Scan the pools now and mine where the return is best at this moment, among lands ready.
+      const lands = await favorites.estimateNow()
+      landId = pickFavoriteLand(
+        lands,
+        (land) => mineReadyAt(land.delay, tools.data, miner.data?.last_mine),
+        miningType,
+        Date.now()
+      )?.asset_id
     }
     await mineNow({ account, permission, tools: tools.data, landId })
     setBusy(false)

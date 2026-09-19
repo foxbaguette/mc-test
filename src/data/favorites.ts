@@ -67,17 +67,18 @@ export function useFavorites(account: string | null) {
     }
   })
 
-  return useMemo(() => {
+  // The estimates from the pools as they stand in `poolData`: the loaded ones for the list, freshly
+  // read ones when the mine button picks a land.
+  const estimate = (poolData: typeof pools.data): FavoriteLand[] => {
     const power = miningPowerByRarity(tools.data)
-
-    const lands: FavoriteLand[] = landIds.flatMap((id) => {
+    return landIds.flatMap((id) => {
       const asset = assets.data?.lands.find((a) => a.asset_id === id)
       if (!asset) return []
       const [landName, planetName] = asset.data.name.split(' on ')
       const planet = planetName?.toLowerCase() as Planet
       const landType = landTypes.data?.find((l) => l.landtype_id === asset.data.cardid)
       const commission = effectiveCommission(asset.data.commission / 10000, planetMin.data?.[planet] ?? 0)
-      const gross = estimateTlm(power, landType?.mining_power_mod ?? 0, pools.data?.[planet])
+      const gross = estimateTlm(power, landType?.mining_power_mod ?? 0, poolData?.[planet])
       return [
         {
           ...asset.data,
@@ -92,6 +93,10 @@ export function useFavorites(account: string | null) {
         }
       ]
     })
+  }
+
+  return useMemo(() => {
+    const lands = estimate(pools.data)
 
     const sets: FavoriteToolSet[] = toolSets.map((set) => ({
       ...set,
@@ -106,7 +111,12 @@ export function useFavorites(account: string | null) {
       toolSets: sets,
       isLoading: member.isLoading || assets.isLoading,
       isFetching: assets.isFetching || member.isFetching,
-      refetch: () => Promise.all([member.refetch(), assets.refetch()])
+      refetch: () => Promise.all([member.refetch(), assets.refetch()]),
+      /**
+       * The lands estimated on the planets' pools as they are right now: the mine button reads the
+       * pools again when clicked, so it mines where the return is best at that moment.
+       */
+      estimateNow: async () => estimate((await pools.refetch()).data)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
