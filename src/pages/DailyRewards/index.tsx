@@ -75,7 +75,19 @@ function useWide() {
 function LuckySpins() {
   const today = useDailySpinsToday()
   const now = useNow(60_000)
-  if (!today.data) return null
+  // The card stands from the start; its rows fill in once the member table is read.
+  if (!today.data)
+    return (
+      <section className="daily__lucky" aria-label="Today's lucky spins" aria-busy>
+        <h2 className="daily__side-title">Today's lucky spins</h2>
+        <span className="skeleton daily__skeleton-line" />
+        <ul>
+          {Array.from({ length: 8 }, (_, i) => (
+            <li key={i} className="skeleton daily__skeleton-row" />
+          ))}
+        </ul>
+      </section>
+    )
   return (
     <section className="daily__lucky" aria-label="Today's lucky spins">
       <h2 className="daily__side-title">Today's lucky spins</h2>
@@ -151,7 +163,10 @@ export default function DailyRewards() {
   }
 
   const prizes = useMemo(() => prizesOf(chances.data ?? []), [chances.data])
-  const mcPoints = usePlayer().mcPoints
+  const playerData = usePlayer()
+  const mcPoints = playerData.mcPoints
+  // Until the member row is in, the standing shows as loading rather than as zeros.
+  const standingLoading = player.isLoading || playerData.isLoading
   const wide = useWide()
   const winColor = segments[target]?.color
   // Each landing plays the sparks afresh.
@@ -172,7 +187,9 @@ export default function DailyRewards() {
             <div>
               <span className="daily__side-title">Last prize</span>
               <strong className="num">
-                {lastReward ? (
+                {standingLoading ? (
+                  '…'
+                ) : lastReward ? (
                   <>
                     {lastReward.toLocaleString('en-US')} <StarSVG />
                   </>
@@ -184,20 +201,27 @@ export default function DailyRewards() {
             <div>
               <span className="daily__side-title">Next spin</span>
               <strong className="num">
-                {onCooldown ? <Ticking render={(tick) => cooldownLabel(readyAt, tick, 'Now')} /> : 'Now'}
+                {standingLoading ? '…' : onCooldown ? <Ticking render={(tick) => cooldownLabel(readyAt, tick, 'Now')} /> : 'Now'}
               </strong>
             </div>
             <div>
               <span className="daily__side-title">Your MC Points</span>
               <strong className="num">
-                {mcPoints.toLocaleString('en-US')} <StarSVG />
+                {standingLoading ? (
+                  '…'
+                ) : (
+                  <>
+                    {mcPoints.toLocaleString('en-US')} <StarSVG />
+                  </>
+                )}
               </strong>
             </div>
           </aside>
           {/* The prizes and their odds, as the chain sets them. */}
           <aside className="daily__prizes" aria-label="Prizes">
             <h2 className="daily__side-title">Prizes</h2>
-            <ul>
+            <ul aria-busy={chances.isLoading}>
+              {chances.isLoading && Array.from({ length: 5 }, (_, i) => <li key={i} className="skeleton daily__skeleton-row" />)}
               {prizes.map((prize) => (
                 <li key={prize.mcp} style={{ '--prize': prize.color } as CSSProperties}>
                   <span className="daily__prize-amount num">

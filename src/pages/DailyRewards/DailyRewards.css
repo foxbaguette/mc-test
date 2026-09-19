@@ -549,3 +549,21 @@
     font-size: 15px;
   }
 }
+
+/* Placeholders while a panel's data loads: the panels stand from the start. */
+.daily__prizes li.daily__skeleton-row,
+.daily__lucky li.daily__skeleton-row {
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--plate-radius-sm);
+  /* The shimmer, over the prize rows' own coloured fill. */
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 25%, rgba(255, 255, 255, 0.09) 50%, rgba(255, 255, 255, 0.04) 75%);
+  background-size: 200% 100%;
+}
+
+.daily__skeleton-line {
+  display: block;
+  width: 60%;
+  height: 14px;
+}
