@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { WarningCircleIcon } from '@/components/icons'
+import { WarningCircleIcon } from '@/icons/ui'
 import { useTips } from '@/data/game'
 
 /** Tips rotate on their own, one every ten seconds. */

@@ -1,11 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { AnyAction } from '@wharfkit/session'
-import { useShallow } from 'zustand/react/shallow'
 
 import { Button } from '@/components/Button'
 import { Modal } from '@/components/Modal'
+import { Ticking } from '@/components/Ticking'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/toast'
 import { usePlayer } from '@/data/player'
 import { useMinerClaim } from '@/data/toolLoaning'
 import { refreshVault, useClaimableWeeks, useLandComms, useLandPayouts } from '@/data/vault'
@@ -16,32 +15,29 @@ import QuestSVG from '@/icons/quest'
 import StarSVG from '@/icons/star'
 import TLMSVG from '@/icons/tlm'
 import TrophySVG from '@/icons/trophy'
-import { sleep, tlmToNumber } from '@/lib/format'
-import { chainDate, formatDateTimeShort, timeLeft, useNow } from '@/lib/time'
+import { tlmToNumber } from '@/lib/format'
+import { chainDate, compactWait, formatDateTimeShort, timeLeft, useClockFor } from '@/lib/time'
 import {
   claimCommsAction,
-  claimMinesAction,
   claimPayoutAction,
   claimWeeksActions,
   storeRewardPointsAction,
   withdrawRewardPointsAction
-} from '@/mining/actions'
-import { useSession } from '@/state/session'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+} from '@/chain/actions/rewards'
+import { claimMinesAction } from '@/chain/actions/mining'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import './TriliumVault.css'
 
 export default function TriliumVault() {
-  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const { run: sign, pending, account, permission } = useTransaction()
   const player = usePlayer()
   const minerClaim = useMinerClaim(account)
   const landComms = useLandComms(account)
   const payouts = useLandPayouts(account)
   const weeks = useClaimableWeeks()
-  const now = useNow(1000)
 
-  const [pending, setPending] = useState<string | null>(null)
   const [withdrawQp, setWithdrawQp] = useState('0')
   const [depositQp, setDepositQp] = useState('0')
   const [confirmDeposit, setConfirmDeposit] = useState(false)
@@ -51,17 +47,15 @@ export default function TriliumVault() {
 
   const mineAmount = tlmToNumber(minerClaim.data?.amount)
   const mineReadyAt = minerClaim.data ? +chainDate(minerClaim.data.timestamp) : 0
-  const mineWait = timeLeft(mineReadyAt, now)
+  // Re-render once, when the mining rewards unlock; the countdown ticks on its own.
+  const now = useClockFor([mineReadyAt])
+  const mineWaiting = mineReadyAt > now
   const commsAmount = tlmToNumber(landComms.data?.comms)
   const payoutAmount = tlmToNumber(payouts.data?.payoutAmount)
   const storedPoints = player.member?.score_nft ?? 0
 
-  const waitLabel = `${mineWait.days ? `${mineWait.days}d` : ''}${mineWait.hours ? `${mineWait.hours}h` : ''}${
-    mineWait.minutes ? `${mineWait.minutes}m` : ''
-  }${mineWait.seconds}s`
-
   // Everything that can be collected right now, and the one transaction that takes it all.
-  const mineReady = mineAmount > 0 && mineWait.ms === 0
+  const mineReady = mineAmount > 0 && !mineWaiting
   const totalReady = (mineReady ? mineAmount : 0) + commsAmount + payoutAmount + weeks.total
   const claimAll: AnyAction[] = account
     ? [
@@ -72,22 +66,14 @@ export default function TriliumVault() {
       ]
     : []
 
-  async function run(key: string, actions: AnyAction[], success: string) {
-    if (!account) return
-    setPending(key)
-    try {
-      await transact(actions)
-      toast.success(success)
-      // The chain needs a moment before the claimed rows are gone; read again after that.
-      await sleep(2000)
-      await refreshVault(account)
-      setTimeout(() => void refreshVault(account), 4000)
-    } catch (err) {
-      if (!isUserCancel(err)) toast.error(formatTransactError(err))
-    } finally {
-      setPending(null)
-    }
-  }
+  // Claimed rows disappear from the tables, so the vault is read again once the chain has them.
+  const run = (key: string, actions: AnyAction[], success: string) =>
+    sign(
+      () => actions,
+      success,
+      () => refreshVault(account),
+      key
+    )
 
   return (
     <>
@@ -117,11 +103,11 @@ export default function TriliumVault() {
             title="Alien Worlds Mining Rewards"
             amount={mineAmount.toFixed(4)}
             unit={<TLMSVG />}
-            ready={mineAmount > 0 && mineWait.ms === 0}
+            ready={mineReady}
             info={
               <>
                 Earned by mining in Alien Worlds
-                {mineWait.ms > 0 && minerClaim.data && (
+                {mineWaiting && minerClaim.data && (
                   <>
                     <br />
                     {`Available on ${formatDateTimeShort(chainDate(minerClaim.data.timestamp))}`}
@@ -134,10 +120,12 @@ export default function TriliumVault() {
                 block
                 size="sm"
                 isLoading={pending === 'mines'}
-                disabled={!!pending || mineAmount === 0 || mineWait.ms > 0}
+                disabled={!!pending || mineAmount === 0 || mineWaiting}
                 onClick={() => run('mines', [claimMinesAction(account!, permission)], 'TLM Claimed')}
               >
-                <span className="num">{mineWait.ms > 0 ? waitLabel : 'Claim'}</span>
+                <span className="num">
+                  {mineWaiting ? <Ticking render={(tick) => compactWait(timeLeft(mineReadyAt, tick))} /> : 'Claim'}
+                </span>
               </Button>
             }
           />
@@ -228,7 +216,7 @@ export default function TriliumVault() {
               <div className="vault__qp">
                 <div className="vault__qp-row">
                   <input
-                    className="vault__input num"
+                    className="input vault__input num"
                     inputMode="numeric"
                     aria-label="Reward Points to withdraw"
                     value={withdrawQp}
@@ -251,7 +239,7 @@ export default function TriliumVault() {
                 </div>
                 <div className="vault__qp-row">
                   <input
-                    className="vault__input num"
+                    className="input vault__input num"
                     inputMode="numeric"
                     aria-label="Reward Points to deposit"
                     value={depositQp}

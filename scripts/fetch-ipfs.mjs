@@ -1,5 +1,6 @@
-// Downloads every IPFS image the site references on chain into public/ipfs/<hash>,
-// so avatars and tutorial images are served locally instead of from Pinata.
+// Downloads every IPFS image the site shows into public/ipfs/<hash>: member avatars and the
+// default avatars, so they are served locally instead of from Pinata. (Tutorials, the activity
+// feed and the sponsor list are gone from the site, so their images are no longer fetched.)
 // Usage: node scripts/fetch-ipfs.mjs   (safe to re-run; existing files are skipped)
 
 import { mkdir, stat, writeFile } from 'node:fs/promises'
@@ -70,22 +71,12 @@ async function download(hash) {
   return 'failed'
 }
 
-const [members, activity, sponsors, tutorials, settings] = await Promise.all([
-  rows('members.mc', 'mcmembers'),
-  rows('members.mc', 'activitylog'),
-  rows('members.mc', 'sponsorlog'),
-  rows('missions.mc', 'tutorials'),
-  rows('members.mc', 'settings')
-])
+const [members, settings] = await Promise.all([rows('members.mc', 'mcmembers'), rows('members.mc', 'settings')])
 
 const hashes = new Set(
-  [
-    ...members.map((r) => hashOf(r.avatar)),
-    ...activity.map((r) => hashOf(r.avatar)),
-    ...sponsors.map((r) => hashOf(r.avatar)),
-    ...tutorials.map((r) => String(r.image ?? '').trim()),
-    ...settings.map((r) => String(r.standard_avatar ?? '').trim())
-  ].filter((h) => h && h !== '-')
+  [...members.map((r) => hashOf(r.avatar)), ...settings.map((r) => String(r.standard_avatar ?? '').trim())].filter(
+    (h) => h && h !== '-'
+  )
 )
 
 const counts = { downloaded: 0, skipped: 0, failed: 0 }

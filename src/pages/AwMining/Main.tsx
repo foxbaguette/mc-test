@@ -6,17 +6,17 @@ import { Button } from '@/components/Button'
 import { MiningTypePicker } from '@/components/MiningTypePicker'
 import { useEquippedTools, useLandTypes, useMiner, useMineTrack, usePlanetMinCommission, useToolInventory } from '@/data/mining'
 import { landImage, planetImage, tlmToNumber } from '@/lib/format'
-import { addFavLand, addFavTools, setBagAction } from '@/mining/actions'
+import { addFavLand, addFavTools, setBagAction } from '@/chain/actions/mining'
 import { publicUrl } from '@/lib/publicUrl'
 import { miningKeys, playerKeys } from '@/data/keys'
 
-import { useChainAction } from './useMemberAction'
+import { useTransaction } from '@/wallet/useTransaction'
 
 const fmt = (n: number, digits = 3) => n.toLocaleString('en-US', { maximumFractionDigits: digits })
 
 export function Main() {
   const queryClient = useQueryClient()
-  const { run, busy, account } = useChainAction()
+  const { run, busy, account } = useTransaction()
   const miner = useMiner(account)
   const tools = useEquippedTools(account)
   const inventory = useToolInventory(account)

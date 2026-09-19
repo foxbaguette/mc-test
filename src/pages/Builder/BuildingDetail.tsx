@@ -12,8 +12,8 @@ import {
   useSchemaInventory
 } from '@/data/builder'
 import type { BuilderPlayer, PlayerBuilding } from '@/data/types/builder'
-import { stakeBuildingNftsAction, upgradeBuildingAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { stakeBuildingNftsAction, upgradeBuildingAction } from '@/chain/actions/builder'
+import { useTransaction } from '@/wallet/useTransaction'
 import { useAccount } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 import { useNow } from '@/lib/time'
@@ -53,8 +53,7 @@ function Detail({ player, building }: DialogProps) {
   const account = useAccount()
   const defs = useBuildingDefs()
   const bonuses = useBuilderBonuses()
-  const { run, busy } = useChainAction()
-  const [pending, setPending] = useState<string | null>(null)
+  const { run, busy, pending } = useTransaction()
   const [schema, setSchema] = useState<string>()
   const [picked, setPicked] = useState<PickedCard[]>([])
 
@@ -90,12 +89,8 @@ function Detail({ player, building }: DialogProps) {
   const bonus = building.nft_bonuspercent + picked.reduce((sum, card) => sum + card.bonus, 0)
   const isMarket = building.buildingid === 'market'
 
-  async function act(key: string, build: (account: string, permission: string) => AnyAction, success: string) {
-    setPending(key)
-    const ok = await run(build, success, refreshBuilder)
-    setPending(null)
-    return ok
-  }
+  const act = (key: string, build: (account: string, permission: string) => AnyAction, success: string) =>
+    run(build, success, refreshBuilder, key)
 
   async function stake() {
     const ids = picked.map((card) => card.asset_id)

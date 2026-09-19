@@ -39,6 +39,10 @@ export function cooldownLabel(target: Date | number, now = Date.now(), ready = '
   return totalHours > 0 ? `${pad(totalHours)}:${pad(t.minutes)}:${pad(t.seconds)}` : `${pad(t.minutes)}:${pad(t.seconds)}`
 }
 
+/** "1d4h12m30s": how long until mining rewards can be claimed, as the original claim buttons counted. */
+export const compactWait = (wait: TimeLeft) =>
+  `${wait.days ? `${wait.days}d` : ''}${wait.hours ? `${wait.hours}h` : ''}${wait.minutes ? `${wait.minutes}m` : ''}${wait.seconds}s`
+
 /** "2d 4h", "4h 12m", "12m 30s" or "30s": the two units that matter at that scale. */
 export function shortDuration(ms: number): string {
   const total = Math.max(0, Math.round(ms / 1000))
@@ -87,6 +91,19 @@ export function useRerenderAt(at: number | undefined): number {
     return () => clearTimeout(timer)
   }, [at])
   return passed
+}
+
+/**
+ * The current time, for deciding what is ready: the caller re-renders only when the next of
+ * `times` passes, not on every tick. Pair it with `<Ticking>` for countdown text that must change
+ * every second, so only that text re-renders.
+ */
+export function useClockFor(times: (number | undefined)[]): number {
+  const now = Date.now()
+  let next = Infinity
+  for (const time of times) if (time !== undefined && time > now && time < next) next = time
+  useRerenderAt(Number.isFinite(next) ? next : undefined)
+  return now
 }
 
 /** Re-renders the caller every `intervalMs` and returns the current time. */

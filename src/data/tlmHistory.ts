@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { create } from 'zustand'
 
 import { getActions, historyTime, withHistoryNode, type HistoryAction } from '@/chain/history'
 import { tlmHistoryKeys } from './keys'
@@ -84,20 +84,31 @@ export function shiftMonth(key: string, by: number) {
   return monthKey(date)
 }
 
-function readPage(node: string, account: string, key: string, stream: (typeof STREAMS)[number], skip: number) {
+function readPage(
+  node: string,
+  account: string,
+  key: string,
+  stream: (typeof STREAMS)[number],
+  skip: number,
+  signal: AbortSignal
+) {
   const { start, end } = monthRange(key)
-  return getActions<TransferData>(node, {
-    account,
-    filter: `${stream.contract}:transfer`,
-    'transfer.to': account,
-    'transfer.from': stream.from,
-    after: new Date(start).toISOString(),
-    before: new Date(end).toISOString(),
-    limit: PAGE_SIZE,
-    skip,
-    // Oldest first: transfers arriving while the month loads land at the end instead of shifting the pages.
-    sort: 'asc'
-  })
+  return getActions<TransferData>(
+    node,
+    {
+      account,
+      filter: `${stream.contract}:transfer`,
+      'transfer.to': account,
+      'transfer.from': stream.from,
+      after: new Date(start).toISOString(),
+      before: new Date(end).toISOString(),
+      limit: PAGE_SIZE,
+      skip,
+      // Oldest first: transfers arriving while the month loads land at the end instead of shifting the pages.
+      sort: 'asc'
+    },
+    { signal }
+  )
 }
 
 const toTransfer = (action: TransferAction): TlmTransfer => {
@@ -116,11 +127,12 @@ const toTransfer = (action: TransferAction): TlmTransfer => {
 /**
  * The whole month, page by page, reporting progress as it goes. All pages come from the
  * node that answered the first, so the pages line up; the next node is tried if one fails.
+ * Cancelled through `signal` when nobody needs the month any more (another month was picked).
  */
-function readMonth(account: string, key: string, onProgress: (loaded: number, total: number) => void) {
+function readMonth(account: string, key: string, signal: AbortSignal, onProgress: (loaded: number, total: number) => void) {
   return withHistoryNode(async (node) => {
     // First pages together: their totals size the loading bar for both tokens at once.
-    const firsts = await Promise.all(STREAMS.map((stream) => readPage(node, account, key, stream, 0)))
+    const firsts = await Promise.all(STREAMS.map((stream) => readPage(node, account, key, stream, 0, signal)))
     const totals = firsts.map((first) => first.total)
     const total = totals.reduce((a, b) => a + b, 0)
     const lists = firsts.map((first) => [...first.actions])
@@ -129,7 +141,7 @@ function readMonth(account: string, key: string, onProgress: (loaded: number, to
 
     for (const [i, stream] of STREAMS.entries()) {
       while (lists[i].length < totals[i]) {
-        const page = await readPage(node, account, key, stream, lists[i].length)
+        const page = await readPage(node, account, key, stream, lists[i].length, signal)
         if (page.actions.length === 0) break
         lists[i].push(...page.actions)
         onProgress(loaded(), total)
@@ -145,25 +157,38 @@ function readMonth(account: string, key: string, onProgress: (loaded: number, to
         .filter((action) => (seen.has(action.global_sequence) ? false : (seen.add(action.global_sequence), true)))
         .map(toTransfer)
     ).sort((a, b) => b.at - a.at || Number(b.id) - Number(a.id))
-  })
+  }, signal)
 }
 
+interface Progress {
+  loaded: number
+  total: number
+}
+
+/** Loading progress per account and month, kept outside the component so a remount keeps showing it. */
+const useProgress = create<Record<string, Progress>>(() => ({}))
+const setProgress = (id: string, progress: Progress) => useProgress.setState({ [id]: progress })
+
 export function useTlmHistory(account: string | null, key: string) {
-  const [progress, setProgress] = useState<{ key: string; loaded: number; total: number } | null>(null)
+  const progressId = `${account}:${key}`
+  const progress = useProgress((all) => all[progressId] ?? null)
 
   const query = useQuery({
     queryKey: tlmHistoryKeys.month(account, key),
     enabled: !!account,
+    // The page shows its own error with a retry.
+    meta: { silentError: true },
     // A past month never changes; the current one is refreshed by hand.
     staleTime: key === monthKey(new Date()) ? 5 * 60_000 : Infinity,
-    queryFn: () => {
-      setProgress({ key, loaded: 0, total: 0 })
-      return readMonth(account!, key, (loaded, total) => setProgress({ key, loaded, total }))
+    // Using the signal lets React Query cancel the read once no screen shows this month.
+    queryFn: ({ signal }) => {
+      setProgress(progressId, { loaded: 0, total: 0 })
+      return readMonth(account!, key, signal, (loaded, total) => setProgress(progressId, { loaded, total }))
     }
   })
 
   // The query object is passed on untouched so the page only re-renders for the fields it reads.
-  return { query, progress: progress?.key === key ? progress : null }
+  return { query, progress }
 }
 
 /** Totals per source, in the order the sources are listed. */

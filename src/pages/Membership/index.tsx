@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useShallow } from 'zustand/react/shallow'
 
 import { DISCORD_URL } from '@/chain/config'
 import { Button } from '@/components/Button'
-import { CheckSquareIcon } from '@/components/icons'
+import { CheckSquareIcon, CloseIcon } from '@/icons/ui'
 import { PageHeader } from '@/components/PageHeader'
 import { toast } from '@/components/toast'
 import { refreshPlayer, useMembership } from '@/data/player'
@@ -15,9 +14,8 @@ import StarSVG from '@/icons/star'
 import TLMSVG from '@/icons/tlm'
 import { tlmToNumber } from '@/lib/format'
 import { chainDate, formatDate } from '@/lib/time'
-import { signUpAction } from '@/mining/actions'
-import { useSession } from '@/state/session'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+import { signUpAction } from '@/chain/actions/members'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import './Membership.css'
@@ -59,7 +57,7 @@ export default function Membership() {
 
   return (
     <>
-      <PageHeader title="Membership" image={publicUrl('/assets/background/bg-member.jpeg')} />
+      <PageHeader title="Membership" image={publicUrl('/assets/background/bg-member.webp')} />
 
       <div className="page member plates">
         <h2 className="member__intro">{intro}</h2>
@@ -149,7 +147,11 @@ function Tier({ title, active, status, description, current }: TierProps) {
           const included = active.includes(feature)
           return (
             <li key={feature} className={included ? 'is-on' : 'is-off'}>
-              {included ? <CheckSquareIcon size={20} color="#00D1FF" /> : <CrossIcon />}
+              {included ? (
+                <CheckSquareIcon size={20} color="#00D1FF" />
+              ) : (
+                <CloseIcon size={20} color="#D32C54" strokeWidth={2.5} />
+              )}
               <span>{feature}</span>
             </li>
           )
@@ -163,23 +165,6 @@ function Tier({ title, active, status, description, current }: TierProps) {
 /** A status pill with a dot in the state's colour. */
 function Badge({ state, children }: { state: 'active' | 'pending' | 'inactive' | 'revoked'; children: React.ReactNode }) {
   return <span className={`member__badge is-${state}`}>{children}</span>
-}
-
-function CrossIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#D32C54"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      aria-hidden
-    >
-      <path d="m6 6 12 12M18 6 6 18" />
-    </svg>
-  )
 }
 
 function ReferralPanel({ account }: { account: string | null }) {
@@ -203,29 +188,23 @@ function ReferralPanel({ account }: { account: string | null }) {
 }
 
 function JoinForm({ cost, onDone }: { cost: string; onDone: () => void }) {
-  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const { run, busy, account } = useTransaction()
   const [searchParams] = useSearchParams()
   const [referrer, setReferrer] = useState(searchParams.get('ref') ?? '')
-  const [busy, setBusy] = useState(false)
 
   async function join() {
-    if (!account || !cost) return
-    setBusy(true)
-    try {
-      await transact([signUpAction(account, permission, cost, referrer.trim() || undefined)])
-      toast.success('Sign up request sent successfully')
-      await refreshPlayer(account)
-      onDone()
-    } catch (err) {
-      if (!isUserCancel(err)) toast.error(formatTransactError(err))
-    } finally {
-      setBusy(false)
-    }
+    if (!cost) return
+    const sent = await run(
+      (wallet, permission) => signUpAction(wallet, permission, cost, referrer.trim() || undefined),
+      'Sign up request sent successfully',
+      () => refreshPlayer(account)
+    )
+    if (sent) onDone()
   }
 
   return (
     <>
-      <PageHeader title="Membership" image={publicUrl('/assets/background/bg-member.jpeg')} />
+      <PageHeader title="Membership" image={publicUrl('/assets/background/bg-member.webp')} />
 
       <div className="page member plates">
         <h2 className="member__intro">JOIN MISSION CONTROL</h2>
@@ -255,7 +234,7 @@ function JoinForm({ cost, onDone }: { cost: string; onDone: () => void }) {
 
           <label className="member__field">
             <input
-              className="member__input num"
+              className="input member__input num"
               value={referrer}
               placeholder="wallet"
               onChange={(e) => setReferrer(e.target.value)}

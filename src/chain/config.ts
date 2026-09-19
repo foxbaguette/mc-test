@@ -58,8 +58,7 @@ export const CONTRACTS = {
   M_FEDERATION: 'm.federation',
   FEDERATION: 'federation',
   HQ_MU: 'hq.mu',
-  AWLNDRATINGS: 'awlndratings',
-  ALE_PLAYERS: 'players.ale'
+  AWLNDRATINGS: 'awlndratings'
 } as const
 
 export const PLANETS = ['eyeke', 'kavian', 'veles', 'magor', 'neri', 'naron'] as const

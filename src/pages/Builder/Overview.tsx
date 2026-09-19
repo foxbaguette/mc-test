@@ -21,8 +21,8 @@ import LeaderBoardSvg from '@/icons/leaderboard'
 import ShardsSVG from '@/icons/shards'
 import StarSVG from '@/icons/star'
 import { chainDate, cooldownLabel, shortDuration, timeLeft, useNow } from '@/lib/time'
-import { exploderAction, upgradeBuildingAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { exploderAction, upgradeBuildingAction } from '@/chain/actions/builder'
+import { useTransaction } from '@/wallet/useTransaction'
 
 import { BuildingDialog } from './BuildingDetail'
 import { LeaderboardDialog } from './Leaderboard'
@@ -38,8 +38,7 @@ export function Overview({ player, season }: OverviewProps) {
   const now = useNow()
   const settings = useBuilderSettings()
   const defs = useBuildingDefs()
-  const { run, busy } = useChainAction()
-  const [pending, setPending] = useState<string | null>(null)
+  const { run, busy, pending } = useTransaction()
   // Both open over the outpost instead of taking the player to another page.
   const [openId, setOpenId] = useState<string | null>(null)
   const [board, setBoard] = useState(false)
@@ -50,11 +49,8 @@ export function Overview({ player, season }: OverviewProps) {
   const fill = player.max_gamecurrency > 0 ? (resources / player.max_gamecurrency) * 100 : 0
   const toFull = msUntilFull(player, now)
 
-  async function act(key: string, build: (account: string, permission: string) => AnyAction, success: string) {
-    setPending(key)
-    await run(build, success, refreshBuilder)
-    setPending(null)
-  }
+  const act = (key: string, build: (account: string, permission: string) => AnyAction, success: string) =>
+    run(build, success, refreshBuilder, key)
 
   const upgrade = (b: PlayerBuilding) =>
     act(`up:${b.buildingid}`, (a, p) => upgradeBuildingAction(a, p, b.buildingid), 'Upgrade successful')

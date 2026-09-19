@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { RARITY_COLORS } from '@/chain/config'
-import { ClockIcon } from '@/components/icons'
+import { ClockIcon } from '@/icons/ui'
 import { depositState } from '@/data/toolLoaning'
 import type { ToolWallet } from '@/data/types/toolLoaning'
 import PickaxeSVG from '@/icons/pickaxe'

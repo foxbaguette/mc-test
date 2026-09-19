@@ -5,7 +5,7 @@ import { atomic } from '@/chain/atomic'
 import { PLANETS, type Planet } from '@/chain/config'
 import { tlmToNumber } from '@/lib/format'
 
-import { queryClient } from './queryClient'
+import { queryClient, refetchOnReturn } from './queryClient'
 import * as t from './tables'
 import type { CurrentLand, EquippedTool, LandData, ToolData } from './types/mining'
 import { miningKeys } from './keys'
@@ -62,6 +62,8 @@ export function useMiner(account: string | null) {
     queryKey: miningKeys.miner(account),
     enabled: !!account,
     staleTime: 20 * MIN,
+    // Mining in the Alien Worlds game moves the cooldown.
+    refetchOnWindowFocus: refetchOnReturn,
     queryFn: async () => {
       const miner = await t.readMiner(account!)
       if (!miner) return null
@@ -79,6 +81,7 @@ export function useEquippedTools(account: string | null) {
     queryKey: miningKeys.equippedTools(account),
     enabled: !!account && !!awTools.data,
     staleTime: 20 * MIN,
+    refetchOnWindowFocus: refetchOnReturn,
     queryFn: async (): Promise<EquippedTool[]> => {
       const bag = await t.readBag(account!)
       if (!bag?.items.length) return []

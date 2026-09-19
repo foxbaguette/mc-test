@@ -39,7 +39,9 @@ export function useCandidates(planet: string = VOTING_PLANET) {
     queryKey: votingKeys.profiles(planet),
     queryFn: () => fetchProfiles(planet),
     staleTime: 30 * MIN,
-    retry: 1
+    retry: 1,
+    // Without profiles, candidates show their wallet names.
+    meta: { silentError: true }
   })
 
   const candidates = useMemo<Candidate[]>(() => {
@@ -90,15 +92,26 @@ export function useLastVote(account: string | null, planet: string = VOTING_PLAN
   return { wallets, isFetched: history.isFetched }
 }
 
-/** Vote power: what was claimed plus the shards earned since, capped by the contract maximum. */
+/**
+ * Vote power: what was claimed (`claimed`) plus the shards earned since that claim (total shards
+ * now minus the total at the claim), never below 0 and capped by the contract maximum.
+ */
+export function votePower(max: number, claimed: number, totalShards: number, shardsAtClaim: number) {
+  return Math.max(0, Math.min(max, claimed + (totalShards - shardsAtClaim)))
+}
+
 export function useVotePower(account: string | null) {
   const config = useQuery({ queryKey: votingKeys.config, queryFn: readVotingConfig, staleTime: HOUR })
   const member = useMember(account)
   const points = useUserPoints(account)
 
   const max = config.data?.max_votes ?? 0
-  const earned = (points.data?.total_points ?? 0) - (member.data?.last_voteclaim_shards ?? 0)
-  const current = Math.max(0, Math.min(max, (member.data?.vote_power ?? 0) + earned))
+  const current = votePower(
+    max,
+    member.data?.vote_power ?? 0,
+    points.data?.total_points ?? 0,
+    member.data?.last_voteclaim_shards ?? 0
+  )
 
   return { current, max, isLoading: config.isLoading || member.isLoading || points.isLoading }
 }

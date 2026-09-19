@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { bestTeam, estimatedRp, modMatches, nextAdventureAt, teamScore, type ModUnlocks, type TeamCandidate } from './adventures'
+import {
+  bestTeam,
+  estimatedRp,
+  idRanges,
+  modMatches,
+  nextAdventureAt,
+  teamScore,
+  type ModUnlocks,
+  type TeamCandidate
+} from './adventures'
 import type { Adventure, AdventureMod, AdvTemplate } from './types/adventures'
 
 const HOUR = 3_600_000
@@ -135,5 +144,34 @@ describe('nextAdventureAt', () => {
   it('is 0 without an interval or adventures', () => {
     expect(nextAdventureAt([], 24, newest)).toBe(0)
     expect(nextAdventureAt([adventure('2026-09-16T00:00:00')], undefined, newest)).toBe(0)
+  })
+})
+
+describe('idRanges', () => {
+  it('reads small gaps along and splits at large ones', () => {
+    // vauas.wam's joined adventures: one range 672–1207 would read 536 adventures for 35.
+    const ids = [
+      672, 829, 888, 1070, 1072, 1076, 1078, 1091, 1092, 1094, 1115, 1118, 1119, 1121, 1125, 1126, 1133, 1135, 1138, 1144, 1145,
+      1150, 1154, 1155, 1160, 1161, 1167, 1168, 1174, 1175, 1179, 1189, 1197, 1203, 1207
+    ]
+    const ranges = idRanges(ids)
+    expect(ranges).toEqual([
+      [672, 672],
+      [829, 829],
+      [888, 888],
+      [1070, 1078],
+      [1091, 1094],
+      [1115, 1207]
+    ])
+    expect(ranges.reduce((rows, [from, to]) => rows + to - from + 1, 0)).toBe(109)
+  })
+
+  it('handles none, one and a custom gap', () => {
+    expect(idRanges([])).toEqual([])
+    expect(idRanges([5])).toEqual([[5, 5]])
+    expect(idRanges([1, 3, 6], 2)).toEqual([
+      [1, 3],
+      [6, 6]
+    ])
   })
 })

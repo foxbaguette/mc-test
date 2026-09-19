@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { atomic } from '@/chain/atomic'
 import { chainDate } from '@/lib/time'
 
+import { queryClient } from './queryClient'
 import * as t from './tables'
 import type { Treasure } from './types/game'
 import type { LandData } from './types/mining'
@@ -11,6 +12,10 @@ import { treasureKeys } from './keys'
 
 const MIN = 60_000
 const HOUR = 60 * MIN
+
+/** The whole treasures table, downloaded once for both lists (about 130 kB and growing). */
+const readTreasureRows = () =>
+  queryClient.fetchQuery({ queryKey: treasureKeys.rows, queryFn: t.readTreasures, staleTime: 10 * MIN })
 
 export interface TreasureHunt extends Treasure {
   planetName: string
@@ -28,7 +33,7 @@ export function useTreasureHunts() {
     queryKey: treasureKeys.all,
     staleTime: 10 * MIN,
     queryFn: async (): Promise<TreasureHunt[]> => {
-      const rows = await t.readTreasures()
+      const rows = await readTreasureRows()
       const now = Date.now()
       const open = rows
         .filter((row) => {
@@ -62,7 +67,7 @@ export function useFinishedHunts(limit = 8) {
     queryKey: treasureKeys.finished(limit),
     staleTime: 30 * MIN,
     queryFn: async (): Promise<FinishedHunt[]> => {
-      const rows = await t.readTreasures()
+      const rows = await readTreasureRows()
       const done = rows
         .filter((row) => row.is_distributed)
         .sort((a, b) => +chainDate(b.start_date) - +chainDate(a.start_date))
@@ -89,3 +94,6 @@ export function useFinishedHunts(limit = 8) {
     }
   })
 }
+
+/** Reads the table again, then both lists. */
+export const refreshTreasureHunts = () => queryClient.invalidateQueries({ queryKey: treasureKeys.all })

@@ -109,7 +109,7 @@ export async function logout(): Promise<void> {
 /** Wallets that may sign in but never mine (every mine path checks canMine). */
 const NO_MINING_WALLETS = ['anchor']
 
-export const MINING_BLOCKED_MESSAGE = 'Mining is not available with Anchor'
+export const MINING_BLOCKED_MESSAGE = 'Mining unavailable with Anchor'
 
 /** The signed-in wallet plugin, e.g. "cloudwallet", "wombat" or "anchor". */
 export function walletId(): string | null {
@@ -117,6 +117,10 @@ export function walletId(): string | null {
 }
 
 export const canMine = (wallet: string | null) => !wallet || !NO_MINING_WALLETS.includes(wallet)
+
+/** Whether signing these actions would mine from a wallet that may not mine. */
+export const minesWithBlockedWallet = (wallet: string | null, actions: AnyAction[]) =>
+  !canMine(wallet) && actions.some((a) => String(a.account) === CONTRACTS.M_FEDERATION && String(a.name) === 'mine')
 
 export function permission(): string {
   return current ? String(current.permission) : 'active'
@@ -139,12 +143,7 @@ export async function transact(actions: AnyAction[]): Promise<string> {
   const session = current ?? (await restoreSession())
   if (!session) throw new Error('User not found, please login')
   // Last line of defence: no mine leaves this app from a wallet that may not mine.
-  if (
-    !canMine(session.walletPlugin.id) &&
-    actions.some((a) => String(a.account) === CONTRACTS.M_FEDERATION && String(a.name) === 'mine')
-  ) {
-    throw new Error(MINING_BLOCKED_MESSAGE)
-  }
+  if (minesWithBlockedWallet(session.walletPlugin.id, actions)) throw new Error(MINING_BLOCKED_MESSAGE)
   const result = await session.transact({ actions }, { broadcast: true, expireSeconds: 120 })
   return String(result.resolved?.transaction.id ?? '')
 }

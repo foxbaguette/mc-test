@@ -4,15 +4,15 @@ import type { AnyAction } from '@wharfkit/session'
 
 import { Avatar } from '@/components/Avatar'
 import { Button } from '@/components/Button'
-import { RefreshIcon } from '@/components/icons'
+import { RefreshIcon } from '@/icons/ui'
 import { PageHeader } from '@/components/PageHeader'
 import { Select } from '@/components/Select'
 import { refreshApplications, useFlagReasons, usePendingApplications, useSupportLog } from '@/data/applications'
 import { usePlayerSupport } from '@/data/player'
 import type { Member } from '@/data/types/player'
 import { chainDate, formatDateTimeShort } from '@/lib/time'
-import { approveMemberAction, delayMemberAction, flagMemberAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { approveMemberAction, delayMemberAction, flagMemberAction } from '@/chain/actions/members'
+import { useTransaction } from '@/wallet/useTransaction'
 import { useAccount } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 
@@ -31,7 +31,7 @@ export default function Applications() {
 
   return (
     <>
-      <PageHeader title="Applications" image={publicUrl('/assets/background/bg-applications.jpeg')} />
+      <PageHeader title="Applications" image={publicUrl('/assets/background/bg-applications.webp')} />
 
       <div className="page apps">
         <div className="apps__bar">
@@ -69,7 +69,7 @@ export default function Applications() {
 function ApplicationCard({ member }: { member: Member }) {
   const reasons = useFlagReasons()
   const log = useSupportLog(member.wallet)
-  const { run, busy } = useChainAction()
+  const { run, busy } = useTransaction()
   const [reason, setReason] = useState(CUSTOM)
   const [text, setText] = useState('')
 
@@ -149,7 +149,7 @@ function ApplicationCard({ member }: { member: Member }) {
           ariaLabel="Flag reason"
         />
         <textarea
-          className="apl__text"
+          className="input apl__text"
           rows={2}
           value={text}
           disabled={reason !== CUSTOM}

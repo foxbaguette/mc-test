@@ -13,7 +13,8 @@ import MCPBuilderSVG from '@/icons/mcp-builder'
 import RocketSVG from '@/icons/rocket'
 import TriliumVaultSVG from '@/icons/trilium-vault'
 import { tlmToNumber } from '@/lib/format'
-import { chainDate, shortDuration, useNow } from '@/lib/time'
+import { chainDate, shortDuration, useClockFor } from '@/lib/time'
+import { Ticking } from '@/components/Ticking'
 import { useAccount } from '@/state/session'
 
 const DAY = 86_400_000
@@ -31,7 +32,6 @@ interface Action {
 /** What the player can actually do right now, in one place. */
 export function NextUp() {
   const account = useAccount()
-  const now = useNow(1000)
   const player = useMembership()
 
   const quests = useQuests()
@@ -43,6 +43,24 @@ export function NextUp() {
   const comms = useLandComms(account)
   const payouts = useLandPayouts(account)
   const weeks = useClaimableWeeks()
+
+  // Daily claim: members.mc allows one per UTC day.
+  const lastClaim = player.member?.last_bgaction ? +chainDate(player.member.last_bgaction) : 0
+  const dailyReadyAt = lastClaim ? Math.floor(lastClaim / DAY) * DAY + DAY : 0
+  const seasonStart = season.data ? +chainDate(season.data.season_start) : 0
+  const seasonEnd = season.data ? +chainDate(season.data.season_end) : 0
+
+  // Every moment a card here changes (quests open or close, rewards unlock, adventures close or
+  // appear, the daily claim, the season): re-render then. The countdowns tick on their own.
+  const now = useClockFor([
+    ...(quests.data ?? []).flatMap((quest) => [+chainDate(quest.quest_start_date), +chainDate(quest.quest_end_date)]),
+    minerClaim.data ? +chainDate(minerClaim.data.timestamp) : undefined,
+    ...adventures.open.map((adventure) => +chainDate(adventure.enter_end)),
+    nextAdventureAt(adventures.all, adventureSettings.data?.auto_create_hours, Date.now()),
+    dailyReadyAt,
+    seasonStart,
+    seasonEnd
+  ])
 
   // Quests: what is live this week, and how much of it is done.
   const currentWeekly = weeklies.current
@@ -67,13 +85,8 @@ export function NextUp() {
   const openAdventures = adventures.open.filter((adventure) => +chainDate(adventure.enter_end) > now)
   const nextAdventure = nextAdventureAt(adventures.all, adventureSettings.data?.auto_create_hours, now)
 
-  // Daily claim: members.mc allows one per UTC day.
-  const lastClaim = player.member?.last_bgaction ? +chainDate(player.member.last_bgaction) : 0
-  const dailyReadyAt = lastClaim ? Math.floor(lastClaim / DAY) * DAY + DAY : 0
   const dailyReady = dailyReadyAt <= now
 
-  const seasonStart = season.data ? +chainDate(season.data.season_start) : 0
-  const seasonEnd = season.data ? +chainDate(season.data.season_end) : 0
   const seasonLive = !!season.data && now >= seasonStart && now < seasonEnd
 
   const actions: Action[] = [
@@ -99,18 +112,20 @@ export function NextUp() {
       icon: <RocketSVG color1="#00A3FF" color2="#E75300" />,
       state: adventures.isLoading ? '…' : openAdventures.length > 0 ? `${openAdventures.length} open` : 'None open',
       detail:
-        nextAdventure > now
-          ? `Next in ${shortDuration(nextAdventure - now)}`
-          : openAdventures.length > 0
-            ? 'Send in your NFTs'
-            : '',
+        nextAdventure > now ? (
+          <Ticking render={(tick) => `Next in ${shortDuration(nextAdventure - tick)}`} />
+        ) : openAdventures.length > 0 ? (
+          'Send in your NFTs'
+        ) : (
+          ''
+        ),
       ready: openAdventures.length > 0
     },
     {
       to: '/daily-rewards',
       title: 'Daily Claim',
       icon: <GiftSVG />,
-      state: dailyReady ? 'Available' : shortDuration(dailyReadyAt - now),
+      state: dailyReady ? 'Available' : <Ticking render={(tick) => shortDuration(dailyReadyAt - tick)} />,
       detail: dailyReady ? 'Spin the wheel' : 'Until the next spin',
       ready: dailyReady
     },
@@ -118,18 +133,22 @@ export function NextUp() {
       to: '/builder',
       title: 'Builder',
       icon: <MCPBuilderSVG />,
-      state: season.isLoading
-        ? '…'
-        : seasonLive
-          ? 'Live'
-          : seasonStart > now
-            ? shortDuration(seasonStart - now)
-            : 'Between seasons',
-      detail: seasonLive
-        ? `Ends in ${shortDuration(seasonEnd - now)}`
-        : seasonStart > now
-          ? 'Until the season starts'
-          : 'Next season not announced',
+      state: season.isLoading ? (
+        '…'
+      ) : seasonLive ? (
+        'Live'
+      ) : seasonStart > now ? (
+        <Ticking render={(tick) => shortDuration(seasonStart - tick)} />
+      ) : (
+        'Between seasons'
+      ),
+      detail: seasonLive ? (
+        <Ticking render={(tick) => `Ends in ${shortDuration(seasonEnd - tick)}`} />
+      ) : seasonStart > now ? (
+        'Until the season starts'
+      ) : (
+        'Next season not announced'
+      ),
       ready: seasonLive
     }
   ]

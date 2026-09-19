@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 
 import { Button } from '@/components/Button'
-import { RefreshIcon } from '@/components/icons'
+import { ChevronIcon, RefreshIcon } from '@/icons/ui'
 import { PageHeader } from '@/components/PageHeader'
 import { monthKey, shiftMonth, summarize, TLM_SOURCES, useTlmHistory, type TlmSource } from '@/data/tlmHistory'
 import TLMSVG from '@/icons/tlm'
@@ -60,7 +60,7 @@ export default function TlmHistory() {
         <div className="thist__bar">
           <div className="thist__month">
             <button type="button" className="thist__step" onClick={() => goTo(shiftMonth(month, -1))} aria-label="Previous month">
-              <Chevron dir="left" />
+              <ChevronIcon dir="left" />
             </button>
             <span className="thist__month-label num">{monthLabel}</span>
             <button
@@ -70,7 +70,7 @@ export default function TlmHistory() {
               disabled={month >= current}
               aria-label="Next month"
             >
-              <Chevron dir="right" />
+              <ChevronIcon dir="right" />
             </button>
           </div>
 
@@ -183,13 +183,5 @@ export default function TlmHistory() {
         )}
       </div>
     </>
-  )
-}
-
-function Chevron({ dir }: { dir: 'left' | 'right' }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
-      <path d={dir === 'left' ? 'm15 6-6 6 6 6' : 'm9 6 6 6-6 6'} />
-    </svg>
   )
 }

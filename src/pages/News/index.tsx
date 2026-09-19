@@ -29,7 +29,7 @@ export default function News() {
 
   return (
     <>
-      <PageHeader title="News" image={publicUrl('/assets/background/bg-news.jpeg')} />
+      <PageHeader title="News" image={publicUrl('/assets/background/bg-news.webp')} />
 
       <div className="page feed plates">
         <div className="feed__bar">

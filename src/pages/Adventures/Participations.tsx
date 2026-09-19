@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from 'react'
 
 import { Button } from '@/components/Button'
-import { CheckSquareIcon } from '@/components/icons'
+import { CheckSquareIcon } from '@/icons/ui'
 import { estimatedRp, refreshAdventures, type Participation } from '@/data/adventures'
 import type { AdvTemplate } from '@/data/types/adventures'
 import QuestSVG from '@/icons/quest'
 import { chainDate, countdown, timeLeft } from '@/lib/time'
-import { claimAdventureAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { claimAdventureAction } from '@/chain/actions/adventures'
+import { useTransaction } from '@/wallet/useTransaction'
 
 import { AdventureImg, CardImg, SponsorRibbon, Stat } from './shared'
 
@@ -32,7 +32,7 @@ export function RunningList({ items, templates, now }: { items: Participation[];
 }
 
 export function ClaimableList({ items, templates }: { items: Participation[]; templates: Templates }) {
-  const { run, busy, account } = useChainAction()
+  const { run, busy, account } = useTransaction()
   const [pending, setPending] = useState<number | null>(null)
   // Hide a claimed adventure right away; the chain can take a moment to drop it.
   const [claimed, setClaimed] = useState<number[]>([])

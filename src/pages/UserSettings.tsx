@@ -1,17 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useShallow } from 'zustand/react/shallow'
 
-import { CONTRACTS } from '@/chain/config'
+import { saveSettingsActions } from '@/chain/actions/members'
 import { Button } from '@/components/Button'
 import { MiningTypePicker } from '@/components/MiningTypePicker'
 import { NetworkStatus } from '@/components/NetworkStatus'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/toast'
 import { useLevels } from '@/data/game'
 import { useMembership } from '@/data/player'
-import { useSession } from '@/state/session'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 import { playerKeys } from '@/data/keys'
 
@@ -19,14 +16,13 @@ import './UserSettings.css'
 
 export default function UserSettings() {
   const queryClient = useQueryClient()
-  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const { run, busy: saving, account } = useTransaction()
   const player = useMembership()
   const levels = useLevels()
   const member = player.member
 
   const [tag, setTag] = useState('')
   const [freeCpu, setFreeCpu] = useState(true)
-  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (!member) return
@@ -46,26 +42,16 @@ export default function UserSettings() {
 
   async function handleSave(event: FormEvent) {
     event.preventDefault()
-    if (!account) return
-    setSaving(true)
-    try {
-      const authorization = [{ actor: account, permission }]
-      await transact([
-        { account: CONTRACTS.FEDERATION, name: 'settag', authorization, data: { account, tag: tag.trim() } },
-        { account: CONTRACTS.MEMBERS, name: 'setcpu', authorization, data: { wallet: account, freecpu: freeCpu } }
-      ])
-      toast.success('Settings updated successfully')
-      void queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
-    } catch (err) {
-      if (!isUserCancel(err)) toast.error(`Error updating settings: ${formatTransactError(err)}`)
-    } finally {
-      setSaving(false)
-    }
+    await run(
+      (wallet, permission) => saveSettingsActions(wallet, permission, tag.trim(), freeCpu),
+      'Settings updated successfully',
+      () => queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
+    )
   }
 
   return (
     <>
-      <PageHeader title="User Area" image={publicUrl('/assets/background/bg-user-area.jpeg')} />
+      <PageHeader title="User Area" image={publicUrl('/assets/background/bg-user-area.webp')} />
 
       <div className="page settings">
         <section className="panel settings__mining">
@@ -83,7 +69,7 @@ export default function UserSettings() {
           <fieldset disabled={!canEdit || saving} className="settings__fields">
             <label className="field">
               <span className="field__label">Player Tag</span>
-              <input className="field__input" value={tag} maxLength={12} onChange={(e) => setTag(e.target.value)} />
+              <input className="input field__input" value={tag} maxLength={12} onChange={(e) => setTag(e.target.value)} />
             </label>
 
             <label className="switch">

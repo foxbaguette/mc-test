@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 import { NAV_GROUPS, TABBAR_ORDER, useNavItems } from './nav'
+import { MoreIcon } from '@/icons/ui'
 
 import './TabBar.css'
 
@@ -34,11 +35,7 @@ export function TabBar({ onMore, moreOpen }: { onMore: () => void; moreOpen: boo
         aria-haspopup="dialog"
         aria-expanded={moreOpen}
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <circle cx="5" cy="12" r="2" />
-          <circle cx="12" cy="12" r="2" />
-          <circle cx="19" cy="12" r="2" />
-        </svg>
+        <MoreIcon />
         <span>More</span>
       </button>
     </nav>

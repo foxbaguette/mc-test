@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Button } from '@/components/Button'
-import { RefreshIcon } from '@/components/icons'
+import { RefreshIcon } from '@/icons/ui'
 import {
   cooldownEnd,
   estimateMcpForDelivery,
@@ -17,8 +17,8 @@ import type { BuilderPlayer, PlayerBuilding } from '@/data/types/builder'
 import QuestSVG from '@/icons/quest'
 import StarSVG from '@/icons/star'
 import { cooldownLabel } from '@/lib/time'
-import { deliverResourcesAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { deliverResourcesAction } from '@/chain/actions/builder'
+import { useTransaction } from '@/wallet/useTransaction'
 
 import { ConfirmDialog } from './ConfirmDialog'
 
@@ -40,7 +40,7 @@ export function Market({ player, building, resources, now }: MarketProps) {
   const pool = useSwapPool()
   const settings = useBuilderSettings()
   const { rewardPoints } = usePlayer()
-  const { run, busy } = useChainAction()
+  const { run, busy } = useTransaction()
   const [amount, setAmount] = useState('')
   const [confirm, setConfirm] = useState<(SpendOption & { resources: number }) | null>(null)
 
@@ -83,7 +83,7 @@ export function Market({ player, building, resources, now }: MarketProps) {
           <span className="bfield__label">Я to deliver to Mission Control</span>
           <span className="bfield__row">
             <input
-              className="bfield__input num"
+              className="input bfield__input num"
               inputMode="numeric"
               placeholder="0"
               value={amount}

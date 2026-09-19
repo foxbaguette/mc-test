@@ -6,7 +6,7 @@ import type { EquippedTool } from '@/data/types/mining'
 import { useSession } from '@/state/session'
 import { canMine, formatTransactError, isUserCancel, MINING_BLOCKED_MESSAGE, transact } from '@/wallet/session'
 
-import { mineActions } from './actions'
+import { mineActions } from '@/chain/actions/mining'
 import { computeNonce } from './nonce'
 import { mineResultMessage } from './result'
 
@@ -31,11 +31,11 @@ export async function mineNow({ account, permission, tools, landId }: MineOption
     const nonce = await computeNonce({ account, lastMineTx: miner?.last_mine_tx, difficulty })
     const target = landId && landId !== miner?.current_land ? landId : undefined
 
-    await transact(mineActions(account, permission, nonce, target))
+    const txId = await transact(mineActions(account, permission, nonce, target))
 
     // Resolve only once the result is known and the cooldown data is fresh, so the mine
     // button stays busy until then instead of showing MINE again right after broadcasting.
-    toast.success(await mineResultMessage(account))
+    toast.success(await mineResultMessage(txId))
     await Promise.all([refreshMining(account), refreshPlayer(account)])
     return true
   } catch (err) {

@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 import { chainDate } from '@/lib/time'
 import { useAccount } from '@/state/session'
 
-import { queryClient } from './queryClient'
+import { queryClient, refetchOnReturn } from './queryClient'
 import * as t from './tables'
 import { useWeeks } from './game'
 import type { Week } from './types/game'
@@ -24,20 +24,17 @@ export const useUserPoints = (account: string | null) =>
     queryKey: playerKeys.userPoints(account),
     queryFn: () => t.readUserPoints(account!),
     enabled: !!account,
-    staleTime: MIN
+    staleTime: MIN,
+    refetchOnWindowFocus: refetchOnReturn
   })
 
 export const useTlmBalance = (account: string | null) =>
-  useQuery({ queryKey: playerKeys.tlm(account), queryFn: () => t.readTlmBalance(account!), enabled: !!account, staleTime: MIN })
-
-/** A player who has never signed up in Alien Legends has no row at all. */
-
-export const useAlePlayer = (account: string | null) =>
   useQuery({
-    queryKey: playerKeys.alePlayer(account),
-    queryFn: () => t.readAlePlayer(account!),
+    queryKey: playerKeys.tlm(account),
+    queryFn: () => t.readTlmBalance(account!),
     enabled: !!account,
-    staleTime: HOUR
+    staleTime: MIN,
+    refetchOnWindowFocus: refetchOnReturn
   })
 
 export const usePlayerSupport = (account: string | null) =>
@@ -114,13 +111,17 @@ export function usePlayer() {
   const { account, member: m } = membership
   const points = useUserPoints(account)
   const tlm = useTlmBalance(account)
-  const { weeklies, current } = useUserWeeklies(account)
+  const { weeklies, current, query: weekliesQuery } = useUserWeeklies(account)
   const support = usePlayerSupport(account)
 
   const p = points.data
   const tlmBalance = tlm.data
   const supportRow = support.data
   const pointsLoading = points.isLoading
+  // A balance that never loaded is unknown, not zero.
+  const pointsFailed = points.isError && p === undefined
+  const tlmFailed = tlm.isError && tlmBalance === undefined
+  const weekliesFailed = weekliesQuery.isError && weekliesQuery.data === undefined
 
   return useMemo(() => {
     const mcPoints = (p?.total_points ?? 0) - ((m?.mcp_start ?? 0) + (m?.mcp_used ?? 0)) + (m?.mcp_gained ?? 0)
@@ -133,9 +134,10 @@ export function usePlayer() {
       currentWeekly: current,
       weeklies,
       isSupport: !!supportRow?.wallet,
-      isLoading: membership.isLoading || pointsLoading
+      isLoading: membership.isLoading || pointsLoading,
+      failed: { mcPoints: pointsFailed, redeemablePoints: pointsFailed, tlm: tlmFailed, rewardPoints: weekliesFailed }
     }
-  }, [membership, m, p, current, tlmBalance, weeklies, supportRow, pointsLoading])
+  }, [membership, m, p, current, tlmBalance, weeklies, supportRow, pointsLoading, pointsFailed, tlmFailed, weekliesFailed])
 }
 
 export function refreshPlayer(account: string | null) {

@@ -9,7 +9,7 @@ describe('invalidation prefixes cover the full keys', () => {
     ['favorites of an account', miningKeys.favorites('a.wam', '1,2', 'x|y'), miningKeys.favorites('a.wam')],
     ['adventure inventories', adventureKeys.inventory('a.wam', 'crew.worlds'), adventureKeys.inventoryAll],
     ['adventure participations', adventureKeys.participants('a.wam'), adventureKeys.participantsAll],
-    ['joined adventures', adventureKeys.joined(10, 20), adventureKeys.joinedAll],
+    ['joined adventures', adventureKeys.joined('10,12,20'), adventureKeys.joinedAll],
     ['builder player', builderKeys.player('a.wam'), builderKeys.playerAll],
     ['builder inventories', builderKeys.inventory('a.wam', 'tool.worlds'), builderKeys.inventoryAll],
     ['vault queries', vaultKeys.payouts('a.wam'), vaultKeys.all],

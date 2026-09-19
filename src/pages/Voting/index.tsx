@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 
 import { DEFAULT_AVATAR } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
 import { Select } from '@/components/Select'
-import { toast } from '@/components/toast'
 import { refreshVoting, useCandidates, useLastVote, useVotePower, VOTING_PLANET, type Candidate } from '@/data/voting'
 import BoltSVG from '@/icons/bolt'
-import { castVoteActions } from '@/mining/actions'
-import { useSession } from '@/state/session'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+import { castVoteActions } from '@/chain/actions/voting'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import './Voting.css'
@@ -21,13 +18,12 @@ const NONE = 'none'
 const BACKED_SEATS = 3
 
 export default function Voting() {
-  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const { run, busy, account } = useTransaction()
   const { candidates, isLoading, isFetching } = useCandidates()
   const power = useVotePower(account)
   const lastVote = useLastVote(account)
   const [first, setFirst] = useState(NONE)
   const [second, setSecond] = useState(NONE)
-  const [busy, setBusy] = useState(false)
   const prefilled = useRef(false)
 
   const byWallet = useMemo(() => new Map(candidates.map((c) => [c.wallet, c])), [candidates])
@@ -55,22 +51,17 @@ export default function Voting() {
   const chosen = [first, second].filter((wallet) => wallet !== NONE)
 
   async function castVote() {
-    if (!account || chosen.length === 0) return
-    setBusy(true)
-    try {
-      await transact(castVoteActions(account, permission, VOTING_PLANET, chosen, Math.floor(power.current)))
-      toast.success('Vote successfully registered')
-      await refreshVoting(account)
-    } catch (err) {
-      if (!isUserCancel(err)) toast.error(formatTransactError(err))
-    } finally {
-      setBusy(false)
-    }
+    if (chosen.length === 0) return
+    await run(
+      (wallet, permission) => castVoteActions(wallet, permission, VOTING_PLANET, chosen, Math.floor(power.current)),
+      'Vote successfully registered',
+      () => refreshVoting(account)
+    )
   }
 
   return (
     <>
-      <PageHeader title="Eyeke Voting" image={publicUrl('/assets/background/bg-voting.jpeg')} />
+      <PageHeader title="Eyeke Voting" image={publicUrl('/assets/background/bg-voting.webp')} />
 
       <div className="page vote plates">
         <div className="vote__power">

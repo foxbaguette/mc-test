@@ -3,17 +3,18 @@ import { useShallow } from 'zustand/react/shallow'
 
 import { Button } from '@/components/Button'
 import { MiningBlocked } from '@/components/MiningBlocked'
-import { RefreshIcon } from '@/components/icons'
+import { RefreshIcon } from '@/icons/ui'
+import { Ticking } from '@/components/Ticking'
 import { PageHeader } from '@/components/PageHeader'
 import { refreshMining, useEquippedTools, useMiner } from '@/data/mining'
-import { type TreasureHunt, useFinishedHunts, useTreasureHunts } from '@/data/treasureHunts'
+import { refreshTreasureHunts, type TreasureHunt, useFinishedHunts, useTreasureHunts } from '@/data/treasureHunts'
 import { useMembership } from '@/data/player'
 import FinishFlagSVG from '@/icons/finish-flag'
 import ShardsSVG from '@/icons/shards'
 import TLMSVG from '@/icons/tlm'
 import TreasureSVG from '@/icons/treasure'
 import { landImage, tlmToNumber } from '@/lib/format'
-import { chainDate, cooldownLabel, formatDate, shortDuration, useNow } from '@/lib/time'
+import { chainDate, cooldownLabel, formatDate, shortDuration, useClockFor } from '@/lib/time'
 import { mineReadyAt } from '@/mining/estimates'
 import { mineNow } from '@/mining/mineNow'
 import { useCanMine, useSession } from '@/state/session'
@@ -35,15 +36,18 @@ export default function TreasureHuntPage() {
   const finished = useFinishedHunts()
   const miner = useMiner(account)
   const tools = useEquippedTools(account)
-  const now = useNow(1000)
   const [busy, setBusy] = useState<string | null>(null)
   const canMine = useCanMine()
   const [view, setView] = useState<View>('active')
 
   const refreshing = hunts.isFetching || miner.isFetching || tools.isFetching
   const list = hunts.data ?? []
-  const live = list.filter((hunt) => +chainDate(hunt.start_date) <= now)
-  const upcoming = list.filter((hunt) => +chainDate(hunt.start_date) > now)
+  const startOf = (hunt: TreasureHunt) => +chainDate(hunt.start_date)
+  const readyOf = (hunt: TreasureHunt) => mineReadyAt(hunt.land.delay, tools.data, miner.data?.last_mine)
+  // Re-render when a hunt opens or a cooldown ends; the countdowns tick on their own.
+  const now = useClockFor([...list.map(startOf), ...list.map(readyOf)])
+  const live = list.filter((hunt) => startOf(hunt) <= now)
+  const upcoming = list.filter((hunt) => startOf(hunt) > now)
 
   async function handleMine(hunt: TreasureHunt) {
     if (!account) return
@@ -53,16 +57,17 @@ export default function TreasureHuntPage() {
   }
 
   const card = (hunt: TreasureHunt) => {
-    const start = +chainDate(hunt.start_date)
+    const start = startOf(hunt)
     const started = start <= now
-    const mineLabel = cooldownLabel(mineReadyAt(hunt.land.delay, tools.data, miner.data?.last_mine), now)
+    const readyAt = readyOf(hunt)
+    const ready = readyAt <= now
 
     return (
       <article key={hunt.treasure_name} className={`hunt ${started ? 'is-live' : ''}`}>
         <div className="hunt__media">
           <img src={landImage(hunt.landName)} alt={hunt.landName} loading="lazy" />
           <span className={`hunt__state num ${started ? 'is-live' : ''}`}>
-            {started ? 'LIVE' : `starts in ${shortDuration(start - now)}`}
+            {started ? 'LIVE' : <Ticking render={(tick) => `starts in ${shortDuration(start - tick)}`} />}
           </span>
         </div>
 
@@ -92,10 +97,10 @@ export default function TreasureHuntPage() {
             block
             color={started ? 'gradientYellow' : 'solidBlue'}
             isLoading={busy === hunt.treasure_name}
-            disabled={!canMine || !!busy || mineLabel !== 'MINE'}
+            disabled={!canMine || !!busy || !ready}
             onClick={() => handleMine(hunt)}
           >
-            <span className="num">{mineLabel}</span>
+            <span className="num">{ready ? 'MINE' : <Ticking render={(tick) => cooldownLabel(readyAt, tick)} />}</span>
           </Button>
         </div>
       </article>
@@ -104,7 +109,7 @@ export default function TreasureHuntPage() {
 
   return (
     <>
-      <PageHeader title="Treasure Hunt" image={publicUrl('/assets/background/bg-login.jpeg')} />
+      <PageHeader title="Treasure Hunt" image={publicUrl('/assets/background/bg-login.webp')} />
 
       <div className="page hunts plates">
         <MiningBlocked />
@@ -157,7 +162,7 @@ export default function TreasureHuntPage() {
             <button
               className={`icon-btn ${refreshing ? 'is-spinning' : ''}`}
               disabled={!player.isFullMember || refreshing}
-              onClick={() => Promise.all([refreshMining(account), hunts.refetch(), finished.refetch()])}
+              onClick={() => Promise.all([refreshMining(account), refreshTreasureHunts()])}
               aria-label="Refresh"
             >
               <RefreshIcon />

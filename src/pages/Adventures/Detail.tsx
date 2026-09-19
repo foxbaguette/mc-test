@@ -21,11 +21,12 @@ import type { Adventure, AdvTemplate } from '@/data/types/adventures'
 import QuestSVG from '@/icons/quest'
 import StarSVG from '@/icons/star'
 import { chainDate, countdown, timeLeft } from '@/lib/time'
-import { joinAdventureAction, startAdventureWithNftsAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { joinAdventureAction, startAdventureWithNftsAction } from '@/chain/actions/adventures'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import { AdventureImg, CardImg, ModRow, SponsorRibbon } from './shared'
+import { ChevronIcon } from '@/icons/ui'
 
 type Templates = Map<number, AdvTemplate>
 
@@ -51,7 +52,7 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
   const navigate = useNavigate()
   const unlocks = useModUnlocks()
   const { mcPoints } = usePlayer()
-  const { run, busy, account } = useChainAction()
+  const { run, busy, account } = useTransaction()
 
   const [slots, setSlots] = useState<(Pick | null)[]>([null, null, null])
   const [active, setActive] = useState(-1)
@@ -294,11 +295,7 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
           onClick={() => (picked.length > 0 ? start() : setConfirming(true))}
         >
           {notEnough ? 'Not enough' : 'Start'}
-          {!notEnough && (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
-              <path d="m9 6 6 6-6 6" />
-            </svg>
-          )}
+          {!notEnough && <ChevronIcon />}
         </Button>
         <p>
           {picked.length > 0

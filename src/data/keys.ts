@@ -24,7 +24,6 @@ export const playerKeys = {
   userPoints: (account: Account) => ['userPoints', account] as const,
   tlm: (account: Account) => ['tlm', account] as const,
   userWeeklies: (account: Account) => ['userWeeklies', account] as const,
-  alePlayer: (account: Account) => ['alePlayer', account] as const,
   support: (account: Account) => ['support', account] as const
 }
 
@@ -55,6 +54,7 @@ export const toolLoaningKeys = {
 
 export const treasureKeys = {
   all: ['treasureHunts'] as const,
+  rows: ['treasureHunts', 'rows'] as const,
   finished: (limit: number) => ['treasureHunts', 'finished', limit] as const
 }
 
@@ -64,7 +64,8 @@ export const adventureKeys = {
   participantsAll: ['adventures', 'participants'] as const,
   participants: (account: Account) => ['adventures', 'participants', account] as const,
   joinedAll: ['adventures', 'joined'] as const,
-  joined: (first: number, last: number) => ['adventures', 'joined', first, last] as const,
+  /** The joined adventures' ids, sorted and comma-joined. */
+  joined: (ids: string) => ['adventures', 'joined', ids] as const,
   templates: ['adventures', 'templates'] as const,
   levels: ['adventures', 'levels'] as const,
   settings: ['adventures', 'settings'] as const,
@@ -116,7 +117,6 @@ export const applicationKeys = {
 }
 
 export const newsKeys = {
-  home: ['homeNews'] as const,
   all: ['news'] as const
 }
 

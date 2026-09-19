@@ -7,6 +7,7 @@ import StarSVG from '@/icons/star'
 import { chainDate, countdown, timeLeft } from '@/lib/time'
 
 import { AdventureImg, ModGrid, Stat, SponsorRibbon } from './shared'
+import { ChevronIcon } from '@/icons/ui'
 
 export function AvailableList({ items, now, nextAt }: { items: Adventure[]; now: number; nextAt: number }) {
   const unlocks = useModUnlocks()
@@ -40,9 +41,7 @@ export function AvailableList({ items, now, nextAt }: { items: Adventure[]; now:
                 <Stat label="MC Point Cost" value={adventure.point_cost.toLocaleString('en-US')} icon={<StarSVG />} />
                 <Link to={to} className="adv-card__view">
                   View
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
-                    <path d="m9 6 6 6-6 6" />
-                  </svg>
+                  <ChevronIcon />
                 </Link>
               </div>
               <ModGrid mods={adventure.mods} unlocks={unlocks} />

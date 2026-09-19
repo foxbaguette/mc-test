@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { PageHeader } from '@/components/PageHeader'
-import { RefreshIcon } from '@/components/icons'
+import { RefreshIcon } from '@/icons/ui'
 import { Select } from '@/components/Select'
 import { useCollectInfo, useQuests } from '@/data/game'
 import { useUserWeeklies } from '@/data/player'
@@ -108,7 +108,7 @@ export default function Questing() {
 
   return (
     <>
-      <PageHeader title="Weekly Quests" image={publicUrl('/assets/background/bg-quest.jpeg')} />
+      <PageHeader title="Weekly Quests" image={publicUrl('/assets/background/bg-quest.webp')} />
 
       <div className="page questing">
         <div className="questing__toolbar">

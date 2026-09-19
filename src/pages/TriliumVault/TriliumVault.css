@@ -255,12 +255,6 @@
   font-size: 14px;
 }
 
-.vault__input:focus {
-  border-color: var(--blue);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 186, 255, 0.18);
-}
-
 .vault-card--wide .vault-card__info {
   margin-top: 2px;
 }

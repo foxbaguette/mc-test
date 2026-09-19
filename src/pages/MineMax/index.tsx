@@ -4,12 +4,13 @@ import { useShallow } from 'zustand/react/shallow'
 import { RARITY_COLORS } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { MiningBlocked } from '@/components/MiningBlocked'
-import { RefreshIcon } from '@/components/icons'
+import { RefreshIcon } from '@/icons/ui'
 import { PageHeader } from '@/components/PageHeader'
 import { useMaximizerPlanets } from '@/data/maximizer'
 import { useMiner } from '@/data/mining'
 import { planetImage } from '@/lib/format'
-import { cooldownLabel, useNow } from '@/lib/time'
+import { cooldownLabel, useClockFor } from '@/lib/time'
+import { Ticking } from '@/components/Ticking'
 import { mineReadyAt } from '@/mining/estimates'
 import { mineNow } from '@/mining/mineNow'
 import { useCanMine, useSession } from '@/state/session'
@@ -31,12 +32,12 @@ export default function MineMax() {
   )
   const maximizer = useMaximizerPlanets(account)
   const miner = useMiner(account)
-  const now = useNow(1000)
   const canMine = useCanMine()
 
   const tools = maximizer.tools.data ?? []
-  const label = cooldownLabel(mineReadyAt(MAXIMIZER_LAND_DELAY, maximizer.tools.data, miner.data?.last_mine), now)
-  const ready = label === 'MINE'
+  const readyAt = mineReadyAt(MAXIMIZER_LAND_DELAY, maximizer.tools.data, miner.data?.last_mine)
+  // Re-render when the cooldown ends; the countdown in the button ticks on its own.
+  const ready = readyAt <= useClockFor([readyAt])
 
   async function setLandAndMine() {
     if (!account) return
@@ -46,7 +47,7 @@ export default function MineMax() {
 
   return (
     <>
-      <PageHeader title="Mine Maximizer" image={publicUrl('/assets/background/mine-bg.jpeg')} />
+      <PageHeader title="Mine Maximizer" image={publicUrl('/assets/background/mine-bg.webp')} />
 
       <div className="page maxi plates">
         <MiningBlocked />
@@ -111,7 +112,9 @@ export default function MineMax() {
             disabled={!canMine || !account || maximizer.isLoading || miner.isLoading || tools.length === 0 || !ready}
             onClick={setLandAndMine}
           >
-            <span className="num">{ready ? 'Set Land & Mine' : `Mine Cooldown ${label}`}</span>
+            <span className="num">
+              {ready ? 'Set Land & Mine' : <Ticking render={(tick) => `Mine Cooldown ${cooldownLabel(readyAt, tick)}`} />}
+            </span>
           </Button>
           <Button size="lg" color="gradientBlue" disabled={miningType === 'blue'} onClick={() => setMiningType('blue')}>
             Use as Mining Button

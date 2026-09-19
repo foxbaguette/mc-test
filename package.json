@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "images": "node scripts/fetch-ipfs.mjs && node scripts/optimize-tool-images.mjs && node scripts/fetch-adventure-images.mjs && node scripts/fetch-card-images.mjs"
+    "images": "node scripts/fetch-ipfs.mjs && node scripts/optimize-tool-images.mjs && node scripts/fetch-adventure-images.mjs && node scripts/fetch-card-images.mjs && node scripts/optimize-backgrounds.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.59.0",

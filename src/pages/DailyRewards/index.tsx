@@ -1,18 +1,15 @@
 import { useMemo, useState } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 
 import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/toast'
-import { CONTRACTS } from '@/chain/config'
 import { refreshPlayer, useMembership } from '@/data/player'
 import { useClaimChances } from '@/data/game'
 import { readMember } from '@/data/tables'
 import { sleep } from '@/lib/format'
-import { chainDate, cooldownLabel, useNow } from '@/lib/time'
-import { payCpu } from '@/mining/actions'
-import { useSession } from '@/state/session'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+import { chainDate, cooldownLabel, useClockFor } from '@/lib/time'
+import { Ticking } from '@/components/Ticking'
+import { dailyRewardActions } from '@/chain/actions/members'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import { Wheel, WheelRim, type WheelSegment } from './Wheel'
@@ -21,12 +18,25 @@ import './DailyRewards.css'
 
 const DAY = 86_400_000
 
+/**
+ * The member row once it shows this claim, so the wheel lands on the prize just won. A node shows
+ * it about a second after signing; asked a few times over up to 8 s before settling for what is there.
+ */
+async function readClaimedMember(account: string, previousClaim: string | undefined) {
+  for (const delay of [1000, 1000, 1500, 2000, 2500]) {
+    await sleep(delay)
+    const member = await readMember(account).catch(() => null)
+    if (member && member.last_bgaction !== previousClaim) return member
+  }
+  return readMember(account).catch(() => null)
+}
+
 export default function DailyRewards() {
-  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const { run, busy: signing, account } = useTransaction()
   const player = useMembership()
   const chances = useClaimChances()
-  const now = useNow(1000)
-  const [busy, setBusy] = useState(false)
+  const [reading, setReading] = useState(false)
+  const busy = signing || reading
   const [spinning, setSpinning] = useState(false)
   const [target, setTarget] = useState(0)
   const [revealed, setRevealed] = useState(false)
@@ -46,36 +56,28 @@ export default function DailyRewards() {
   // members.mc allows one claim per UTC day: ready once a new UTC day has started since the last claim.
   const lastClaim = player.member?.last_bgaction ? +chainDate(player.member.last_bgaction) : 0
   const readyAt = lastClaim ? Math.floor(lastClaim / DAY) * DAY + DAY : 0
-  const label = cooldownLabel(readyAt, now, 'SPIN')
-  const onCooldown = label !== 'SPIN'
+  // Re-render when the next claim opens; the countdown on the button ticks on its own.
+  const onCooldown = readyAt > useClockFor([readyAt])
   const lastReward = player.member?.stats?.find((s) => s.key === 'LastDailyReward')?.value
 
   async function handleSpin() {
-    if (!account) return
-    setBusy(true)
     setRevealed(false)
-    try {
-      await transact([
-        payCpu(account, permission, 3),
-        {
-          account: CONTRACTS.MEMBERS,
-          name: 'dailyrewards',
-          authorization: [{ actor: account, permission }],
-          data: { wallet: account }
-        }
-      ])
-      await sleep(4000)
-      const member = await readMember(account)
-      const prize = member?.stats?.find((s) => s.key === 'LastDailyReward')?.value ?? 0
-      const matches = segments.map((s, i) => [s, i] as const).filter(([s]) => Number(s.label.replace(/,/g, '')) === prize)
-      setTarget(matches.length ? matches[Math.floor(Math.random() * matches.length)][1] : 0)
-      setSpinning(true)
-      void refreshPlayer(account)
-    } catch (err) {
-      if (!isUserCancel(err)) toast.error(formatTransactError(err))
-    } finally {
-      setBusy(false)
-    }
+    const previousClaim = player.member?.last_bgaction
+    const signed = await run(
+      dailyRewardActions,
+      // The wheel shows the result; no toast.
+      ''
+    )
+    if (!signed || !account) return
+
+    setReading(true)
+    const member = await readClaimedMember(account, previousClaim)
+    setReading(false)
+    const prize = member?.stats?.find((s) => s.key === 'LastDailyReward')?.value ?? 0
+    const matches = segments.map((s, i) => [s, i] as const).filter(([s]) => Number(s.label.replace(/,/g, '')) === prize)
+    setTarget(matches.length ? matches[Math.floor(Math.random() * matches.length)][1] : 0)
+    setSpinning(true)
+    void refreshPlayer(account)
   }
 
   const showClaimed = (onCooldown && !spinning) || revealed
@@ -129,7 +131,9 @@ export default function DailyRewards() {
             disabled={busy || spinning || onCooldown || player.isLoading}
             onClick={handleSpin}
           >
-            <span className="num">{label}</span>
+            <span className="num">
+              {onCooldown ? <Ticking render={(tick) => cooldownLabel(readyAt, tick, 'SPIN')} /> : 'SPIN'}
+            </span>
           </Button>
         </section>
       </div>

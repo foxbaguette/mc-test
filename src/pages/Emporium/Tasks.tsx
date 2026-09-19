@@ -2,14 +2,15 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/Button'
-import { ArrowLeftCircleIcon, HistoryIcon } from '@/components/icons'
+import { ArrowLeftCircleIcon, HistoryIcon } from '@/icons/ui'
 import { currentTaskPrice, nextProgressAt, refreshEmporium, useActiveTasks, useEmporiumConfig } from '@/data/emporium'
 import { usePlayer } from '@/data/player'
 import type { EmporiumTask } from '@/data/types/emporium'
 import ShardsSVG from '@/icons/shards'
-import { cooldownLabel, useNow } from '@/lib/time'
-import { finishTaskAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { cooldownLabel, useClockFor } from '@/lib/time'
+import { Ticking } from '@/components/Ticking'
+import { finishTaskAction } from '@/chain/actions/emporium'
+import { useTransaction } from '@/wallet/useTransaction'
 
 import { CurrencyIcon, TaskImage } from './shared'
 
@@ -21,10 +22,11 @@ export function Tasks() {
   const tasks = useActiveTasks()
   const config = useEmporiumConfig()
   const player = usePlayer()
-  const { run, busy, account } = useChainAction()
+  const { run, busy, account } = useTransaction()
   const [confirming, setConfirming] = useState<{ id: number; since: number } | null>(null)
-  // Tick faster while a confirmation counts down, so Confirm unlocks right at three seconds.
-  const now = useNow(confirming ? 250 : 1000)
+  const confirmAt = confirming ? confirming.since + CONFIRM_SECONDS * 1000 : undefined
+  // Re-render when prices drop and when Confirm unlocks; the countdowns tick on their own.
+  const now = useClockFor([config.data ? nextProgressAt(config.data, Date.now()) : undefined, confirmAt])
 
   const balanceFor = (type: string) =>
     type === 'mcp' ? player.mcPoints : type === 'tlm' ? player.tlm : type === 'qp' ? player.rewardPoints : 0
@@ -52,7 +54,13 @@ export function Tasks() {
       <div className="zap-bar">
         <p className="zap-bar__progress">
           Next Task Progress:{' '}
-          <strong className="num">{config.data ? cooldownLabel(nextProgressAt(config.data, now), now, '00:00') : '--:--'}</strong>
+          <strong className="num">
+            {config.data ? (
+              <Ticking render={(tick) => cooldownLabel(nextProgressAt(config.data!, tick), tick, '00:00')} />
+            ) : (
+              '--:--'
+            )}
+          </strong>
         </p>
         <Link to="history" className="zap-bar__history">
           <HistoryIcon /> History
@@ -67,9 +75,7 @@ export function Tasks() {
               const shards = (task.shards / 10).toLocaleString('en-US')
               const enough = balanceFor(task.task_type) >= price
               const isConfirming = confirming?.id === task.task_id
-              const wait = isConfirming
-                ? Math.min(CONFIRM_SECONDS, Math.max(0, Math.ceil((confirming.since + CONFIRM_SECONDS * 1000 - now) / 1000)))
-                : 0
+              const locked = isConfirming && confirmAt !== undefined && confirmAt > now
 
               // Keyed by price so the chip flashes whenever the price drops.
               const priceChip = (key: string) => (
@@ -129,12 +135,24 @@ export function Tasks() {
                     <Button
                       block
                       color={isConfirming ? 'gradientYellow' : 'solidBlue'}
-                      disabled={busy || !enough || wait > 0}
+                      disabled={busy || !enough || locked}
                       onClick={
                         isConfirming ? () => complete(task, price) : () => setConfirming({ id: task.task_id, since: Date.now() })
                       }
                     >
-                      <span className="num">{isConfirming ? `Confirm${wait ? ` (${wait}) s` : ''}` : task.button}</span>
+                      <span className="num">
+                        {!isConfirming ? (
+                          task.button
+                        ) : locked ? (
+                          // Quarter-second ticks, so the count reaches zero right when Confirm unlocks.
+                          <Ticking
+                            intervalMs={250}
+                            render={(tick) => `Confirm (${Math.max(1, Math.ceil((confirmAt! - tick) / 1000))}) s`}
+                          />
+                        ) : (
+                          'Confirm'
+                        )}
+                      </span>
                     </Button>
                     {/* Always rendered (hidden when affordable) so every card's button sits at the same height. */}
                     <span className={`zap-task__short ${enough ? 'is-hidden' : ''}`} aria-hidden={enough}>

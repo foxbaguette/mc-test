@@ -3,12 +3,12 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { RARITY_ORDER } from '@/chain/config'
 import { Button } from '@/components/Button'
-import { WarningCircleIcon } from '@/components/icons'
+import { WarningCircleIcon } from '@/icons/ui'
 import { useToolInventory } from '@/data/mining'
 import { SHINE_ORDER, useStakedTools, useToolOv } from '@/data/toolLoaning'
 import { chainDate, formatDateNumeric } from '@/lib/time'
-import { stakeToolsAction, unstakeToolsAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { stakeToolsAction, unstakeToolsAction } from '@/chain/actions/toolLoaning'
+import { useTransaction } from '@/wallet/useTransaction'
 import { miningKeys, toolLoaningKeys } from '@/data/keys'
 
 import { ToolCard, ToolStats } from './Shared'
@@ -16,7 +16,7 @@ import { ToolCard, ToolStats } from './Shared'
 /** Both sides of lending in one place: what is staked now, and what could be. */
 export function Lend() {
   const queryClient = useQueryClient()
-  const { run, busy, account } = useChainAction()
+  const { run, busy, account } = useTransaction()
   const inventory = useToolInventory(account)
   const staked = useStakedTools(account)
   const toolOv = useToolOv()

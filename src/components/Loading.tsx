@@ -1,42 +1,40 @@
-import { useEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 
-import { reprobe } from '@/state/useNetwork'
 import { publicUrl } from '@/lib/publicUrl'
-import { Button } from './Button'
 
 import './Loading.css'
 
-const planets = ['eyeke', 'magor', 'veles', 'naron', 'neri', 'kavian']
+/** Eyeke at the centre, the other five on three orbits: radius and lap time as a share of the loader. */
+const ORBITS = [
+  { planets: ['magor'], radius: 0.25, seconds: 6 },
+  { planets: ['veles', 'naron'], radius: 0.37, seconds: 11 },
+  { planets: ['neri', 'kavian'], radius: 0.49, seconds: 18 }
+]
 
 export function Loading() {
-  const [slow, setSlow] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setSlow(true), 10_000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  async function handleReload() {
-    // Re-rank the nodes first so the reload starts on the ones answering now.
-    await reprobe().catch(() => undefined)
-    window.location.reload()
-  }
-
   return (
     <div className="loading" role="status" aria-live="polite">
-      <div className="loading__planets" aria-hidden>
-        {planets.map((planet) => (
-          <img key={planet} src={publicUrl(`/assets/planets/${planet}.png`)} alt="" />
+      <div className="loading__system" aria-hidden>
+        {ORBITS.map(({ planets, radius, seconds }, orbit) => (
+          <div key={orbit} className="loading__orbit" style={{ '--r': radius, '--lap': `${seconds}s` } as CSSProperties}>
+            {planets.map((planet, i) => (
+              <span
+                key={planet}
+                className="loading__arm"
+                style={{ '--at': `${(360 / planets.length) * i + orbit * 70}deg` } as CSSProperties}
+              >
+                <img className="loading__planet" src={publicUrl(`/assets/planets/${planet}.png`)} alt="" />
+              </span>
+            ))}
+          </div>
         ))}
+        <img className="loading__core" src={publicUrl('/assets/planets/eyeke.png')} alt="" />
       </div>
 
-      <h2 className="loading__title">{slow ? 'IS THIS PROCESS TAKING LONGER THAN USUAL?' : 'LOADING DATA...'}</h2>
-
-      {slow && (
-        <Button size="lg" pill onClick={handleReload}>
-          YES, RELOAD!
-        </Button>
-      )}
+      <div className="loading__label">
+        <span>LOADING DATA...</span>
+        <span className="loading__bar" />
+      </div>
     </div>
   )
 }

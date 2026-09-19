@@ -12,7 +12,9 @@ export interface Article {
   thumbnail: string
 }
 
-const CACHE_KEY = 'mc_news_home'
+const CACHE_KEY = 'mc_news'
+/** Where the home page kept its own copy before both pages shared one. */
+const OLD_CACHE_KEY = 'mc_news_home'
 const CACHE_TTL = 4 * 60 * 60 * 1000
 
 // Public RSS-to-JSON converter. (The old site's Vercel fallback now answers 402.)
@@ -60,49 +62,49 @@ async function readFeed(feed: string): Promise<Article[]> {
   return []
 }
 
-function readCache(): Article[] | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY)
-    if (!raw) return null
-    const { expiry, value } = JSON.parse(raw)
-    return Date.now() < expiry ? value : null
-  } catch {
-    return null
-  }
-}
-
-/** Latest article per author across the Mission Control blog feeds, newest first. */
-async function loadHomeNews(): Promise<Article[]> {
-  const cached = readCache()
-  if (cached) return cached
-
-  const blogs = await readBlogs()
-  const feeds = [...blogs.map((b) => `https://medium.com/feed/${b.blogid}`), 'https://alienw.com/feed']
-  const articles = (await Promise.all(feeds.map(readFeed)))
-    .flat()
-    .sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
-
-  const seen = new Set<string>()
-  const perAuthor = articles.filter((a) => (seen.has(a.author) ? false : (seen.add(a.author), true)))
-
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ expiry: Date.now() + CACHE_TTL, value: perAuthor }))
-  } catch {
-    /* storage unavailable */
-  }
-  return perAuthor
-}
-
-export const useHomeNews = () => useQuery({ queryKey: newsKeys.home, queryFn: loadHomeNews, staleTime: CACHE_TTL })
-
 export interface NewsFeed {
   id: string
   name: string
   url: string
 }
 
-/** Every Mission Control blog plus Alienw.com, with their articles newest first. */
-async function loadNews() {
+export interface News {
+  feeds: NewsFeed[]
+  /** Articles per feed id, newest first; `all` holds every feed together. */
+  byFeed: Record<string, Article[]>
+}
+
+function readCache(): News | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const { expiry, value } = JSON.parse(raw)
+    return Date.now() < expiry && value?.byFeed ? value : null
+  } catch {
+    return null
+  }
+}
+
+function writeCache(value: News) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ expiry: Date.now() + CACHE_TTL, value }))
+    localStorage.removeItem(OLD_CACHE_KEY)
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+const newest = (articles: Article[]) =>
+  [...articles].sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
+
+/**
+ * Every Mission Control blog plus Alienw.com, with their articles newest first. One download
+ * serves both the News page and the home page, and is kept in the browser for four hours.
+ */
+async function loadNews(): Promise<News> {
+  const cached = readCache()
+  if (cached) return cached
+
   const blogs = await readBlogs()
   const feeds: NewsFeed[] = [
     ...blogs.map((blog) => ({ id: blog.blogid, name: blog.blogname, url: `https://medium.com/feed/${blog.blogid}` })),
@@ -110,15 +112,25 @@ async function loadNews() {
   ]
 
   const lists = await Promise.all(feeds.map((feed) => readFeed(feed.url)))
-  const newest = (articles: Article[]) =>
-    [...articles].sort((a, b) => new Date(b.published).getTime() - new Date(a.published).getTime())
-
   const byFeed: Record<string, Article[]> = { all: newest(lists.flat()) }
   feeds.forEach((feed, i) => {
     byFeed[feed.id] = newest(lists[i])
   })
 
-  return { feeds, byFeed }
+  const news = { feeds, byFeed }
+  // Nothing came back (the converter was down): don't keep that for four hours.
+  if (byFeed.all.length > 0) writeCache(news)
+  return news
 }
 
 export const useNews = () => useQuery({ queryKey: newsKeys.all, queryFn: loadNews, staleTime: CACHE_TTL })
+
+/** The newest article of each author, for the home page. */
+export function latestPerAuthor(news: News): Article[] {
+  const seen = new Set<string>()
+  return news.byFeed.all.filter((article) => (seen.has(article.author) ? false : (seen.add(article.author), true)))
+}
+
+/** Same query and cache as the News page, reduced to the latest article per author. */
+export const useHomeNews = () =>
+  useQuery({ queryKey: newsKeys.all, queryFn: loadNews, staleTime: CACHE_TTL, select: latestPerAuthor })

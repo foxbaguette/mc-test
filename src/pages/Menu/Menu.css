@@ -168,7 +168,7 @@
 .weekly.panel {
   padding: 14px 20px 16px;
   border-left: 2px solid var(--yellow);
-  background: radial-gradient(70% 200% at 0 50%, rgba(246, 168, 0, 0.14), transparent 60%), var(--plate-face);
+  background: var(--plate-face);
 }
 
 .weekly .panel__head {
@@ -432,7 +432,7 @@
   font-size: 11.5px;
 }
 
-/* Alien Legends, for players who have not tried it yet. */
+/* Alien Legends invitation. */
 .ale-banner {
   position: relative;
   display: grid;

@@ -156,7 +156,7 @@ export default function ToolTactician() {
 
   return (
     <>
-      <PageHeader title="Tool Tactician" image={publicUrl('/assets/background/bg-tool-tactician.jpeg')} />
+      <PageHeader title="Tool Tactician" image={publicUrl('/assets/background/bg-tool-tactician.webp')} />
 
       <div className="page tactician">
         <section className="tactician__setup">

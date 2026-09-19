@@ -6,7 +6,7 @@ import { KOL_DIGGER, KOL_DIGGER_LAND, refreshToolLoaning, type LoanTool } from '
 import { useSession } from '@/state/session'
 import { canMine, formatTransactError, isUserCancel, MINING_BLOCKED_MESSAGE, transact } from '@/wallet/session'
 
-import { loanMineActions } from './actions'
+import { loanMineActions } from '@/chain/actions/toolLoaning'
 import { computeNonce } from './nonce'
 import { mineResultMessage } from './result'
 
@@ -51,10 +51,10 @@ export async function mineWithLoanedTool({ account, permission, tool, bagIds, la
     const miner = await readMiner(account)
     const nonce = await computeNonce({ account, lastMineTx: miner?.last_mine_tx, difficulty })
 
-    await transact(loanMineActions(account, permission, { assetIds, landId: land, nonce, restoreBag: bagIds }))
+    const txId = await transact(loanMineActions(account, permission, { assetIds, landId: land, nonce, restoreBag: bagIds }))
 
     // Stay busy until the result is known and the tool cooldowns are fresh (see mineNow).
-    toast.success(await mineResultMessage(account))
+    toast.success(await mineResultMessage(txId))
     await Promise.all([refreshMining(account), refreshPlayer(account), refreshToolLoaning(account)])
     return true
   } catch (err) {

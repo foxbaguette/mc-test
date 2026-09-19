@@ -15,10 +15,10 @@ import PickaxeSVG from '@/icons/pickaxe'
 import SearchSVG from '@/icons/search'
 import ShardsSVG from '@/icons/shards'
 import { landImage, planetImage } from '@/lib/format'
-import { addFavLand, remFavLand, setLandAction } from '@/mining/actions'
+import { addFavLand, remFavLand, setLandAction } from '@/chain/actions/mining'
 import { miningKeys, playerKeys } from '@/data/keys'
 
-import { useChainAction } from './useMemberAction'
+import { useTransaction } from '@/wallet/useTransaction'
 
 // "Mountains" also matches "Icy Mountains", so those land templates are pinned explicitly.
 const MOUNTAIN_TEMPLATES = '19546,19530,19510,19496,19478,19463'
@@ -31,7 +31,7 @@ interface Filter {
 
 export function Selection() {
   const queryClient = useQueryClient()
-  const { run, busy, account } = useChainAction()
+  const { run, busy, account } = useTransaction()
   const miner = useMiner(account)
   const favorites = useFavorites(account)
   const planetMin = usePlanetMinCommission()

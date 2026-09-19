@@ -28,6 +28,8 @@ const REPROBE_INTERVAL_MS = 10 * 60 * 1000
 const ROTATION_SIZE = 4
 /** How long a node stays benched after failing a real request. */
 const PENALTY_MS = 60_000
+/** When every node is benched, the soonest the whole list is probed again. */
+const REPROBE_AFTER_FAILURE_MS = 30_000
 
 type Listener = (status: PoolStatus) => void
 
@@ -44,6 +46,7 @@ export class EndpointPool {
   private penalties = new Map<string, number>()
   private inflight: Promise<PoolStatus> | null = null
   private probedAt = 0
+  private lastForcedProbe = 0
   private state: PoolStatus['state'] = 'idle'
   private listeners = new Set<Listener>()
 
@@ -164,11 +167,19 @@ export class EndpointPool {
     return [first, ...rest].slice(0, limit)
   }
 
-  /** Bench a node that just failed a real request. */
+  /**
+   * Bench a node that just failed a real request. When none is left, probe the whole list again,
+   * but at most every REPROBE_AFTER_FAILURE_MS: while offline, every failed read lands here, and
+   * each forced probe asks all the nodes.
+   */
   penalize(url: string) {
-    this.penalties.set(url, Date.now() + PENALTY_MS)
-    const alive = this.ranked.some((u) => (this.penalties.get(u) ?? 0) < Date.now())
-    if (!alive) void this.probe(true)
+    const now = Date.now()
+    this.penalties.set(url, now + PENALTY_MS)
+    const alive = this.ranked.some((u) => (this.penalties.get(u) ?? 0) < now)
+    if (!alive && now - this.lastForcedProbe >= REPROBE_AFTER_FAILURE_MS) {
+      this.lastForcedProbe = now
+      void this.probe(true)
+    }
   }
 }
 

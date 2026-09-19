@@ -313,12 +313,6 @@
   text-align: center;
 }
 
-.member__input:focus {
-  border-color: var(--blue);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 186, 255, 0.2);
-}
-
 .member__hint {
   color: var(--text-faint);
   font-size: 12px;

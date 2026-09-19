@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 
-import { ArrowLeftCircleIcon, RefreshIcon } from '@/components/icons'
+import { ArrowLeftCircleIcon, RefreshIcon } from '@/icons/ui'
 import { PageHeader } from '@/components/PageHeader'
 import {
   nextAdventureAt,
@@ -54,7 +54,7 @@ export default function Adventures() {
 
   return (
     <>
-      <PageHeader title="Adventures" image={publicUrl('/assets/background/bg-adventures.jpeg')} />
+      <PageHeader title="Adventures" image={publicUrl('/assets/background/bg-adventures.webp')} />
 
       <div className="page adv">
         <div className="adv__bar">

@@ -5,15 +5,15 @@ import { refreshBuilder } from '@/data/builder'
 import type { BuilderSeason } from '@/data/types/builder'
 import StarSVG from '@/icons/star'
 import { chainDate, timeLeft, useNow } from '@/lib/time'
-import { regPlayerAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { regPlayerAction } from '@/chain/actions/builder'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import { PrevSeason } from './PrevSeason'
 
 export function Welcome({ season }: { season: BuilderSeason | null }) {
   const now = useNow()
-  const { run, busy } = useChainAction()
+  const { run, busy } = useTransaction()
   const [tab, setTab] = useState<'new' | 'prev'>('new')
 
   let title = ''

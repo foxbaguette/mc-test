@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 
+import { useDismiss } from '@/components/useDismiss'
+import { MoreIcon } from '@/icons/ui'
+
 import { SECONDARY_GROUPS, useNavItems, type NavItem } from './nav'
 
 import './SectionNav.css'
@@ -52,19 +55,7 @@ export function SectionNav() {
 
   useEffect(() => setOpen(false), [pathname])
 
-  useEffect(() => {
-    if (!open) return
-    const onPointerDown = (e: PointerEvent) => {
-      if (!moreRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    document.addEventListener('pointerdown', onPointerDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
+  useDismiss(open, moreRef, () => setOpen(false))
 
   return (
     <nav className="section-nav" aria-label="Sections">
@@ -83,11 +74,7 @@ export function SectionNav() {
             aria-haspopup="true"
             aria-expanded={open}
           >
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <circle cx="5" cy="12" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="19" cy="12" r="2" />
-            </svg>
+            <MoreIcon />
             <span className="section-nav__label">More</span>
           </button>
 

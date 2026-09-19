@@ -2,6 +2,7 @@ import { Suspense, useEffect, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { LoadError } from '@/components/LoadError'
 
 import { Drawer } from './Drawer'
 import { Header } from './Header'
@@ -42,6 +43,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           </Suspense>
         </ErrorBoundary>
       </main>
+      <LoadError />
       <TabBar onMore={() => setSheetOpen(true)} moreOpen={sheetOpen} />
       <Drawer open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </div>

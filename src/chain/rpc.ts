@@ -114,43 +114,47 @@ function shared<T>(key: string, run: () => Promise<T>): Promise<T> {
   return request
 }
 
+const PAGE_SIZE = 1000
+/** Guards against a malformed next_key looping forever: 50,000 rows. */
+const MAX_PAGES = 50
+
+/**
+ * Rows of a table.
+ * - With an explicit `limit`: one page, at most that many rows.
+ * - Without one: every row. Primary-key reads follow `next_key` page by page, forwards or in
+ *   reverse. A node answers at most 1,000 rows per call and only says so with `more`, so a
+ *   growing table would otherwise lose rows silently.
+ * - Secondary-index reads can't be paged reliably (many rows share one index value), so they stay
+ *   one page; in development a cut-off result is reported in the console.
+ */
 export function getRows<T>(query: TableQuery, options: ReadOptions = {}): Promise<T[]> {
-  const body = { json: true, scope: query.code, limit: 1000, ...query }
+  const body = { json: true, scope: query.code, limit: PAGE_SIZE, ...query }
   const key = JSON.stringify(body) + (options.confirmEmpty ? '!' : '')
+  const paged = query.limit === undefined && query.index_position === undefined
 
   return shared(key, async () => {
-    const first = await post<TableResult<T>>('/v1/chain/get_table_rows', body)
-    if (first.data.rows.length > 0 || !options.confirmEmpty) return first.data.rows
+    let answer = await post<TableResult<T>>('/v1/chain/get_table_rows', body)
+    if (answer.data.rows.length === 0 && options.confirmEmpty) {
+      answer = await post<TableResult<T>>('/v1/chain/get_table_rows', body, new Set([answer.url]))
+    }
 
-    const second = await post<TableResult<T>>('/v1/chain/get_table_rows', body, new Set([first.url]))
-    return second.data.rows
+    const rows = [...answer.data.rows]
+    let page = answer.data
+    for (let n = 1; paged && page.more && page.next_key && n < MAX_PAGES; n++) {
+      // Reverse reads walk down from the top, so the next page ends where this one stopped.
+      const bound = query.reverse ? { upper_bound: page.next_key } : { lower_bound: page.next_key }
+      page = (await post<TableResult<T>>('/v1/chain/get_table_rows', { ...body, ...bound })).data
+      rows.push(...page.rows)
+    }
+
+    if (import.meta.env.DEV && query.limit === undefined && page.more) {
+      console.warn(`${query.code}:${query.table} was cut off after ${rows.length} rows`, query)
+    }
+    return rows
   })
 }
 
 export async function getRow<T>(query: TableQuery, options: ReadOptions = {}): Promise<T | null> {
   const rows = await getRows<T>({ limit: 1, ...query }, options)
   return rows[0] ?? null
-}
-
-/** A whole table, following `next_key` pagination. */
-export function getAllRows<T>(query: TableQuery): Promise<T[]> {
-  const key = `all:${JSON.stringify(query)}`
-  return shared(key, async () => {
-    const out: T[] = []
-    let lower = query.lower_bound
-    // Guard against a malformed next_key looping forever.
-    for (let page = 0; page < 50; page++) {
-      const { data } = await post<TableResult<T>>('/v1/chain/get_table_rows', {
-        json: true,
-        scope: query.code,
-        limit: 1000,
-        ...query,
-        lower_bound: lower
-      })
-      out.push(...data.rows)
-      if (!data.more || !data.next_key) break
-      lower = data.next_key
-    }
-    return out
-  })
 }

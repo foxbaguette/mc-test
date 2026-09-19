@@ -7,28 +7,28 @@ import { MiningBlocked } from '@/components/MiningBlocked'
 import { useFavorites, type FavoriteLand } from '@/data/favorites'
 import { refreshMining, useEquippedTools, useMiner } from '@/data/mining'
 import HearthBrokenSVG from '@/icons/hearth-broken'
-import RefreshSVG from '@/icons/refresh'
 import ShardsSVG from '@/icons/shards'
 import StarSVG from '@/icons/star'
 import TLMSVG from '@/icons/tlm'
 import { landImage, planetImage } from '@/lib/format'
-import { cooldownLabel, useNow } from '@/lib/time'
-import { remFavLand, remFavTools, setBagAction, setLandAction } from '@/mining/actions'
+import { cooldownLabel, useClockFor } from '@/lib/time'
+import { Ticking } from '@/components/Ticking'
+import { remFavLand, remFavTools, setBagAction, setLandAction } from '@/chain/actions/mining'
 import { mineReadyAt } from '@/mining/estimates'
 import { mineNow } from '@/mining/mineNow'
 import { useCanMine } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 import { miningKeys, playerKeys } from '@/data/keys'
 
-import { useChainAction } from './useMemberAction'
+import { useTransaction } from '@/wallet/useTransaction'
+import { RefreshIcon } from '@/icons/ui'
 
 export function Favorites() {
   const queryClient = useQueryClient()
-  const { run, busy, account, permission } = useChainAction()
+  const { run, busy, account, permission } = useTransaction()
   const favorites = useFavorites(account)
   const tools = useEquippedTools(account)
   const miner = useMiner(account)
-  const now = useNow(1000)
   const [mining, setMining] = useState<string | null>(null)
   const canMine = useCanMine()
 
@@ -38,9 +38,11 @@ export function Favorites() {
   )
 
   const readyAt = (land: FavoriteLand) => mineReadyAt(land.delay, tools.data, miner.data?.last_mine)
-  const withLabel = favorites.lands.map((land) => ({ land, label: cooldownLabel(readyAt(land), now) }))
-  const ready = withLabel.filter((l) => l.label === 'MINE').sort((a, b) => b.land.delay - a.land.delay)
-  const waiting = withLabel.filter((l) => l.label !== 'MINE').sort((a, b) => a.land.delay - b.land.delay)
+  // Re-render when a land's cooldown ends, to re-sort; the countdowns tick on their own.
+  const now = useClockFor(favorites.lands.map(readyAt))
+  const withReady = favorites.lands.map((land) => ({ land, at: readyAt(land), isReady: readyAt(land) <= now }))
+  const ready = withReady.filter((l) => l.isReady).sort((a, b) => b.land.delay - a.land.delay)
+  const waiting = withReady.filter((l) => !l.isReady).sort((a, b) => a.land.delay - b.land.delay)
 
   const refreshMember = () => queryClient.invalidateQueries({ queryKey: playerKeys.member(account) })
 
@@ -122,7 +124,7 @@ export function Favorites() {
             onClick={() => Promise.all([refreshMining(account), favorites.refetch()])}
             aria-label="Refresh"
           >
-            <RefreshSVG />
+            <RefreshIcon />
           </button>
         </div>
 
@@ -132,8 +134,8 @@ export function Favorites() {
           ) : favorites.lands.length === 0 ? (
             <p className="empty">You don't have any favorite land</p>
           ) : (
-            [...ready, ...waiting].map(({ land, label }) => (
-              <article key={land.asset_id} className={`land-tile ${label === 'MINE' ? 'is-ready' : ''}`}>
+            [...ready, ...waiting].map(({ land, at, isReady }) => (
+              <article key={land.asset_id} className={`land-tile ${isReady ? 'is-ready' : ''}`}>
                 <div className="land-tile__media">
                   <img src={landImage(land.landName)} alt={land.landName} loading="lazy" />
                   <img className="land-card__planet" src={planetImage(land.planetName)} alt={land.planetName} />
@@ -192,12 +194,12 @@ export function Favorites() {
                   <Button
                     size="sm"
                     block
-                    color={label === 'MINE' ? 'gradientYellow' : 'solidBlue'}
+                    color={isReady ? 'gradientYellow' : 'solidBlue'}
                     isLoading={mining === land.asset_id}
-                    disabled={!canMine || busy || mining !== null || label !== 'MINE'}
+                    disabled={!canMine || busy || mining !== null || !isReady}
                     onClick={() => mineLand(land.asset_id)}
                   >
-                    <span className="num">{label === 'MINE' ? 'Mine' : label}</span>
+                    <span className="num">{isReady ? 'Mine' : <Ticking render={(tick) => cooldownLabel(at, tick)} />}</span>
                   </Button>
                 </div>
               </article>

@@ -3,37 +3,34 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/Button'
 import { Modal } from '@/components/Modal'
-import { InfoCircleIcon } from '@/components/icons'
+import { CloseIcon, InfoCircleIcon } from '@/icons/ui'
 import { refreshPlayer, usePlayer } from '@/data/player'
 import { depositState, useMinerClaim, useToolWallet } from '@/data/toolLoaning'
 import TLMSVG from '@/icons/tlm'
 import { tlmToNumber } from '@/lib/format'
-import { chainDate, timeLeft, useNow } from '@/lib/time'
-import { claimMinesAction, claimToolsTlmAction, depositToolsTlmAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { chainDate, compactWait, timeLeft, useClockFor } from '@/lib/time'
+import { Ticking } from '@/components/Ticking'
+import { claimMinesAction } from '@/chain/actions/mining'
+import { claimToolsTlmAction, depositToolsTlmAction } from '@/chain/actions/toolLoaning'
+import { useTransaction } from '@/wallet/useTransaction'
 import { toolLoaningKeys } from '@/data/keys'
 
 import { DepositValue } from './Shared'
 
 /** Everything about the player's TLM, above whatever tab is open: it applies to all of them. */
 export function Wallet() {
-  const { run, busy, account } = useChainAction()
+  const { run, busy, pending, account } = useTransaction()
   const wallet = useToolWallet(account)
   const claim = useMinerClaim(account)
-  const now = useNow(1000)
   const [open, setOpen] = useState(false)
-  const [claiming, setClaiming] = useState(false)
 
   const amount = tlmToNumber(claim.data?.amount)
   const readyAt = claim.data ? +chainDate(claim.data.timestamp) : 0
-  const wait = timeLeft(readyAt, now)
-  const waitLabel = `${wait.days ? `${wait.days}d` : ''}${wait.hours ? `${wait.hours}h` : ''}${wait.minutes ? `${wait.minutes}m` : ''}${wait.seconds}s`
+  // Re-render when the rewards unlock; the countdown in the button ticks on its own.
+  const waiting = readyAt > useClockFor([readyAt])
 
-  async function claimMines() {
-    setClaiming(true)
-    await run(claimMinesAction, 'TLM Claimed', () => Promise.all([claim.refetch(), refreshPlayer(account)]))
-    setClaiming(false)
-  }
+  const claimMines = () =>
+    run(claimMinesAction, 'TLM Claimed', () => Promise.all([claim.refetch(), refreshPlayer(account)]), 'claim')
 
   return (
     <>
@@ -56,11 +53,11 @@ export function Wallet() {
           <Button
             size="sm"
             className="tl-plate__btn"
-            isLoading={claiming}
-            disabled={busy || amount === 0 || wait.ms > 0}
+            isLoading={pending === 'claim'}
+            disabled={busy || amount === 0 || waiting}
             onClick={claimMines}
           >
-            <span className="num">{wait.ms > 0 ? waitLabel : 'Claim'}</span>
+            <span className="num">{waiting ? <Ticking render={(tick) => compactWait(timeLeft(readyAt, tick))} /> : 'Claim'}</span>
           </Button>
         </div>
       </section>
@@ -72,12 +69,11 @@ export function Wallet() {
 
 function DepositDialog({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
-  const { run, busy, account } = useChainAction()
+  const { run, busy, pending, account } = useTransaction()
   const player = usePlayer()
   const wallet = useToolWallet(account)
   const [deposit, setDeposit] = useState('')
   const [withdraw, setWithdraw] = useState('')
-  const [pending, setPending] = useState<'deposit' | 'withdraw' | null>(null)
 
   const state = depositState(wallet.data)
 
@@ -85,15 +81,14 @@ function DepositDialog({ onClose }: { onClose: () => void }) {
     event.preventDefault()
     const value = Number(kind === 'deposit' ? deposit : withdraw)
     if (!(value > 0)) return
-    setPending(kind)
     const ok = await run(
       (a, p) => (kind === 'deposit' ? depositToolsTlmAction(a, p, value) : claimToolsTlmAction(a, p, value)),
       kind === 'deposit' ? 'Deposit successful' : 'Withdraw successful',
       () =>
-        Promise.all([queryClient.invalidateQueries({ queryKey: toolLoaningKeys.toolWallet(account) }), refreshPlayer(account)])
+        Promise.all([queryClient.invalidateQueries({ queryKey: toolLoaningKeys.toolWallet(account) }), refreshPlayer(account)]),
+      kind
     )
     if (ok) (kind === 'deposit' ? setDeposit : setWithdraw)('')
-    setPending(null)
   }
 
   return (
@@ -102,9 +97,7 @@ function DepositDialog({ onClose }: { onClose: () => void }) {
         <header className="tl-dialog__head">
           <h2 className="tl-dialog__title">Deposited TLM</h2>
           <button className="icon-btn" onClick={onClose} disabled={busy} aria-label="Close">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
+            <CloseIcon />
           </button>
         </header>
 
@@ -127,7 +120,7 @@ function DepositDialog({ onClose }: { onClose: () => void }) {
               <span className="tl-field__label">{kind === 'deposit' ? 'Deposit TLM' : 'Withdraw TLM'}</span>
               <span className="tl-field__row">
                 <input
-                  className="tl-field__input num"
+                  className="input tl-field__input num"
                   inputMode="decimal"
                   placeholder="0.0000"
                   value={kind === 'deposit' ? deposit : withdraw}

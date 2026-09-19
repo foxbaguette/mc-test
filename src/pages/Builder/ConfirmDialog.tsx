@@ -4,8 +4,8 @@ import { Button } from '@/components/Button'
 import { Modal } from '@/components/Modal'
 import { formatR, refreshBuilder } from '@/data/builder'
 import QuestSVG from '@/icons/quest'
-import { qpFillStorageAction, qpToResourcesAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { qpFillStorageAction, qpToResourcesAction } from '@/chain/actions/builder'
+import { useTransaction } from '@/wallet/useTransaction'
 
 const SECONDS = 15
 
@@ -18,7 +18,7 @@ interface ConfirmDialogProps {
 
 /** Quest point exchange confirmation; the quote expires after 15 seconds, as before. */
 export function ConfirmDialog({ qp, resources, fill, onClose }: ConfirmDialogProps) {
-  const { run, busy } = useChainAction()
+  const { run, busy } = useTransaction()
   const [left, setLeft] = useState(SECONDS)
 
   const closeRef = useRef(onClose)

@@ -41,6 +41,30 @@ export function useTemplateMap() {
   return useMemo(() => new Map((templates.data ?? []).map((row) => [row.templateid, row])), [templates.data])
 }
 
+/**
+ * Consecutive runs of sorted ids as [first, last] ranges. A gap of up to `maxGap` ids is read along
+ * rather than split: ten unneeded rows cost about as much as one more request.
+ */
+export function idRanges(sortedIds: number[], maxGap = 10): [number, number][] {
+  const ranges: [number, number][] = []
+  for (const id of sortedIds) {
+    const last = ranges[ranges.length - 1]
+    if (last && id - last[1] <= maxGap) last[1] = id
+    else ranges.push([id, id])
+  }
+  return ranges
+}
+
+/**
+ * Only the adventures the player joined. One range from the oldest to the newest would also
+ * download every adventure in between: about 1 MB for a player whose joined ids span 672–1207.
+ */
+async function readAdventuresById(ids: number[]) {
+  const wanted = new Set(ids)
+  const pages = await Promise.all(idRanges(ids).map(([from, to]) => t.readAdventureRange(from, to)))
+  return pages.flat().filter((adventure) => wanted.has(adventure.adventureid))
+}
+
 export interface Participation extends AdventureParticipation {
   adventure?: Adventure
 }
@@ -61,11 +85,9 @@ export function useAdventures(account: string | null) {
   })
 
   const ids = useMemo(() => [...new Set((mine.data ?? []).map((p) => p.adventureid))].sort((a, b) => a - b), [mine.data])
-  const first = ids[0] ?? 0
-  const last = ids[ids.length - 1] ?? 0
   const joined = useQuery({
-    queryKey: adventureKeys.joined(first, last),
-    queryFn: () => t.readAdventureRange(first, last),
+    queryKey: adventureKeys.joined(ids.join(',')),
+    queryFn: () => readAdventuresById(ids),
     enabled: ids.length > 0,
     staleTime: 10 * MIN
   })

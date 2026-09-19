@@ -3,13 +3,13 @@ import { useQueryClient } from '@tanstack/react-query'
 
 import { RARITY_COLORS, RARITY_ORDER } from '@/chain/config'
 import { Button } from '@/components/Button'
-import { ClockIcon } from '@/components/icons'
+import { ClockIcon } from '@/icons/ui'
 import { Select } from '@/components/Select'
 import { SHINE_ORDER, useToolOv, useToolWallet } from '@/data/toolLoaning'
 import PickaxeSVG from '@/icons/pickaxe'
 import ShardsSVG from '@/icons/shards'
-import { setTempListAction } from '@/mining/actions'
-import { useChainAction } from '@/pages/AwMining/useMemberAction'
+import { setTempListAction } from '@/chain/actions/toolLoaning'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 import { toolLoaningKeys } from '@/data/keys'
 
@@ -23,7 +23,7 @@ const SORTS: { value: Sort; label: string }[] = [
 
 export function Config() {
   const queryClient = useQueryClient()
-  const { run, busy, account } = useChainAction()
+  const { run, busy, account } = useTransaction()
   const toolOv = useToolOv()
   const wallet = useToolWallet(account)
   const [sort, setSort] = useState<Sort>('rarity')

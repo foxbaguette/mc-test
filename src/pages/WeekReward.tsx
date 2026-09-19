@@ -1,19 +1,16 @@
 import { useMemo, useState } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 
-import { CONTRACTS } from '@/chain/config'
+import { claimWeekAction } from '@/chain/actions/rewards'
 import { Button } from '@/components/Button'
-import { InfoCircleIcon } from '@/components/icons'
+import { InfoCircleIcon } from '@/icons/ui'
 import { PageHeader } from '@/components/PageHeader'
-import { toast } from '@/components/toast'
 import { refreshPlayer, usePlayer } from '@/data/player'
 import { useMissionSettings, useWeeks } from '@/data/game'
 import StarSVG from '@/icons/star'
 import TLMSVG from '@/icons/tlm'
-import { sleep, tlmToNumber } from '@/lib/format'
+import { tlmToNumber } from '@/lib/format'
 import { chainDate } from '@/lib/time'
-import { useSession } from '@/state/session'
-import { formatTransactError, isUserCancel, transact } from '@/wallet/session'
+import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import './WeekReward.css'
@@ -25,12 +22,11 @@ interface Card {
 }
 
 export default function WeekReward() {
-  const { account, permission } = useSession(useShallow((s) => ({ account: s.account, permission: s.permission })))
+  const { run, busy, pending, account } = useTransaction()
   const player = usePlayer()
   const { currentWeek, weeks, query: weeksQuery } = useWeeks()
   const settings = useMissionSettings()
   const [claimed, setClaimed] = useState<number[]>([])
-  const [busy, setBusy] = useState<string | null>(null)
 
   const cards = useMemo<Card[]>(() => {
     const now = Date.now()
@@ -54,33 +50,20 @@ export default function WeekReward() {
   }, [currentWeek, weeks, player.weeklies, claimed])
 
   async function claim(weekId: number, withTlm: boolean) {
-    if (!account) return
-    setBusy(`${weekId}-${withTlm}`)
-    try {
-      await transact([
-        {
-          account: CONTRACTS.MISSIONS,
-          name: withTlm ? 'claimweektlm' : 'claimweek',
-          authorization: [{ actor: account, permission }],
-          data: withTlm ? { wallet: account, week_id: weekId } : { wallet: account, week_id: weekId, boost_percentage: 0 }
-        }
-      ])
-      setClaimed((prev) => [...prev, weekId])
-      toast.success('Claim successfully!')
-      await sleep(3000)
-      await Promise.all([refreshPlayer(account), weeksQuery.refetch()])
-    } catch (err) {
-      if (!isUserCancel(err)) toast.error(formatTransactError(err))
-    } finally {
-      setBusy(null)
-    }
+    const done = await run(
+      (wallet, permission) => claimWeekAction(wallet, permission, weekId, withTlm),
+      'Claim successfully!',
+      () => Promise.all([refreshPlayer(account), weeksQuery.refetch()]),
+      `${weekId}-${withTlm}`
+    )
+    if (done) setClaimed((prev) => [...prev, weekId])
   }
 
   const cost = settings.data?.cost_nftpoints_claim ?? 0
 
   return (
     <>
-      <PageHeader title="Weekly Rewards" image={publicUrl('/assets/background/bg-week-rewards.jpeg')} />
+      <PageHeader title="Weekly Rewards" image={publicUrl('/assets/background/bg-week-rewards.webp')} />
 
       <div className="page week-reward plates">
         <div className="callout">
@@ -114,8 +97,8 @@ export default function WeekReward() {
                     <Button
                       color="gradientPink"
                       block
-                      isLoading={busy === `${card.weekId}-false`}
-                      disabled={!!busy || player.mcPoints < cost}
+                      isLoading={pending === `${card.weekId}-false`}
+                      disabled={busy || player.mcPoints < cost}
                       title={player.mcPoints < cost ? `${cost.toLocaleString('en-US')} MC Points` : undefined}
                       onClick={() => claim(card.weekId, false)}
                     >
@@ -124,8 +107,8 @@ export default function WeekReward() {
                     </Button>
                     <Button
                       block
-                      isLoading={busy === `${card.weekId}-true`}
-                      disabled={!!busy}
+                      isLoading={pending === `${card.weekId}-true`}
+                      disabled={busy}
                       onClick={() => claim(card.weekId, true)}
                     >
                       <span className="num">{(card.userTlm / 2).toFixed(4)}</span> <TLMSVG />

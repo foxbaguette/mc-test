@@ -93,7 +93,7 @@ export default function Landing() {
 
       <main>
         <section className="landing__hero">
-          <img className="landing__hero-bg" src={publicUrl('/assets/background/bg-landing.jpeg')} alt="" />
+          <img className="landing__hero-bg" src={publicUrl('/assets/background/bg-landing.webp')} alt="" />
           <div className="landing__hero-content">
             <img className="landing__hero-logo" src={publicUrl('/assets/icons/mission-control.png')} alt="" />
             <h1>Mission Control</h1>

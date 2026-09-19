@@ -5,7 +5,7 @@
   padding: var(--gutter);
   background:
     linear-gradient(180deg, rgba(5, 16, 30, 0.6), rgba(5, 16, 30, 0.9)),
-    url(/assets/background/bg-login.jpeg) center / cover no-repeat,
+    url(/assets/background/bg-login.webp) center / cover no-repeat,
     var(--bg);
 }
 

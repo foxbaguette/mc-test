@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { Avatar } from '@/components/Avatar'
 import { NetworkStatus } from '@/components/NetworkStatus'
+import { useDismiss } from '@/components/useDismiss'
 import { usePlayer } from '@/data/player'
 import { useWeeks } from '@/data/game'
 import QuestSVG from '@/icons/quest'
@@ -11,6 +12,7 @@ import StarSVG from '@/icons/star'
 import TLMSVG from '@/icons/tlm'
 import { formatAmount } from '@/lib/format'
 import { useSession } from '@/state/session'
+import { CloseIcon } from '@/icons/ui'
 
 import { NavTile } from './MenuNav'
 import { NAV_GROUPS, useNavItems } from './nav'
@@ -26,17 +28,17 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
   const { prizePool } = useWeeks()
   const items = useNavItems()
 
+  // A press on the backdrop is outside the panel, so it closes the sheet like Escape does.
+  useDismiss(open, panelRef, onClose)
+
   useEffect(() => {
     if (!open) return
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     panelRef.current?.focus()
     return () => {
-      window.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
-  }, [open, onClose])
+  }, [open])
 
   async function handleLogout() {
     onClose()
@@ -46,7 +48,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
 
   return (
     <div className={`drawer ${open ? 'is-open' : ''}`} aria-hidden={!open}>
-      <div className="drawer__backdrop" onClick={onClose} />
+      <div className="drawer__backdrop" />
       <div className="drawer__panel" ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Menu">
         <div className="drawer__head">
           <Avatar avatar={player.member?.avatar} rarity={player.member?.avatarrarity} size={48} />
@@ -55,9 +57,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
             <span className="muted">{player.account}</span>
           </div>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
 

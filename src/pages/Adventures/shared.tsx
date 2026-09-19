@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 
 import { AW_IMAGE_URL } from '@/chain/config'
-import { LockIcon } from '@/components/icons'
+import { LockIcon } from '@/icons/ui'
 import { adventureImageSlug, formatAffixValue, type ModUnlocks } from '@/data/adventures'
 import type { Adventure, AdventureMod, AdvTemplate } from '@/data/types/adventures'
 import Filter2SVG from '@/icons/filter2'
@@ -33,7 +33,7 @@ export function AdventureImg({ image, className }: { image: string; className?: 
         `https://gateway.pinata.cloud/ipfs/${clean}`,
         `https://ipfs.filebase.io/ipfs/${clean}`,
         // Some old artwork is no longer pinned anywhere; show the Adventures banner rather than a broken image.
-        publicUrl('/assets/background/bg-adventures.jpeg')
+        publicUrl('/assets/background/bg-adventures.webp')
       ]}
     />
   )

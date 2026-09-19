@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-import { ArrowLeftCircleIcon } from '@/components/icons'
+import { ArrowLeftCircleIcon } from '@/icons/ui'
 import { taskPaidAmount, useTaskHistory } from '@/data/emporium'
 import ShardsSVG from '@/icons/shards'
 import { chainDate, useNow } from '@/lib/time'

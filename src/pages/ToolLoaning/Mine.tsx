@@ -4,12 +4,13 @@ import { useShallow } from 'zustand/react/shallow'
 import { RARITY_ORDER } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { MiningBlocked } from '@/components/MiningBlocked'
-import { RefreshIcon } from '@/components/icons'
+import { RefreshIcon } from '@/icons/ui'
 import { useEquippedTools } from '@/data/mining'
 import { refreshToolLoaning, useLoanableTools, useLoanLand, type LoanTool } from '@/data/toolLoaning'
 import PersonSVG from '@/icons/person'
 import SettingsSVG from '@/icons/settings'
-import { cooldownLabel, useNow } from '@/lib/time'
+import { cooldownLabel, useClockFor } from '@/lib/time'
+import { Ticking } from '@/components/Ticking'
 import { mineWithLoanedTool } from '@/mining/loan'
 import { useCanMine, useSession } from '@/state/session'
 
@@ -20,7 +21,8 @@ export function Mine() {
   const loan = useLoanableTools(account)
   const equipped = useEquippedTools(account)
   const landFor = useLoanLand()
-  const now = useNow(1000)
+  // Re-render when a tool becomes ready, to re-sort; the countdowns tick on their own.
+  const now = useClockFor(loan.tools.map((tool) => tool.readyAt))
   const [mining, setMining] = useState<number | null>(null)
   const canMine = useCanMine()
 
@@ -80,8 +82,7 @@ export function Mine() {
           <p className="empty">No tools</p>
         ) : (
           tools.map((tool) => {
-            const label = cooldownLabel(tool.readyAt, now)
-            const isReady = label === 'MINE'
+            const isReady = tool.readyAt <= now
             return (
               <ToolCard
                 key={tool.template_id}
@@ -107,7 +108,9 @@ export function Mine() {
                     <>
                       {/* Whose clock is still running: the player's own, or this tool's. */}
                       {tool.blockedBy === 'miner' ? <PersonSVG /> : <SettingsSVG />}
-                      <span className="num">{label}</span>
+                      <span className="num">
+                        <Ticking render={(tick) => cooldownLabel(tool.readyAt, tick)} />
+                      </span>
                     </>
                   )}
                 </Button>

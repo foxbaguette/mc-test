@@ -1,5 +1,5 @@
 import { Button } from '@/components/Button'
-import { RefreshIcon } from '@/components/icons'
+import { RefreshIcon } from '@/icons/ui'
 import { useMembership } from '@/data/player'
 import { useMining } from '@/mining/useMining'
 
