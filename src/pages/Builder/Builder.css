@@ -514,6 +514,11 @@
   transition: width 0.1s linear;
 }
 
+/* Phones only (see the 640px block): the price sits on the button. */
+.bld__price {
+  display: none;
+}
+
 .bld.is-locked .bld__art img {
   filter: grayscale(1) brightness(0.55);
 }
@@ -1140,69 +1145,453 @@
 }
 
 @media (max-width: 640px) {
-  /* Art down the left, everything else stacked beside it. */
-  .bld,
-  .bld--special {
-    grid-template-columns: 92px minmax(0, 1fr);
-    grid-template-areas:
-      'art body'
-      'art actions';
-    min-height: 0;
-    padding-right: 12px;
+  /* Phones play the outpost like a mobile game: a compact HUD and the buildings as a grid of tiles. */
+  .builder {
+    gap: 12px;
+    padding-top: 12px;
+    padding-bottom: 20px;
   }
 
-  .bld__art {
-    grid-area: art;
+  /* Storage, prize pool and leaderboard share one row, like a game's top bar. */
+  .builder-hud {
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 
-  .bld__body {
-    grid-area: body;
+  .builder-hud__season {
+    margin-bottom: -2px;
+    padding: 4px 11px;
+    font-size: 10.5px;
   }
 
-  .bld__actions {
-    grid-area: actions;
+  .builder-hud__plate {
+    gap: 3px;
+    padding: 5px 8px;
   }
 
-  /* Names and rates stay on one line, so a card does not grow a row per word. */
-  .bld__head {
-    flex-wrap: wrap;
+  .builder-hud__storage {
+    flex: 1 1 0;
   }
 
-  .bld__name {
-    max-width: 100%;
+  .builder-hud__resources {
     overflow: hidden;
+    font-size: 14px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .bld__rate {
-    white-space: nowrap;
+  .builder-hud__resources small {
+    font-size: 9px;
   }
 
-  .bld__actions {
-    flex-direction: row;
+  .builder-meter {
+    height: 4px;
+  }
+
+  .builder-hud__rate {
     flex-wrap: wrap;
-    padding-top: 0;
+    gap: 0 8px;
+    font-size: 9px;
   }
 
-  .bld__actions > * {
-    flex: 1 1 130px;
+  .builder-hud__prize {
+    flex: none;
+    gap: 2px;
   }
 
-  .bdetail__art {
-    width: 84px;
+  .builder-hud__label {
+    font-size: 8px;
+    letter-spacing: 0.08em;
   }
 
-  .bslots {
+  .builder-hud__pool {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    font-size: 12px;
+  }
+
+  .builder-hud__pool > span {
+    gap: 4px;
+  }
+
+  .builder-hud__pool svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  /* Only the crown: the icon says leaderboard, the label is kept for screen readers. */
+  .builder-hud__leaderboard {
+    flex: none;
+    padding: 0 9px;
+  }
+
+  .builder-hud__leaderboard > span {
+    display: none;
+  }
+
+  .builder-hud__leaderboard svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .builder-columns {
+    gap: 12px;
+  }
+
+  .builder-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
 
+  .builder-group__title {
+    grid-column: 1 / -1;
+    margin-bottom: -2px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+
+  /* One tile per building: art on top, name and rate, then the price on the button. */
+  .bld,
+  .bld--special {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
+    padding: 0;
+    border-radius: 12px;
+    container-type: inline-size;
+  }
+
+  .bld__art {
+    flex: none;
+    aspect-ratio: 5 / 4;
+    width: 100%;
+  }
+
+  .bld__art::after {
+    inset: 4px;
+  }
+
+  .bld__body {
+    gap: 1px;
+    padding: 6px 7px 0;
+  }
+
+  .bld__head {
+    display: block;
+  }
+
+  .bld__name {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The level as a badge on the art. */
+  .bld__level {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    padding: 1px 5px;
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(5, 16, 30, 0.78);
+    color: var(--text);
+    font-size: 9px;
+  }
+
+  .bld__rate {
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bld__desc {
+    display: none;
+  }
+
+  /* Sockets as small cards along the bottom edge of the art. */
+  .bld__sockets {
+    position: absolute;
+    top: calc(80cqw - 33px);
+    right: 7px;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .bsocket {
+    width: 19px;
+    height: 26px;
+    border-radius: 4px;
+    background: rgba(5, 16, 30, 0.8);
+  }
+
+  .bsocket__level {
+    font-size: 8px;
+  }
+
+  /* The Exploder's Use sits just above its upgrade, so every upgrade button lines up along the row. */
+  .bld__actions {
+    flex: 1;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
+    gap: 5px;
+    padding: 6px 7px 7px;
+  }
+
+  .bld__cooldown.is-idle,
+  .bld__upgrade:has(.bld__cooldown) .bld__afford {
+    display: none;
+  }
+
+  .bld__upgrade {
+    gap: 3px;
+  }
+
+  .bld__cost:not(.bld__cooldown),
+  .bld__verb {
+    display: none;
+  }
+
+  .bld__price {
+    display: inline;
+  }
+
+  .bld__cooldown {
+    min-height: 0;
+    font-size: 10px;
+  }
+
+  .bld .btn--sm {
+    min-height: 28px;
+    padding: 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .bld__eta {
+    min-height: 12px;
+    overflow: hidden;
+    font-family: var(--font-body);
+    font-size: 10px;
+    line-height: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Dialogs rise from the bottom as a sheet, with everything inside sized for a thumb. */
+  .bmodal,
+  .bmodal:has(.bdetail--single) {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    border-bottom: none;
+    border-radius: 18px 18px 0 0;
+    animation-name: bsheet-in;
+  }
+
+  .bmodal__body {
+    max-height: 88vh;
+  }
+
+  .bmodal__head {
+    padding: 10px 10px 10px 16px;
+  }
+
+  .bmodal__title {
+    font-size: 17px;
+  }
+
+  .bmodal__content {
+    padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bdlg__panel,
+  .bmodal .panel {
+    padding: 12px;
+  }
+
+  .bdlg__title {
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  .bmodal .builder-text {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .bdetail,
+  .bdetail__col {
+    gap: 12px;
+  }
+
+  .bdetail__head {
+    margin-bottom: 4px;
+  }
+
+  .bdetail__upgrade {
+    margin-top: 10px;
+  }
+
+  .bdetail__cost {
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .bdetail__art {
+    width: 64px;
+    height: 72px;
+    border-radius: 12px;
+    object-fit: contain;
+  }
+
+  .bslots {
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .bslot {
+    gap: 4px;
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .bslot img {
+    max-width: 64px;
+  }
+
+  .bslot__level {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .bdetail__bonus {
+    margin: 10px 0 8px;
+    font-size: 14px;
+  }
+
+  .bmodal .btn {
+    font-size: 12px;
+  }
+
+  .bschema {
+    gap: 6px;
+    margin: 8px 0;
+  }
+
+  .bschema__btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .bnfts {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 6px;
+    max-height: 300px;
+  }
+
+  .bmodal .panel__head {
+    margin-bottom: 8px;
+  }
+
+  .bmodal .panel__title {
+    font-size: 13px;
+  }
+
+  .bmarket__title svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .bfield__label {
+    font-size: 12px;
+  }
+
+  .bfield__input {
+    height: 40px;
+    font-size: 15px;
+  }
+
+  .bmarket__estimate {
+    margin: 10px 0;
+    font-size: 13px;
+  }
+
+  .bmarket__estimate strong {
+    font-size: 17px;
+  }
+
+  /* The three offers stay side by side, as a shop row. */
   .bspend {
-    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .bspend__opt {
+    gap: 2px;
+    font-size: 11px;
+  }
+
+  .bspend__opt .btn {
+    min-height: 48px;
+    padding: 0 4px;
+    font-size: 10.5px;
+    white-space: normal;
+  }
+
+  .bspend__est {
+    margin-top: 2px;
+  }
+
+  /* Leaderboard: denser rows, so a screen holds about twice as many players. */
+  .btable {
+    min-width: 640px;
+    border-spacing: 0 4px;
+    font-size: 12.5px;
+  }
+
+  .btable th {
+    padding: 6px 8px;
+    font-size: 10.5px;
+  }
+
+  .btable td {
+    padding: 6px 8px;
+  }
+
+  .btable__builds {
+    gap: 3px;
+  }
+
+  .btable__build {
+    font-size: 9px;
+  }
+
+  .btable__build img {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+  }
+
+  .btable__gap {
+    width: 4px;
   }
 
   .builder-welcome .btn {
     width: 100%;
     min-width: 0;
+  }
+}
+
+@keyframes bsheet-in {
+  from {
+    transform: translateY(100%);
   }
 }

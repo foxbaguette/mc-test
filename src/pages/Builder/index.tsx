@@ -25,7 +25,11 @@ export default function Builder() {
 
   return (
     <>
-      <PageHeader title="Outpost Builder" image={publicUrl('/assets/background/bg-mcp-builder.webp')} />
+      <PageHeader
+        title="Outpost Builder"
+        image={publicUrl('/assets/background/bg-mcp-builder.webp')}
+        className="page-header--compact"
+      />
 
       <div className="page builder plates">
         {season.isLoading || player.isLoading ? (

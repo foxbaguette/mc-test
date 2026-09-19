@@ -102,8 +102,8 @@ export function Overview({ player, season }: OverviewProps) {
           </a>
         )}
 
-        <button type="button" className="builder-hud__leaderboard" onClick={() => setBoard(true)}>
-          LEADERBOARD <LeaderBoardSvg />
+        <button type="button" className="builder-hud__leaderboard" onClick={() => setBoard(true)} aria-label="Leaderboard">
+          <span>LEADERBOARD</span> <LeaderBoardSvg />
         </button>
       </section>
 
@@ -228,7 +228,9 @@ function BuildingCard({
             disabled={busy || !affordable}
             onClick={() => onUpgrade(building)}
           >
-            {locked ? 'BUILD' : 'UPGRADE'}
+            {/* Phones show the price on the button itself, as games do. */}
+            <span className="bld__verb">{locked ? 'BUILD' : 'UPGRADE'}</span>
+            <span className="bld__price num">Я {formatR(cost)}</span>
           </Button>
           {/* Always rendered so every button in a row sits at the same height. */}
           <span className={`bld__afford ${affordable ? 'is-hidden' : ''}`} aria-hidden>
@@ -239,7 +241,9 @@ function BuildingCard({
 
         {isExploder && (
           <div className="bld__upgrade">
-            <span className="bld__cost bld__cooldown num">{cooling ? cooldownLabel(readyAt, now!) : ' '}</span>
+            <span className={`bld__cost bld__cooldown num ${cooling ? '' : 'is-idle'}`}>
+              {cooling ? cooldownLabel(readyAt, now!) : ' '}
+            </span>
             <Button
               size="sm"
               block
