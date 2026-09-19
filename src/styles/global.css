@@ -430,6 +430,8 @@ svg {
     height: auto;
     aspect-ratio: 264 / 370;
     object-fit: fill;
+    /* Undo any offset a page gives its own card images. */
+    transform: none;
   }
 }
 

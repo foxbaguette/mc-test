@@ -363,6 +363,12 @@
     font-size: 12px;
   }
 
+  /* Sized like the rest of the screen, not a hero button. */
+  .vote__picks > .btn {
+    min-height: 40px;
+    font-size: 13px;
+  }
+
   .vote__desc {
     display: -webkit-box;
     overflow: hidden;

@@ -229,9 +229,45 @@
     gap: 8px;
   }
 
+  /* The game filter matches the status tabs above it: a slim pill, not a form field. */
+  .questing__actions {
+    gap: 6px;
+  }
+
+  .questing__actions .select {
+    --select-c1: rgba(255, 255, 255, 0.12);
+    --select-c2: rgba(255, 255, 255, 0.12);
+
+    height: 34px;
+    border-radius: 999px;
+  }
+
+  .questing__actions .select select {
+    padding: 0 36px 0 14px;
+    border-radius: 999px;
+    background: rgba(5, 16, 30, 0.6);
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .questing__actions .select__arrow {
+    right: 14px;
+    width: 10px;
+    height: 10px;
+  }
+
   .questing__actions .icon-btn {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+  }
+
+  .questing__actions .icon-btn svg {
+    width: 16px;
+    height: 16px;
   }
 
   .quests {

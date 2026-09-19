@@ -235,65 +235,83 @@
   }
 }
 
-/* Phones: the three tools in one row, the planets as a 3 x 2 world select, the best one lit. */
+/*
+ * Phones: the three tool cards in one row, the planets as a 3 x 2 world select with the best one
+ * lit, and the actions in one row with refresh at its end.
+ */
 @media (max-width: 640px) {
+  /* A grid, so refresh (inside the tools bar) can sit in the actions row. */
   .maxi {
-    gap: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px 6px;
+  }
+
+  .maxi > * {
+    grid-column: 1 / -1;
   }
 
   .maxi-bar {
-    align-items: stretch;
-    gap: 6px;
+    display: contents;
   }
 
-  .maxi-tools {
-    flex-wrap: nowrap;
-    gap: 6px;
-  }
-
-  .maxi-tool {
-    flex: 1 1 0;
-    flex-direction: column;
-    gap: 4px;
-    padding: 6px 4px;
-    text-align: center;
-  }
-
-  .maxi-tool--skeleton {
-    flex: 1 1 0;
-    width: auto;
-    height: 84px;
-  }
-
-  .maxi-tool__img {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-  }
-
-  .maxi-tool__img img {
-    top: -12px;
-  }
-
-  .maxi-tool__text {
-    align-items: center;
-    width: 100%;
-  }
-
-  .maxi-tool__text strong {
-    max-width: 100%;
-    font-size: 10px;
-  }
-
-  .maxi-tool__rarity {
-    font-size: 8px;
-    letter-spacing: 0.06em;
+  .maxi-actions {
+    order: 1;
+    grid-column: 1;
   }
 
   .maxi-bar .icon-btn {
+    order: 2;
+    grid-column: 2;
     align-self: center;
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 50%;
+  }
+
+  .maxi-bar .icon-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .maxi-tools {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  /* The whole card: it already carries the tool's name and a frame in its rarity. */
+  .maxi-tool {
+    padding: 4px;
+  }
+
+  .maxi-tool--skeleton {
+    width: auto;
+    height: auto;
+    aspect-ratio: 264 / 370;
+  }
+
+  .maxi-tool__img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 264 / 370;
+    border: none;
+    border-radius: 6px;
+    background: none;
+  }
+
+  .maxi-tool__img img {
+    position: static;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform: none;
+  }
+
+  .maxi-tool__text {
+    display: none;
   }
 
   .maxi-planets {
@@ -349,8 +367,10 @@
     transform: none;
   }
 
+  /* The two actions side by side, sized like the rest of the screen. */
   .maxi-actions {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
     margin-top: 0;
   }
@@ -358,6 +378,11 @@
   .maxi-actions .btn {
     width: 100%;
     min-width: 0;
-    min-height: 44px;
+    min-height: 38px;
+    padding: 2px 8px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    white-space: normal;
   }
 }
