@@ -235,10 +235,6 @@ export const readPdDefenseWins = () => getRows<PdDefenseWin>({ code: PD, table: 
 /** The latest PvP rounds, newest first. */
 export const readPdPvpRounds = (count: number) => getRows<PdPvp>({ code: PD, table: 'pvp3', limit: count, reverse: true })
 
-// federation: a player's chosen gamertag, if they set one
-export const readGamertag = (account: string) =>
-  getRow<{ account: string; tag: string }>({ code: CONTRACTS.FEDERATION, table: 'players', ...exact(account) })
-
 // Planet vote power: the stake (stkvt.worlds weights) and the last vote (dao.worlds votes), per planet.
 export const readVoteWeight = (planet: string, account: string) =>
   getRow<{ voter: string; weight: number }>({ code: 'stkvt.worlds', scope: planet, table: 'weights', ...exact(account) })

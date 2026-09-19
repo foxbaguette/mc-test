@@ -149,13 +149,20 @@ export function refreshPlayer(account: string | null) {
   )
 }
 
-/** The gamertag a wallet chose in Alien Worlds, or null when it never set one. */
-export const useGamertag = (account: string | null | undefined) =>
+/**
+ * Every Mission Control member's gamertag, by wallet, from members.mc: the whole member table in
+ * three reads (about 0.5 MB compressed), rather than one lookup per player. Only the tags are kept.
+ */
+export const useMemberTags = (enabled = true) =>
   useQuery({
-    queryKey: playerKeys.gamertag(account ?? null),
-    queryFn: async () => (await t.readGamertag(account!))?.tag || null,
-    enabled: !!account,
+    queryKey: playerKeys.memberTags,
+    queryFn: async () => {
+      const members = await t.readAllMembers()
+      return new Map(members.filter((m) => m.playertag).map((m) => [m.wallet, m.playertag]))
+    },
+    enabled,
     staleTime: HOUR,
-    // A missing tag just shows the wallet instead.
+    gcTime: HOUR,
+    // Without tags, wallets show instead.
     meta: { silentError: true }
   })

@@ -88,7 +88,6 @@ export function AttackMission() {
       </header>
 
       <div className="pd-card__top">
-        <h2 className="pd-card__title">{mission.mission_name}</h2>
         <Meter value={mission.total_attack_points} max={mission.target_attack_points} tone="attack" />
       </div>
 
@@ -198,7 +197,6 @@ export function LandDefense() {
       <div className="pd-card__top">
         {mission ? (
           <>
-            <h2 className="pd-card__title">{mission.mission_name}</h2>
             <Meter value={team?.total_defense_score ?? 0} max={target} tone="defense" />
           </>
         ) : (

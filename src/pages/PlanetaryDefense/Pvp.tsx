@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/Button'
 import { Ticking } from '@/components/Ticking'
 import { pdJoinPvpAction } from '@/chain/actions/planetaryDefense'
-import { useGamertag } from '@/data/player'
+import { useMemberTags } from '@/data/player'
 import {
   pvpJoinable,
   pvpPhaseEnd,
@@ -30,7 +30,9 @@ export function Pvp() {
   const pvp = usePdPvp()
   const round = pvp.data?.[0]
   const roster = usePdPvpRoster(round?.id)
-  const tag = useGamertag(round?.selected_player)
+  // Gamertags come from members.mc; anyone who is not a member shows by wallet.
+  const tags = useMemberTags(!!round)
+  const targetTag = round ? tags.data?.get(round.selected_player) : undefined
   // Which side's players show; until the player picks, their own side or the one whose phase runs.
   const [picked, setPicked] = useState<Side | null>(null)
   const end = round ? pvpPhaseEnd(round) : 0
@@ -67,8 +69,8 @@ export function Pvp() {
 
       {/* The player under attack: their gamertag when they set one, the wallet beneath. */}
       <div className="pd-target">
-        <h2 className="pd-card__title">{tag.data ?? round.selected_player}</h2>
-        {tag.data && <p className="pd-target__wallet">{round.selected_player}</p>}
+        <h2 className="pd-card__title">{targetTag ?? round.selected_player}</h2>
+        {targetTag && <p className="pd-target__wallet">{round.selected_player}</p>}
       </div>
 
       <div className="pd-versus" aria-label="Scores">
@@ -139,6 +141,7 @@ export function Pvp() {
           total={shown === 'defense' ? round.defense_score : round.attack_score}
           loading={roster.isLoading}
           you={account}
+          tags={tags.data}
         />
       </div>
     </section>
@@ -150,10 +153,12 @@ interface RosterProps {
   total: number
   loading: boolean
   you: string | null
+  /** Gamertags by wallet, when known. */
+  tags: Map<string, string> | undefined
 }
 
 /** One side of the round: every player and their share of the side's score, largest first. */
-function Roster({ players, total, loading, you }: RosterProps) {
+function Roster({ players, total, loading, you, tags }: RosterProps) {
   if (loading) return <div className="skeleton pd-team--skeleton" />
   if (!players || players.length === 0) return <p className="pd-empty">No one yet</p>
   return (
@@ -163,7 +168,9 @@ function Roster({ players, total, loading, you }: RosterProps) {
         return (
           <li key={player} className={`pd-row pd-roster__row ${player === you ? 'is-you' : ''}`}>
             <span className="pd-roster__rank num">{i + 1}</span>
-            <span className="pd-row__name">{player}</span>
+            <span className="pd-row__name" title={player}>
+              {tags?.get(player) ?? player}
+            </span>
             <span className="pd-row__value num">{score.toLocaleString('en-US')}</span>
             <span className="pd-roster__share num">{share.toFixed(share >= 10 ? 0 : 1)}%</span>
             <span className="pd-roster__bar" aria-hidden>
