@@ -39,17 +39,24 @@ export default function ShardHistory() {
   const [month, setMonth] = useState(current)
   const [filter, setFilter] = useState<ShardSource | null>(null)
   const [shown, setShown] = useState(PAGE)
+  const [refreshing, setRefreshing] = useState(false)
 
   const history = useShardHistory(account, month)
-  const payouts = useMemo(() => history.query.data?.payouts ?? [], [history.query.data])
-  const direct = history.query.data?.direct ?? 0
+  // While a month loads, the payouts found so far show, newest days first; Alien Worlds' share is
+  // only known at the end.
+  const firstLoad = history.query.isFetching && !history.query.data
+  const loading = history.loading
+  const payouts = useMemo(
+    () => history.query.data?.payouts ?? (firstLoad ? loading?.payouts : undefined) ?? [],
+    [history.query.data, firstLoad, loading]
+  )
+  const direct = history.query.data?.direct ?? null
   const { total, bySource } = useMemo(() => summarize(payouts, direct), [payouts, direct])
   const visible = useMemo(() => (filter ? payouts.filter((p) => p.source === filter) : payouts), [payouts, filter])
 
   const [year, monthIndex] = month.split('-').map(Number)
   const monthLabel = `${MONTHS[monthIndex - 1]} ${year}`
-  const progress = history.progress
-  const percent = progress && progress.total > 0 ? Math.round((progress.loaded / progress.total) * 100) : 0
+  const percent = loading && loading.total > 0 ? Math.round((loading.loaded / loading.total) * 100) : 0
 
   function goTo(key: string) {
     setMonth(key)
@@ -79,27 +86,33 @@ export default function ShardHistory() {
             </button>
           </div>
 
+          {/* Background refreshes stay silent: only a refresh the player asked for spins. */}
           <button
-            className={`icon-btn ${history.query.isFetching ? 'is-spinning' : ''}`}
-            onClick={() => void history.query.refetch()}
-            disabled={history.query.isFetching}
+            className={`icon-btn ${refreshing ? 'is-spinning' : ''}`}
+            onClick={() => {
+              setRefreshing(true)
+              void history.query.refetch().finally(() => setRefreshing(false))
+            }}
+            disabled={refreshing || firstLoad}
             aria-label="Refresh"
           >
             <RefreshIcon />
           </button>
         </div>
 
-        {history.query.isLoading || (history.query.isFetching && !history.query.data) ? (
+        {firstLoad && (
           <div className="thist__loading" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100}>
             <div className="thist__loading-head">
               <span>Loading {monthLabel}</span>
-              <span className="num">{progress && progress.total > 0 ? `${progress.loaded} / ${progress.total}` : ''}</span>
+              <span className="num">{loading && loading.total > 0 ? `${loading.loaded} / ${loading.total}` : ''}</span>
             </div>
-            <span className={`thist__meter ${!progress?.total ? 'is-waiting' : ''}`}>
-              <span style={{ width: `${progress?.total ? percent : 100}%` }} />
+            <span className={`thist__meter ${!loading?.total ? 'is-waiting' : ''}`}>
+              <span style={{ width: `${loading?.total ? percent : 100}%` }} />
             </span>
           </div>
-        ) : history.query.isError ? (
+        )}
+
+        {history.query.isError && !history.query.data ? (
           <p className="thist__empty">Could not load the history. Try again with the refresh button.</p>
         ) : (
           <>
@@ -132,7 +145,9 @@ export default function ShardHistory() {
                       disabled={entry.count === 0}
                     >
                       <span className="thist__label">{source.label}</span>
-                      <span className="thist__source-amount num">{formatTotal(entry.amount)}</span>
+                      <span className="thist__source-amount num">
+                        {source.id === 'aw' && direct === null ? '…' : formatTotal(entry.amount)}
+                      </span>
                       <span className="thist__share" aria-hidden>
                         <span style={{ width: `${share}%` }} />
                       </span>
@@ -146,7 +161,7 @@ export default function ShardHistory() {
             </section>
 
             {visible.length === 0 ? (
-              <p className="thist__empty">No Shards received in {monthLabel}</p>
+              !firstLoad && <p className="thist__empty">No Shards received in {monthLabel}</p>
             ) : (
               <ul className="thist__list">
                 {visible.slice(0, shown).map((payout) => {
