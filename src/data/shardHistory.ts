@@ -1,17 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
+import { Name } from '@wharfkit/session'
 import { create } from 'zustand'
 
 import { HISTORY_NODES } from '@/chain/config'
-import { getSimpleActions, historyTime, type SimpleAction } from '@/chain/history'
+import { getRowBefore, getSimpleActions, historyTime, type SimpleAction } from '@/chain/history'
 import { getRows } from '@/chain/rpc'
 import { shardHistoryKeys } from './keys'
+import { readUserPoints } from './tables'
 import { monthKey, monthRange } from './tlmHistory'
 
 /**
  * Every Shard a player received through the Alien Worlds points proxy (ptpxy.worlds) in one
  * calendar month (UTC). Games pay Shards with `ptpxy.worlds:addpoints`, signed by the game, so
  * the history nodes never file them under the player: the month's payouts to everyone are read
- * and the player's kept. Regular mining pays Shards directly and is not part of this.
+ * and the player's kept. Alien Worlds itself (mining) pays Shards directly and leaves no payout
+ * to list, so its share is worked out from the player's lifetime Shard count instead.
  */
 
 const PROXY = 'ptpxy.worlds'
@@ -26,10 +29,11 @@ const DAY = 86_400_000
 /** How far back windows are read oldest first; eosphere refuses that past 90 days. */
 const OLDEST_FIRST_DAYS = 80
 
-export type ShardSource = 'ale' | 'mc' | 'pdef' | 'naron' | 'other'
+export type ShardSource = 'ale' | 'aw' | 'mc' | 'pdef' | 'naron' | 'other'
 
 export const SHARD_SOURCES: { id: ShardSource; label: string; color: string }[] = [
   { id: 'ale', label: 'Alien Legends', color: '#ffb800' },
+  { id: 'aw', label: 'Alien Worlds', color: '#a78bfa' },
   { id: 'mc', label: 'Mission Control', color: '#00baff' },
   { id: 'pdef', label: 'Planetary Defense', color: '#ff4f6b' },
   { id: 'naron', label: 'Naron Rewards', color: '#2ff5b1' },
@@ -72,6 +76,29 @@ interface SendPoints {
 }
 
 type Progress = { loaded: number; total: number }
+
+export interface ShardMonth {
+  payouts: ShardPayout[]
+  /** Shards Alien Worlds paid directly (mining): no payouts to list, only the amount. */
+  direct: number
+}
+
+/**
+ * The player's lifetime Shard count (uspts.worlds `total_points`, in tenths) at a moment. It only
+ * ever grows, so where nodes disagree the highest is the one that has seen every change.
+ */
+async function lifetimePoints(account: string, at: number, signal: AbortSignal) {
+  if (at >= Date.now()) return (await readUserPoints(account))?.total_points ?? 0
+  const { answered, rows } = await getRowBefore<{ total_points: number }>(
+    'uspts.worlds',
+    'userpoints',
+    Name.from(account).value.toString(),
+    at,
+    signal
+  )
+  if (answered === 0) throw new Error('No history node answered')
+  return Math.max(0, ...rows.map((row) => row.total_points))
+}
 
 /** Runs the jobs `PARALLEL` at a time until none are left; a running job may queue more. */
 function pool(jobs: (() => Promise<void>)[], signal: AbortSignal) {
@@ -221,11 +248,17 @@ async function mcPayouts(nodes: string[], account: string, start: number, end: n
   return trx
 }
 
-async function readMonth(account: string, key: string, signal: AbortSignal, onProgress: (progress: Progress) => void) {
+async function readMonth(
+  account: string,
+  key: string,
+  signal: AbortSignal,
+  onProgress: (progress: Progress) => void
+): Promise<ShardMonth> {
   const { start } = monthRange(key)
   // The current month stops now: later days have nothing yet.
-  const end = Math.min(monthRange(key).end, Date.now())
-  if (end <= start) return []
+  const monthEnd = monthRange(key).end
+  const end = Math.min(monthEnd, Date.now())
+  if (end <= start) return { payouts: [], direct: 0 }
 
   // The month's size is known before the first page, so the loading bar starts at its full length.
   const { nodes, total } = await fullNodes(start, end, signal)
@@ -251,7 +284,12 @@ async function readMonth(account: string, key: string, signal: AbortSignal, onPr
     ? await mcPayouts(nodes, account, start, end, signal)
     : new Set<string>()
 
-  return mine
+  // Everything earned in the month, less what came through the proxy, is what Alien Worlds paid.
+  const [before, after] = await Promise.all([lifetimePoints(account, start, signal), lifetimePoints(account, monthEnd, signal)])
+  const proxied = mine.reduce((sum, action) => sum + action.data.points, 0)
+  const direct = Math.max(0, after - before - proxied) / 10
+
+  const payouts = mine
     .map((action, i) => ({
       id: `${action.transaction_id}:${i}`,
       trxId: action.transaction_id,
@@ -261,6 +299,7 @@ async function readMonth(account: string, key: string, signal: AbortSignal, onPr
       source: mc.has(action.transaction_id) ? ('mc' as const) : sourceOf(action.data.points_manager)
     }))
     .sort((a, b) => b.at - a.at)
+  return { payouts, direct }
 }
 
 /** Loading progress per account and month, kept outside the component so a remount keeps showing it. */
@@ -283,12 +322,13 @@ export function useShardHistory(account: string | null, key: string) {
   return { query, progress }
 }
 
-/** Totals per source, in the order the sources are listed. */
-export function summarize(payouts: ShardPayout[]) {
+/** Totals per source, in the order the sources are listed, with Alien Worlds' direct Shards. */
+export function summarize(payouts: ShardPayout[], direct: number) {
   const bySource = new Map<ShardSource, { amount: number; count: number }>(
     SHARD_SOURCES.map((s) => [s.id, { amount: 0, count: 0 }])
   )
-  let total = 0
+  bySource.get('aw')!.amount = direct
+  let total = direct
   for (const payout of payouts) {
     const entry = bySource.get(payout.source)!
     entry.amount += payout.amount

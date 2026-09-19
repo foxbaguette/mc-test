@@ -151,6 +151,36 @@ export interface TableDelta<D> {
 const DELTA_PAGE = 100
 
 /**
+ * One table row as it stood just before `before`, from every node at once: nodes index history
+ * unevenly, so each answer is returned for the caller to pick from. `answered` is how many nodes
+ * replied; a node that replied without a version means the row did not exist yet.
+ */
+export async function getRowBefore<D>(
+  code: string,
+  table: string,
+  primaryKey: string,
+  before: number,
+  signal?: AbortSignal
+): Promise<{ answered: number; rows: D[] }> {
+  const answers = await Promise.all(
+    HISTORY_NODES.map((node) =>
+      withTimeout(DEFAULT_TIMEOUT_MS, signal, (combined) =>
+        getJson<{ deltas?: TableDelta<D>[] }>(
+          node,
+          '/v2/history/get_deltas',
+          { code, scope: code, table, primary_key: primaryKey, before: new Date(before).toISOString(), sort: 'desc', limit: 1 },
+          combined
+        )
+      )
+        .then((answer) => (Array.isArray(answer.deltas) ? { row: answer.deltas[0]?.data } : null))
+        .catch(() => null)
+    )
+  )
+  const replies = answers.filter((answer) => answer !== null)
+  return { answered: replies.length, rows: replies.flatMap((reply) => (reply.row ? [reply.row] : [])) }
+}
+
+/**
  * Every version of one table row, oldest first, paged from a single node. Hyperion keeps a row's
  * past states, which is how figures the contract only stores as totals can be taken apart.
  */

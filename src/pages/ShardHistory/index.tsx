@@ -11,7 +11,6 @@ import { useAccount } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
 
 import '../TlmHistory/TlmHistory.css'
-import './ShardHistory.css'
 
 const PAGE = 100
 
@@ -42,8 +41,9 @@ export default function ShardHistory() {
   const [shown, setShown] = useState(PAGE)
 
   const history = useShardHistory(account, month)
-  const payouts = useMemo(() => history.query.data ?? [], [history.query.data])
-  const { total, bySource } = useMemo(() => summarize(payouts), [payouts])
+  const payouts = useMemo(() => history.query.data?.payouts ?? [], [history.query.data])
+  const direct = history.query.data?.direct ?? 0
+  const { total, bySource } = useMemo(() => summarize(payouts, direct), [payouts, direct])
   const visible = useMemo(() => (filter ? payouts.filter((p) => p.source === filter) : payouts), [payouts, filter])
 
   const [year, monthIndex] = month.split('-').map(Number)
@@ -112,7 +112,7 @@ export default function ShardHistory() {
                 <span className="thist__count num">{payouts.length} payouts</span>
               </div>
 
-              <div className="thist__sources shist__sources">
+              <div className="thist__sources">
                 {SHARD_SOURCES.map((source) => {
                   const entry = bySource.get(source.id)!
                   const share = total > 0 ? (entry.amount / total) * 100 : 0
@@ -121,13 +121,14 @@ export default function ShardHistory() {
                     <button
                       key={source.id}
                       type="button"
-                      className={`thist__source ${active ? 'is-active' : ''} ${entry.count === 0 ? 'is-empty' : ''}`}
+                      className={`thist__source ${active ? 'is-active' : ''} ${entry.amount === 0 ? 'is-empty' : ''}`}
                       style={{ '--source': source.color } as CSSProperties}
                       onClick={() => {
                         setFilter(active ? null : source.id)
                         setShown(PAGE)
                       }}
                       aria-pressed={active}
+                      // Alien Worlds pays directly: there is an amount but no payouts to list.
                       disabled={entry.count === 0}
                     >
                       <span className="thist__label">{source.label}</span>
@@ -136,7 +137,7 @@ export default function ShardHistory() {
                         <span style={{ width: `${share}%` }} />
                       </span>
                       <span className="thist__source-meta num">
-                        {share.toFixed(1)}% · {entry.count}
+                        {share.toFixed(1)}%{source.id !== 'aw' && ` · ${entry.count}`}
                       </span>
                     </button>
                   )
