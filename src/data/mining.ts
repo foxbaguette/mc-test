@@ -128,8 +128,13 @@ export function useToolInventory(account: string | null) {
 
 export function refreshMining(account: string | null) {
   return Promise.all(
-    [miningKeys.miner(account), miningKeys.equippedTools(account), miningKeys.favorites(account)].map((queryKey) =>
-      queryClient.invalidateQueries({ queryKey })
-    )
+    [
+      miningKeys.miner(account),
+      miningKeys.equippedTools(account),
+      miningKeys.favorites(account),
+      // Every estimate rests on the planets' pools, which move with every mine anyone makes: a
+      // refresh (or a mine) reads them again, so what the screens estimate is current.
+      miningKeys.planetPools
+    ].map((queryKey) => queryClient.invalidateQueries({ queryKey }))
   )
 }
