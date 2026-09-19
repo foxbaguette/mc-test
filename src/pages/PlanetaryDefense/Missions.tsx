@@ -5,6 +5,8 @@ import { Select } from '@/components/Select'
 import { Ticking } from '@/components/Ticking'
 import {
   acceptedRequest,
+  attackCooldownMs,
+  attackReadyAt,
   currentMission,
   effectivePower,
   isOpenRequest,
@@ -23,7 +25,7 @@ import type { PdOwner } from '@/data/types/planetaryDefense'
 import ShardsSVG from '@/icons/shards'
 import TLMSVG from '@/icons/tlm'
 import { tlmToNumber } from '@/lib/format'
-import { chainDate, countdown, shortDuration, timeLeft, useClockFor } from '@/lib/time'
+import { chainDate, cooldownLabel, countdown, shortDuration, timeLeft, useClockFor } from '@/lib/time'
 import {
   pdAttackAction,
   pdCancelRequestAction,
@@ -45,11 +47,14 @@ export function AttackMission() {
 
   const mission = currentMission(missions.data ?? [], Date.now())
   const deadline = mission ? +chainDate(mission.deadline) : 0
-  // Re-render when the mission closes; the countdown ticks on its own.
-  const now = useClockFor([deadline])
-  const state = mission ? missionState(mission, now) : null
   const myPart = mission ? mine.data?.find((row) => row.mission_name === mission.mission_name) : undefined
-  const attack = effectivePower(power.data?.owner ?? power.data?.player, !!power.data?.inForge).attack
+  const { attack, moveCost } = effectivePower(power.data?.owner ?? power.data?.player, !!power.data?.inForge)
+  // The next attack: 3 hours + 10 s per move cost point after the last one on this mission.
+  const readyAt = attackReadyAt(myPart?.last_participation_time, moveCost)
+  // Re-render when the mission closes or the cooldown ends; the countdowns tick on their own.
+  const now = useClockFor([deadline, readyAt])
+  const state = mission ? missionState(mission, now) : null
+  const cooling = readyAt > now
 
   if (missions.isLoading) return <div className="skeleton pd-card--skeleton" />
 
@@ -91,6 +96,8 @@ export function AttackMission() {
         <Plate label="Shards" value={mission.shards.toLocaleString('en-US')} icon={<ShardsSVG color="#ebb309" />} />
         <Plate label="Your attack points" value={(myPart?.attack_points ?? 0).toLocaleString('en-US')} />
         <Plate label="Your attack power" value={attack.toLocaleString('en-US')} />
+        <Plate label="Your move cost" value={moveCost.toLocaleString('en-US')} />
+        <Plate label="Cooldown" value={shortDuration(attackCooldownMs(moveCost))} />
       </div>
 
       <div className="pd-card__foot">
@@ -103,12 +110,14 @@ export function AttackMission() {
           color="gradientOrange"
           className="pd-action"
           isLoading={pending === 'attack'}
-          disabled={busy || !live || attack <= 0}
+          disabled={busy || !live || attack <= 0 || cooling}
           onClick={() =>
             run((a, p) => pdAttackAction(a, p, mission.mission_name), 'Attack sent', refreshPlanetaryDefense, 'attack')
           }
         >
-          Attack
+          <span className="num">
+            {live && cooling ? <Ticking render={(tick) => cooldownLabel(readyAt, tick, 'Attack')} /> : 'Attack'}
+          </span>
         </Button>
       </div>
     </section>

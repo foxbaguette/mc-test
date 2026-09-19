@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   acceptedRequest,
+  attackCooldownMs,
+  attackReadyAt,
   currentMission,
   effectivePower,
   isOpenRequest,
@@ -46,6 +48,18 @@ describe('attack missions', () => {
     const list = [mission('first', '2026-01-01T00:00:00', true), mission('last', '2026-07-20T00:00:00', true)]
     expect(currentMission(list, NOW)?.mission_name).toBe('last')
     expect(currentMission([], NOW)).toBeNull()
+  })
+})
+
+describe('attack cooldown', () => {
+  it('is 3 hours plus 10 seconds per move cost point', () => {
+    expect(attackCooldownMs(0)).toBe(3 * 3600 * 1000)
+    expect(attackCooldownMs(2002)).toBe((10800 + 20020) * 1000)
+  })
+
+  it('counts from the last attack, and is ready at once without one', () => {
+    expect(attackReadyAt(1_000_000, 100)).toBe((1_000_000 + 10800 + 1000) * 1000)
+    expect(attackReadyAt(undefined, 100)).toBe(0)
   })
 })
 

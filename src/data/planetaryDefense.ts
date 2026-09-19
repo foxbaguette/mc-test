@@ -139,6 +139,13 @@ export function effectivePower(row: PdPlayer | PdOwner | null | undefined, inFor
   }
 }
 
+/** Cooldown after an attack: 3 hours plus 10 seconds per point of move cost (the heavier the army, the slower). */
+export const attackCooldownMs = (moveCost: number) => (3 * 3600 + 10 * moveCost) * 1000
+
+/** When the player can attack a mission again: the cooldown counted from their last attack on it. */
+export const attackReadyAt = (lastAttackSeconds: number | undefined, moveCost: number) =>
+  lastAttackSeconds ? lastAttackSeconds * 1000 + attackCooldownMs(moveCost) : 0
+
 /** The team the player supports, if any. */
 export const teamOf = (supports: PdSupport[], account: string) => supports.find((row) => row.supporters.includes(account)) ?? null
 

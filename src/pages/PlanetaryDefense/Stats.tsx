@@ -1,8 +1,16 @@
 import { useMemo } from 'react'
 
-import { effectivePower, teamOf, usePdDefenseWins, usePdPlayerMissions, usePdPower, usePdSupports } from '@/data/planetaryDefense'
+import {
+  attackCooldownMs,
+  effectivePower,
+  teamOf,
+  usePdDefenseWins,
+  usePdPlayerMissions,
+  usePdPower,
+  usePdSupports
+} from '@/data/planetaryDefense'
 import ShardsSVG from '@/icons/shards'
-import { formatDate } from '@/lib/time'
+import { formatDate, shortDuration } from '@/lib/time'
 import { useAccount } from '@/state/session'
 
 import { Plate } from './shared'
@@ -55,6 +63,7 @@ export function PlayerStats() {
           <Plate label="Attack" value={stats.attack.toLocaleString('en-US')} accent />
           <Plate label="Defense" value={stats.defense.toLocaleString('en-US')} accent />
           <Plate label="Move cost" value={stats.moveCost.toLocaleString('en-US')} />
+          <Plate label="Attack cooldown" value={shortDuration(attackCooldownMs(stats.moveCost))} />
           <Plate
             label="Role"
             value={isWarlord ? `Warlord · ${stats.lands} lands` : team ? `Supporter of ${team.owner_address}` : 'No team'}
