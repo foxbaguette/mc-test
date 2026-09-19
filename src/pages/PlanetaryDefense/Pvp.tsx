@@ -94,7 +94,6 @@ export function Pvp() {
           icon={<TLMSVG />}
           accent
         />
-        <Plate label="Land" value={round.land_id} />
         {round.phase === 'result' && round.winner && (
           <Plate label="Winner" value={round.winner === 'defense' ? 'Defense' : 'Attack'} accent />
         )}
