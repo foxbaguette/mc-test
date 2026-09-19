@@ -21,6 +21,8 @@ export function Lend() {
   const staked = useStakedTools(account)
   const toolOv = useToolOv()
   const [pending, setPending] = useState<string | null>(null)
+  // Phones show the first lines of the explanation; a tap opens the rest.
+  const [hintOpen, setHintOpen] = useState(false)
 
   const invalidate = (...keys: (readonly unknown[])[]) =>
     Promise.all(keys.map((queryKey) => queryClient.invalidateQueries({ queryKey })))
@@ -83,11 +85,13 @@ export function Lend() {
 
   return (
     <>
-      <p className="tl-hint">
+      <p className={`tl-hint ${hintOpen ? 'is-open' : ''}`} onClick={() => setHintOpen((open) => !open)} aria-expanded={hintOpen}>
         <WarningCircleIcon size={20} color="var(--blue)" />
-        Going to bed? Excess tools? Not there for a weekend or even on vacation? Stake your tools to Mission Control where other
-        players can mine with them. The mined TLM is split between you (the lender), the miner (the borrower) and Mission Control
-        (facilitator and CPU provider).
+        <span className="tl-hint__text">
+          Going to bed? Excess tools? Not there for a weekend or even on vacation? Stake your tools to Mission Control where other
+          players can mine with them. The mined TLM is split between you (the lender), the miner (the borrower) and Mission
+          Control (facilitator and CPU provider).
+        </span>
       </p>
 
       {(staked.isLoading || mine.length > 0) && (
