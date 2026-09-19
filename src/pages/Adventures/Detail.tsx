@@ -26,7 +26,7 @@ import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
 import { AdventureImg, CardImg, ModRow, SponsorRibbon } from './shared'
-import { ChevronIcon } from '@/icons/ui'
+import { ChevronIcon, CloseIcon } from '@/icons/ui'
 
 type Templates = Map<number, AdvTemplate>
 
@@ -57,11 +57,24 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
   const [slots, setSlots] = useState<(Pick | null)[]>([null, null, null])
   const [active, setActive] = useState(-1)
   const pickerRef = useRef<HTMLDivElement>(null)
+  const slotsRef = useRef<HTMLDivElement>(null)
   const pickerOpen = active >= 0
+  // Phones show the story's first lines; a tap opens the rest.
+  const [storyOpen, setStoryOpen] = useState(false)
 
   // The picker opens below the Start button; scroll it into view so the choice is visible.
+  // On phones it is a sheet over the bottom of the screen: lift the slots to sit just above it.
   useEffect(() => {
-    if (pickerOpen) pickerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    const picker = pickerRef.current
+    if (!pickerOpen || !picker) return
+    if (getComputedStyle(picker).position !== 'fixed') {
+      picker.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      return
+    }
+    const slotsBottom = slotsRef.current?.getBoundingClientRect().bottom ?? 0
+    // Where the sheet ends up, not where its slide-in animation has it right now.
+    const overlap = slotsBottom + 12 - (window.innerHeight - picker.offsetHeight)
+    if (overlap > 0) window.scrollBy({ top: overlap, behavior: 'smooth' })
   }, [pickerOpen])
   const [schema, setSchema] = useState(ADVENTURE_SCHEMAS[0].schema)
   const [filters, setFilters] = useState<number[]>([])
@@ -216,7 +229,13 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
         </div>
       </header>
 
-      <p className="adv-flavor">{adventure.flavor}</p>
+      <p
+        className={`adv-flavor ${storyOpen ? 'is-open' : ''}`}
+        onClick={() => setStoryOpen((open) => !open)}
+        aria-expanded={storyOpen}
+      >
+        {adventure.flavor}
+      </p>
 
       <div className="adv-board">
         <div className="adv-board__mods">{[0, 1, 2, 3, 4].filter((i) => adventure.mods[i]).map(modRow)}</div>
@@ -237,7 +256,7 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
             </Button>
           </div>
 
-          <div className="adv-slots">
+          <div className="adv-slots" ref={slotsRef}>
             {slots.map((slot, i) => (
               <button
                 key={i}
@@ -307,6 +326,9 @@ function Detail({ adventure, templates, now }: { adventure: Adventure; templates
       {/* Opens under the whole adventure, full width, so the cards have room. */}
       {active >= 0 && (
         <div className="adv-picker" ref={pickerRef}>
+          <button type="button" className="icon-btn adv-picker__close" onClick={() => setActive(-1)} aria-label="Close">
+            <CloseIcon />
+          </button>
           <div className="adv-picker__tabs" role="tablist">
             {ADVENTURE_SCHEMAS.map((item) => (
               <button

@@ -54,7 +54,11 @@ export default function Adventures() {
 
   return (
     <>
-      <PageHeader title="Adventures" image={publicUrl('/assets/background/bg-adventures.webp')} />
+      <PageHeader
+        title="Adventures"
+        image={publicUrl('/assets/background/bg-adventures.webp')}
+        className="page-header--compact"
+      />
 
       <div className="page adv">
         <div className="adv__bar">

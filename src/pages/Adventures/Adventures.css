@@ -1193,3 +1193,489 @@
   box-shadow: 0 0 8px rgba(0, 186, 255, 0.8);
   animation: adv-blink 2.4s ease-in-out infinite;
 }
+
+/* Phones only: the sheet's close button. */
+.adv-picker__close {
+  display: none;
+}
+
+/*
+ * Phones: laid out like a mobile game's mission screen. Cards are banners with the title on the
+ * artwork, readouts on one row and objectives as slim chips; the card picker rises as a sheet.
+ */
+@media (max-width: 640px) {
+  .adv.page {
+    gap: 12px;
+    padding-top: 12px;
+    padding-bottom: 20px;
+  }
+
+  .adv-tabs a {
+    min-height: 32px;
+  }
+
+  .adv__bar .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .adv-next {
+    padding: 4px 12px;
+    font-size: 11px;
+  }
+
+  .adv-list {
+    gap: 12px;
+  }
+
+  .adv-empty {
+    min-height: 160px;
+    font-size: 18px;
+  }
+
+  /* Card: banner, readouts, objectives. */
+  .adv-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'art'
+      'data'
+      'more';
+    gap: 10px;
+    padding: 0 0 12px;
+  }
+
+  .adv-card__main,
+  .adv-card__side {
+    display: contents;
+  }
+
+  .adv-card__side .adv-media {
+    grid-area: art;
+    order: 0;
+    aspect-ratio: 2 / 1;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+  }
+
+  /* Darkens the foot of the artwork so the title reads on it. */
+  .adv-card .adv-media::after {
+    inset: 0;
+    border: none;
+    border-radius: 0;
+    background: linear-gradient(180deg, rgba(5, 16, 30, 0.35) 0%, transparent 30%, transparent 45%, rgba(5, 16, 30, 0.92) 100%);
+  }
+
+  .adv-card .adv-status {
+    z-index: 2;
+    grid-area: art;
+    align-self: start;
+    justify-self: start;
+    margin: 10px 0 0 10px;
+    padding: 3px 9px;
+    background: rgba(5, 16, 30, 0.72);
+    backdrop-filter: blur(6px);
+    font-size: 10px;
+  }
+
+  .adv-card__title {
+    z-index: 2;
+    grid-area: art;
+    align-self: end;
+    margin: 0 12px 10px;
+    font-size: 20px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  }
+
+  .adv-card__data {
+    grid-area: data;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 0 12px;
+  }
+
+  .adv-card .adv-stat {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 4px 8px;
+  }
+
+  .adv-stat__label {
+    overflow: hidden;
+    font-size: 8px;
+    letter-spacing: 0.04em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .adv-card .adv-stat__value {
+    gap: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .adv-card .adv-stat__value svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  /* Only the arrow: the banner and title open the adventure too. The word stays for screen readers. */
+  .adv-card__view {
+    flex: none;
+    justify-content: center;
+    width: 38px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .adv-card__view svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  /* Objectives: slim chips, the label over the value. */
+  .adv-card .adv-mods {
+    grid-area: more;
+    gap: 4px 6px;
+    margin: 0;
+    padding: 0 12px;
+  }
+
+  .adv-card .adv-mod {
+    min-height: 32px;
+    padding: 2px 6px 2px 8px;
+    border-radius: 7px;
+  }
+
+  .adv-card .adv-mod--right {
+    padding: 2px 8px 2px 6px;
+  }
+
+  .adv-card .adv-mod::before {
+    top: 7px;
+    bottom: 7px;
+  }
+
+  .adv-card .adv-mod__affix {
+    font-size: 8px;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  .adv-card .adv-mod__value {
+    font-size: 10.5px;
+  }
+
+  .adv-card .adv-mod__pct {
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 10.5px;
+  }
+
+  .adv-card .adv-mod__lock {
+    font-size: 9.5px;
+  }
+
+  .adv-card .adv-mod.is-locked svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Running and claimable: readouts beside the three cards sent out. */
+  .adv-card:has(.adv-cards) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'art art'
+      'data more';
+  }
+
+  .adv-card:has(.adv-cards):has(.adv-card__side > .btn) {
+    grid-template-areas:
+      'art art'
+      'data more'
+      'action action';
+  }
+
+  .adv-card:has(.adv-cards) .adv-card__data {
+    flex-direction: column;
+    justify-content: center;
+    padding-right: 0;
+  }
+
+  .adv-cards {
+    grid-area: more;
+    grid-template-columns: repeat(3, 46px);
+    align-items: start;
+    align-self: center;
+    gap: 5px;
+    margin: 0;
+    padding: 0 12px 0 0;
+  }
+
+  .adv-cards__card {
+    padding: 3px;
+    border-radius: 7px;
+  }
+
+  .adv-cards__card::before,
+  .adv-cards__card::after {
+    width: 6px;
+    height: 6px;
+  }
+
+  .adv-card__side > .btn {
+    grid-area: action;
+    order: 0;
+    margin: 0 12px;
+  }
+
+  .adv-card .adv-ribbon {
+    top: 16px;
+    right: -66px;
+    width: 200px;
+    padding: 2px 0 3px;
+  }
+
+  .adv-card .adv-ribbon span {
+    font-size: 11px;
+  }
+
+  .adv-card .adv-ribbon small {
+    font-size: 9px;
+  }
+
+  /* Detail: a shorter hero with its readouts in a 2 x 2 grid. */
+  .adv-hero {
+    min-height: 0;
+  }
+
+  .adv-hero__stats {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 5px;
+    padding: 12px 12px 36px;
+  }
+
+  .adv-hero:has(.adv-ribbon) .adv-hero__stats {
+    padding-right: 80px;
+  }
+
+  .adv-hero__stats span {
+    gap: 4px;
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  .adv-hero__stats svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .adv-hero__title {
+    padding: 0 12px 12px;
+  }
+
+  .adv-hero__title .adv-status {
+    margin-bottom: 6px;
+    padding: 3px 9px;
+    font-size: 10px;
+  }
+
+  .adv-hero__title h2 {
+    font-size: 22px;
+  }
+
+  /* The story: three lines, the rest a tap away. */
+  .adv-flavor {
+    display: -webkit-box;
+    overflow: hidden;
+    padding: 12px 12px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    cursor: pointer;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .adv-flavor.is-open {
+    display: block;
+  }
+
+  .adv-board {
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .adv-board__center {
+    gap: 8px;
+  }
+
+  .adv-slots {
+    max-width: 270px;
+    gap: 8px;
+  }
+
+  .adv-slot {
+    padding: 4px;
+    border-radius: 10px;
+  }
+
+  .adv-auto .btn.adv-auto__btn {
+    min-height: 28px;
+    font-size: 11px;
+  }
+
+  .adv-board__mods {
+    gap: 4px;
+  }
+
+  .adv-detail .adv-mod {
+    gap: 4px;
+    min-height: 34px;
+    padding: 3px 4px 3px 7px;
+  }
+
+  .adv-detail .adv-mod--right {
+    padding: 3px 7px 3px 4px;
+  }
+
+  .adv-detail .adv-mod__affix {
+    font-size: 8px;
+    line-height: 1.2;
+  }
+
+  .adv-detail .adv-mod__value {
+    font-size: 11px;
+  }
+
+  .adv-detail .adv-mod__pct {
+    padding: 1px 4px;
+    font-size: 11px;
+  }
+
+  .adv-detail .adv-mod__filter {
+    width: 22px;
+    height: 22px;
+  }
+
+  .adv-detail .adv-mod__filter svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .adv-footer {
+    gap: 8px;
+    padding: 0 12px 16px;
+  }
+
+  .adv-result {
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .adv-result__plate {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 5px 10px 7px;
+  }
+
+  .adv-result__label {
+    overflow: hidden;
+    font-size: 8.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .adv-result__value {
+    font-size: 20px;
+  }
+
+  .adv-result__value small {
+    font-size: 11px;
+  }
+
+  .adv-result__value svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .adv-result__bar {
+    margin-top: 5px;
+  }
+
+  .adv-footer .btn.adv-start {
+    min-height: 44px;
+  }
+
+  .adv-footer p:last-child {
+    font-size: 12px;
+  }
+
+  /* The card picker rises from the bottom, over the tab bar, like an inventory sheet. */
+  .adv-picker {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 160;
+    max-height: 58vh;
+    margin: 0;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-bottom: none;
+    border-radius: 18px 18px 0 0;
+    background: #0b1a2c;
+    box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.6);
+    animation: adv-sheet-in 0.2s ease-out;
+  }
+
+  /* Room to scroll the slots up above the open sheet. */
+  .adv-detail:has(.adv-picker) {
+    margin-bottom: 50vh;
+  }
+
+  .adv-picker__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: inline-grid;
+    width: 32px;
+    height: 32px;
+  }
+
+  .adv-picker__tabs {
+    flex: none;
+    flex-wrap: nowrap;
+    gap: 5px;
+    margin-right: 40px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .adv-picker__tab {
+    flex: none;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .adv-picker__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    flex: 1;
+    gap: 6px;
+    min-height: 0;
+    max-height: none;
+  }
+}
+
+@keyframes adv-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adv-picker {
+    animation: none;
+  }
+}
