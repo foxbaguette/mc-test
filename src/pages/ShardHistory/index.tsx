@@ -157,14 +157,11 @@ export default function ShardHistory() {
                       <span className="thist__what">
                         <span className="thist__from">
                           <span className="thist__chip">{source.label}</span>
-                          <a
-                            className="num"
-                            href={`https://waxblock.io/transaction/${payout.trxId}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {payout.manager}
-                          </a>
+                          {payout.label && (
+                            <a href={`https://waxblock.io/transaction/${payout.trxId}`} target="_blank" rel="noreferrer">
+                              {payout.label}
+                            </a>
+                          )}
                         </span>
                       </span>
                       <span className="thist__amount num">

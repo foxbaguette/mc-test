@@ -1,0 +1,44 @@
+name: Node health check
+
+# Once a week, test the WAX nodes the site reads from (scripts/check-nodes.mjs). When a listed node
+# fails, or a new operator's node works, one issue labelled node-health says so; it closes itself
+# once everything is fine again. Runs on GitHub's servers only: players never see or wait on it.
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - id: check
+        run: node scripts/check-nodes.mjs
+
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROBLEMS: ${{ steps.check.outputs.problems }}
+          SUGGESTIONS: ${{ steps.check.outputs.suggestions }}
+        run: |
+          gh label create node-health --color d93f0b --description "WAX node health check" --force
+          open=$(gh issue list --label node-health --state open --json number --jq '.[0].number')
+          if [ "$PROBLEMS" != "0" ] || [ "$SUGGESTIONS" != "0" ]; then
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --body-file node-health.md
+            else
+              gh issue create --title "Node health check: WAX nodes need a look" --label node-health --body-file node-health.md
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "All listed nodes work again and there are no new operators to add."
+          fi

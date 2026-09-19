@@ -2,7 +2,8 @@ import { HISTORY_NODES } from './config'
 
 /*
  * Reads from the Hyperion history nodes. Unlike the RPC pool these are few and slow to rank:
- * paged reads use one node at a time in order, single lookups ask every node at once.
+ * paged reads use one node at a time in order, single lookups ask several nodes at once, and
+ * big reads (Shard History) share their pages out over every node that holds them.
  */
 
 const DEFAULT_TIMEOUT_MS = 20_000
@@ -25,11 +26,91 @@ export const historyTime = (timestamp: string) => +new Date(`${timestamp}Z`)
 
 type Params = Record<string, string | number | undefined>
 
+/*
+ * Every history read goes through one limiter per node, shared by the whole site: at most
+ * BUCKET_SIZE requests per BUCKET_WINDOW_MS, so a big read spread over the nodes never floods
+ * one of them. A node that refuses (a rate limit, or its error page without CORS headers, which
+ * the browser reports as a failed fetch) rests for REST_MS and callers move on to another node.
+ * Nodes that block an address tend to do so for an hour or more, so the rest is long, and it is
+ * kept in the browser: reloading the page must not send a fresh burst to a node that said no.
+ */
+const BUCKET_SIZE = 3
+const BUCKET_WINDOW_MS = 2000
+const REST_MS = 30 * 60_000
+const REST_KEY = 'history-node-rest'
+
+const calls = new Map<string, number[]>()
+const restingUntil = new Map<string, number>(loadRests())
+
+function loadRests(): [string, number][] {
+  try {
+    const saved = JSON.parse(localStorage.getItem(REST_KEY) ?? '{}') as Record<string, number>
+    return Object.entries(saved).filter(([, until]) => until > Date.now())
+  } catch {
+    return []
+  }
+}
+
+function rest(node: string) {
+  // Offline, every request fails: that says nothing about the node.
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return
+  restingUntil.set(node, Date.now() + REST_MS)
+  try {
+    localStorage.setItem(REST_KEY, JSON.stringify(Object.fromEntries(restingUntil)))
+  } catch {
+    // Without storage the rest still holds until the page is reloaded.
+  }
+}
+
+/** How many nodes a single lookup asks at once. */
+const LOOKUP_NODES = 4
+
+/**
+ * Whether a node is resting after refusing a request. When every node is, none counts as resting:
+ * trying beats giving up, and it is more likely the visitor's own connection that failed.
+ */
+export function isResting(node: string) {
+  const now = Date.now()
+  const resting = (url: string) => (restingUntil.get(url) ?? 0) > now
+  return resting(node) && !HISTORY_NODES.every(resting)
+}
+
+async function throttle(node: string, signal: AbortSignal) {
+  for (;;) {
+    signal.throwIfAborted()
+    const now = Date.now()
+    const recent = (calls.get(node) ?? []).filter((t) => now - t < BUCKET_WINDOW_MS)
+    if (recent.length < BUCKET_SIZE) {
+      recent.push(now)
+      calls.set(node, recent)
+      return
+    }
+    calls.set(node, recent)
+    await new Promise((resolve) => setTimeout(resolve, BUCKET_WINDOW_MS - (now - recent[0]) + 10))
+  }
+}
+
 async function getJson<T>(node: string, path: string, params: Params, signal: AbortSignal): Promise<T> {
+  if (isResting(node)) throw new Error(`${node} is resting`)
   const query = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) if (value !== undefined) query.set(key, String(value))
-  const res = await fetch(`${node}${path}?${query}`, { signal })
-  if (!res.ok) throw new Error(`HTTP ${res.status} from ${node}`)
+  await throttle(node, signal)
+  let res: Response
+  try {
+    res = await fetch(`${node}${path}?${query}`, { signal })
+  } catch (err) {
+    if (!signal.aborted) rest(node)
+    throw err
+  }
+  if (res.status === 429 || res.status === 503) rest(node)
+  if (!res.ok) {
+    // Hyperion explains itself in the body ("limit too big, maximum: 100"); keep that.
+    const reason = await res
+      .json()
+      .then((body: { message?: unknown }) => (typeof body.message === 'string' ? `: ${body.message}` : ''))
+      .catch(() => '')
+    throw new Error(`HTTP ${res.status} from ${node}${reason}`)
+  }
   return (await res.json()) as T
 }
 
@@ -123,8 +204,10 @@ export function getTransaction<D>(
   const timer = setTimeout(() => controller.abort(), timeoutMs)
 
   return new Promise<HistoryAction<D>[] | null>((resolve) => {
-    let pending = HISTORY_NODES.length
-    for (const node of HISTORY_NODES) {
+    const nodes = HISTORY_NODES.filter((node) => !isResting(node)).slice(0, LOOKUP_NODES)
+    let pending = nodes.length
+    if (pending === 0) resolve(null)
+    for (const node of nodes) {
       getJson<{ actions?: HistoryAction<D>[] }>(node, '/v2/history/get_transaction', { id }, controller.signal)
         .then((json) => {
           if (json.actions && accept(json.actions)) resolve(json.actions)

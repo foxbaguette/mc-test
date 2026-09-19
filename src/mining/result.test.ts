@@ -36,14 +36,15 @@ describe('mineResultMessage', () => {
   it('looks up the transaction it was given, polling until a node has indexed it', async () => {
     let lookups = 0
     const calls = nodes({
-      cryptolions: () => json({ actions: ++lookups > 1 ? [mine, logmine] : [mine] }),
-      eosphere: () => json({ actions: [mine] }),
-      eosusa: () => json({ actions: [mine] })
+      eosdac: () => json({ actions: ++lookups > 1 ? [mine, logmine] : [mine] }),
+      waxsweden: () => json({ actions: [mine] }),
+      detroitledger: () => json({ actions: [mine] }),
+      sentnl: () => json({ actions: [mine] })
     })
 
     const message = mineResultMessage(TX)
     await vi.advanceTimersByTimeAsync(1500)
-    expect(calls).toHaveLength(3)
+    expect(calls).toHaveLength(4)
     await vi.advanceTimersByTimeAsync(1500)
 
     expect(await message).toBe('You mined 1.2345 TLM & 2.5 Shards')
@@ -51,14 +52,14 @@ describe('mineResultMessage', () => {
   })
 
   it('takes the first node that has it, without waiting for a hanging one', async () => {
-    nodes({ cryptolions: hang, eosphere: hang, eosusa: () => json({ actions: [mine, logmine] }) })
+    nodes({ eosdac: hang, waxsweden: hang, detroitledger: hang, sentnl: () => json({ actions: [mine, logmine] }) })
     const message = mineResultMessage(TX)
     await vi.advanceTimersByTimeAsync(1500)
     expect(await message).toBe('You mined 1.2345 TLM & 2.5 Shards')
   })
 
   it('gives up with a plain success message after about 20 seconds at most', async () => {
-    nodes({ cryptolions: hang, eosphere: hang, eosusa: hang })
+    nodes({ eosdac: hang, waxsweden: hang, detroitledger: hang, sentnl: hang })
     let settled = false
     const message = mineResultMessage(TX).finally(() => (settled = true))
     await vi.advanceTimersByTimeAsync(19_500)

@@ -6,3 +6,6 @@ dist/
 .env.*
 .DS_Store
 Thumbs.db
+
+# Report written by scripts/check-nodes.mjs
+node-health.md

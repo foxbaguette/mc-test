@@ -3,21 +3,29 @@ export const CHAIN_ID = '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44
 export const APP_NAME = 'mission-control'
 
 /**
- * Candidate WAX API nodes (CORS verified). The order is only a hint: the real
- * order is decided at runtime by EndpointPool.probe(), see endpoints.ts.
+ * Candidate WAX API nodes (CORS verified), one per operator: several addresses of one operator
+ * share its rate limit. The order is only a hint: the real order is decided at runtime by
+ * EndpointPool.probe(), see endpoints.ts.
  */
 export const RPC_NODES: readonly string[] = [
-  'https://wax.greymass.com',
-  'https://api.hivebp.io',
-  'https://wax.eosdac.io',
   'https://wax.blacklusion.io',
+  'https://wax.greymass.com',
+  'https://wax-api.alcor.exchange',
+  'https://wax.a-dex.xyz',
   'https://api.waxsweden.org',
   'https://api.wax.bountyblok.io',
-  'https://wax.eosusa.io',
+  'https://waxapi.blocksindia.com',
   'https://wax.eosphere.io',
+  'https://api.wax.detroitledger.tech',
   'https://wax.api.eosnation.io',
+  'https://wax.cryptolions.io',
+  'https://api.hivebp.io',
+  'https://wax.eu.eosamsterdam.net',
+  'https://hyperion7.sentnl.io',
+  'https://wax.eosdac.io',
+  'https://wax.eosusa.io',
   'https://api.wax.alohaeos.com',
-  'https://wax.cryptolions.io'
+  'https://wax.eosrio.io'
 ]
 
 /**
@@ -26,8 +34,21 @@ export const RPC_NODES: readonly string[] = [
  */
 export const CORS_SAFE_CONTENT_TYPE = 'text/plain;charset=UTF-8'
 
-/** Hyperion nodes, used to read back the result of a mine transaction. */
-export const HISTORY_NODES = ['https://wax.cryptolions.io', 'https://wax.eosphere.io', 'https://wax.eosusa.io']
+/**
+ * Hyperion history nodes (CORS verified), those with the fullest index first: reads that take one
+ * node try them in this order. Their indexes differ (hivebp and alcor lack older months; eosphere
+ * is left out for listing actions twice and missing others), so reads that need every record
+ * count first and keep to the nodes that have them all.
+ */
+export const HISTORY_NODES = [
+  'https://history.waxsweden.org',
+  'https://hyperion.wax.detroitledger.tech',
+  'https://hyperion7.sentnl.io',
+  'https://wax.eosdac.io',
+  'https://wax.cryptolions.io',
+  'https://wax.hivebp.io',
+  'https://wax-hyperion.alcor.exchange'
+]
 
 export const ATOMIC_NODES = [
   'https://atomicassets-api.alienworlds.io',

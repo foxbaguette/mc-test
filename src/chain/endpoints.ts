@@ -25,7 +25,7 @@ const SLOW_PROBE_TIMEOUT_MS = 4_000
 const MAX_LAG_SECONDS = 120
 const REPROBE_INTERVAL_MS = 10 * 60 * 1000
 /** Reads rotate across the fastest N nodes. */
-const ROTATION_SIZE = 4
+const ROTATION_SIZE = 6
 /** How long a node stays benched after failing a real request. */
 const PENALTY_MS = 60_000
 /** When every node is benched, the soonest the whole list is probed again. */
