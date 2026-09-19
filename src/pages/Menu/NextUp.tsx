@@ -102,7 +102,8 @@ export function NextUp() {
       to: '/trilium-vault',
       title: 'Rewards',
       icon: <TriliumVaultSVG color="#26d7ff" />,
-      state: `${claimable.toFixed(4)} TLM`,
+      // Whole TLM at a glance (rounded down, never promising more); the Vault shows the exact amount.
+      state: `${Math.floor(claimable).toLocaleString('en-US')} TLM`,
       detail: claimable > 0 ? 'Ready to claim' : 'Nothing to claim yet',
       ready: claimable > 0
     },

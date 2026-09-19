@@ -512,3 +512,205 @@
     width: 130px;
   }
 }
+
+/* Phones: the home screen as a game's dashboard, tiles side by side instead of one tall column. */
+@media (max-width: 640px) {
+  .menu {
+    gap: 16px;
+  }
+
+  /* Weekly statistics: prize pool on top, the four figures as a 2 × 2 grid, the end of the week
+     as one slim line. */
+  .weekly.panel {
+    padding: 10px 12px 12px;
+  }
+
+  .weekly .panel__head {
+    margin-bottom: 6px;
+  }
+
+  .weekly .weekly__prize {
+    padding: 0 0 8px;
+  }
+
+  .weekly .weekly__prize strong {
+    font-size: 19px;
+  }
+
+  .weekly .stat-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  .weekly .stat-list > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 7px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--plate-radius-sm);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .weekly .stat-list > div:last-child {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .weekly .stat-list dt {
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .weekly .stat-list dt svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .weekly .stat-list dd {
+    font-size: 14px;
+  }
+
+  .weekly .stat-list dd svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  /* What you can do: two tiles to a row, an odd last one across both. */
+  .next {
+    gap: 8px;
+  }
+
+  .next__title {
+    font-size: 13px;
+  }
+
+  .next__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .next__grid > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .next-card {
+    grid-template-columns: 20px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: 2px 7px;
+    padding: 8px 10px;
+  }
+
+  .next-card__icon {
+    grid-row: 1;
+    width: 20px;
+    height: 20px;
+  }
+
+  .next-card__icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .next-card__title {
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .next-card__state,
+  .next-card__detail {
+    grid-column: 1 / -1;
+  }
+
+  .next-card__state {
+    font-size: 14px;
+  }
+
+  .next-card__detail {
+    font-size: 10.5px;
+  }
+
+  /* Alien Legends: logo beside the invitation, a slim button underneath. */
+  .ale-banner {
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: stretch;
+    gap: 8px 12px;
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  .ale-banner__logo {
+    width: 76px;
+  }
+
+  .ale-banner__text strong {
+    font-size: 12.5px;
+  }
+
+  .ale-banner__text span {
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+
+  .ale-banner__cta {
+    grid-column: 1 / -1;
+    padding: 7px 14px;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .tip.panel {
+    gap: 2px 10px;
+    padding: 10px 12px;
+  }
+
+  .tip__body svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .tip__body p {
+    font-size: 13px;
+  }
+
+  /* News: a row to swipe through, each card most of the screen wide. */
+  .news {
+    display: flex;
+    gap: 10px;
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .news::-webkit-scrollbar {
+    display: none;
+  }
+
+  .news > * {
+    flex: 0 0 80%;
+    scroll-snap-align: start;
+  }
+
+  .news__body {
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .news__title {
+    font-size: 14px;
+  }
+
+  .news__desc {
+    font-size: 12.5px;
+    -webkit-line-clamp: 2;
+  }
+}
