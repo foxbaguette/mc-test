@@ -12,7 +12,7 @@ const STORE = 'entries'
  * Bump when what a stored day means changes (new labels, sources or fixes): days stored under an
  * older format are then read again from the chain.
  */
-const FORMAT = 1
+const FORMAT = 2
 
 let opening: Promise<IDBDatabase | null> | null = null
 

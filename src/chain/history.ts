@@ -233,6 +233,53 @@ export interface TableDelta<D> {
 
 const DELTA_PAGE = 100
 
+/** A row version with the block it was written in. */
+export interface BlockDelta<D> extends TableDelta<D> {
+  block_num: number
+}
+
+/**
+ * Every version of one table row written between `after` and `before`, oldest first, paged from one
+ * node (Hyperion's `get_deltas`). Throws when the node answers without a list.
+ */
+export async function getRowChanges<D>(
+  node: string,
+  code: string,
+  table: string,
+  primaryKey: string,
+  after: number,
+  before: number,
+  signal?: AbortSignal
+): Promise<BlockDelta<D>[]> {
+  const rows: BlockDelta<D>[] = []
+  for (let skip = 0; skip < 50_000;) {
+    const page = await withTimeout(DEFAULT_TIMEOUT_MS, signal, (combined) =>
+      getJson<{ deltas?: BlockDelta<D>[] }>(
+        node,
+        '/v2/history/get_deltas',
+        {
+          code,
+          scope: code,
+          table,
+          primary_key: primaryKey,
+          after: new Date(after).toISOString(),
+          before: new Date(before).toISOString(),
+          sort: 'asc',
+          limit: 1000,
+          skip
+        },
+        combined
+      )
+    )
+    if (!Array.isArray(page.deltas)) throw new Error(`No deltas from ${node}`)
+    rows.push(...page.deltas)
+    // Only an empty page ends it: a node may hand out fewer per page than asked.
+    if (page.deltas.length === 0) break
+    skip += page.deltas.length
+  }
+  return rows
+}
+
 /**
  * One table row as it stood just before `before`, from every node at once: nodes index history
  * unevenly, so each answer is returned for the caller to pick from. `answered` is how many nodes

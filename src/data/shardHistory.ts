@@ -3,7 +3,15 @@ import { Name } from '@wharfkit/session'
 import { create } from 'zustand'
 
 import { HISTORY_NODES } from '@/chain/config'
-import { getRowBefore, getSimpleActions, historyTime, isResting, type SimpleAction } from '@/chain/history'
+import {
+  getRowBefore,
+  getRowChanges,
+  getSimpleActions,
+  historyTime,
+  isResting,
+  type BlockDelta,
+  type SimpleAction
+} from '@/chain/history'
 import { getRows } from '@/chain/rpc'
 import { shardHistoryKeys } from './keys'
 import { readEntries, writeEntries } from './shardCache'
@@ -14,8 +22,9 @@ import { monthKey, monthRange } from './tlmHistory'
  * Every Shard a player received through the Alien Worlds points proxy (ptpxy.worlds) in one
  * calendar month (UTC). Games pay Shards with `ptpxy.worlds:addpoints`, signed by the game, so
  * the history nodes never file them under the player: each day's payouts to everyone are read
- * and the player's kept. Alien Worlds itself (mining) pays Shards directly and leaves no payout
- * to list, so its share is worked out from the player's lifetime Shard count instead.
+ * and the player's kept. Alien Worlds itself pays Shards directly: each of the player's mines is
+ * listed by what it added to their lifetime Shard count, and anything else it paid is worked out
+ * from that count too.
  *
  * Days are read newest first and shown as they arrive; every day that is over is kept in the
  * browser (shardCache), so a month is read from the chain once and the current one only for the
@@ -124,7 +133,7 @@ type Window = [from: number, to: number]
 
 export interface ShardMonth {
   payouts: ShardPayout[]
-  /** Shards Alien Worlds paid directly (mining): no payouts to list, only the amount. */
+  /** Shards Alien Worlds paid without a transaction of the player's to list (beyond the mines). */
   direct: number
 }
 
@@ -395,6 +404,67 @@ const countActions = (node: string, params: Record<string, string>, [start, end]
     .then((page) => page.total)
     .catch(() => 0)
 
+interface Mine {
+  miner: string
+}
+
+/**
+ * The player's mines in the window as payouts. A mine's Shards sit in its log, which the history
+ * nodes do not file under the player, but each mine is the player's own action, and it raises their
+ * lifetime Shard count in the same block: the row's change in that block, less any proxy payout
+ * landing in the same block, is what the mine paid. Two reads: the mines, and the row's changes.
+ */
+async function minePayouts(
+  nodes: string[],
+  account: string,
+  [start, end]: Window,
+  proxiedByBlock: Map<number, number>,
+  signal: AbortSignal,
+  onPage: (added: number) => void
+): Promise<ShardPayout[]> {
+  const mines = (await readRange<Mine>(nodes, { account, filter: 'm.federation:mine' }, [[start, end]], signal, onPage)).filter(
+    (action) => action.data.miner === account
+  )
+  if (mines.length === 0) return []
+
+  const primaryKey = Name.from(account).value.toString()
+  let changes: BlockDelta<{ total_points: number }>[] | null = null
+  let lastError: unknown
+  for (const node of nodes) {
+    try {
+      changes = await getRowChanges<{ total_points: number }>(node, 'uspts.worlds', 'userpoints', primaryKey, start, end, signal)
+      break
+    } catch (err) {
+      if (signal.aborted) throw err
+      lastError = err
+    }
+  }
+  if (!changes) throw lastError ?? new Error('No history node answered')
+
+  // What each block added to the count, from the count just before the window.
+  let previous = await lifetimePoints(account, start, signal)
+  const addedByBlock = new Map<number, number>()
+  for (const change of changes) {
+    addedByBlock.set(change.block_num, (addedByBlock.get(change.block_num) ?? 0) + change.data.total_points - previous)
+    previous = change.data.total_points
+  }
+
+  return mines.flatMap((mine): ShardPayout[] => {
+    const points = (addedByBlock.get(mine.block) ?? 0) - (proxiedByBlock.get(mine.block) ?? 0)
+    if (points <= 0) return []
+    return [
+      {
+        id: `mine:${mine.transaction_id}`,
+        trxId: mine.transaction_id,
+        at: historyTime(mine.timestamp),
+        label: 'Mining',
+        amount: points / 10,
+        source: 'aw'
+      }
+    ]
+  })
+}
+
 /** The payout as shown, labelled from the wallet or pool that paid it where the chain tells. */
 function toPayout(
   action: SimpleAction<AddPoints>,
@@ -511,12 +581,21 @@ async function readMonth(
       paidBy = await walletPayouts(nodes, wallets, account, labelSpan, signal, onPage)
       pools = await poolClaims(nodes, account, labelSpan, signal, onPage)
     }
+    // Alien Worlds' own payouts: each mine the player sent, worth what it added to their Shards.
+    const proxiedByBlock = new Map<number, number>()
+    for (const action of [...read.values()].flat())
+      proxiedByBlock.set(action.block, (proxiedByBlock.get(action.block) ?? 0) + action.data.points)
+    const mines = await minePayouts(nodes, account, span, proxiedByBlock, signal, onPage)
+
     const settled = new Map<string, ShardPayout[]>()
     for (const [from, to] of missing) {
       const day = dayKey(from)
-      const payouts = (read.get(day) ?? []).map((action) =>
-        toPayout(action, paidBy.get(action.transaction_id), pools.get(action.transaction_id), true)
-      )
+      const payouts = [
+        ...(read.get(day) ?? []).map((action) =>
+          toPayout(action, paidBy.get(action.transaction_id), pools.get(action.transaction_id), true)
+        ),
+        ...mines.filter((mine) => dayKey(mine.at) === day)
+      ].sort(newestFirst)
       byDay.set(day, payouts)
       // Days that are over are kept, empty ones too, so they are never read again.
       if (to <= settledBefore && to - from === DAY) settled.set(day, payouts)
@@ -527,10 +606,11 @@ async function readMonth(
   }
 
   const payouts = shown()
-  // Everything earned in the month, less what came through the proxy, is what Alien Worlds paid.
+  // Everything earned in the month, less every payout listed (the proxy's and the mines), is what
+  // Alien Worlds paid without a transaction of the player's to show for it.
   const [before, after] = await Promise.all([lifetimePoints(account, start, signal), lifetimePoints(account, monthEnd, signal)])
-  const proxied = payouts.reduce((sum, payout) => sum + Math.round(payout.amount * 10), 0)
-  const direct = Math.max(0, after - before - proxied) / 10
+  const listed = payouts.reduce((sum, payout) => sum + Math.round(payout.amount * 10), 0)
+  const direct = Math.max(0, after - before - listed) / 10
   return { payouts, direct }
 }
 

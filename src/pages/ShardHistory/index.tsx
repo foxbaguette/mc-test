@@ -141,7 +141,7 @@ export default function ShardHistory() {
                         setShown(PAGE)
                       }}
                       aria-pressed={active}
-                      // Alien Worlds pays directly: there is an amount but no payouts to list.
+                      // A source with no payouts to list (Alien Worlds without mines) cannot filter the list.
                       disabled={entry.count === 0}
                     >
                       <span className="thist__label">{source.label}</span>
@@ -152,7 +152,7 @@ export default function ShardHistory() {
                         <span style={{ width: `${share}%` }} />
                       </span>
                       <span className="thist__source-meta num">
-                        {share.toFixed(1)}%{source.id !== 'aw' && ` · ${entry.count}`}
+                        {share.toFixed(1)}% · {entry.count}
                       </span>
                     </button>
                   )
