@@ -381,8 +381,81 @@
     font-size: 12px;
   }
 
+  /* Loading: one line, the label giving way to the numbers. */
+  .thist__loading {
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .thist__loading-head {
+    align-items: baseline;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  .thist__loading-head > :first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .thist__loading-head > :last-child {
+    flex: none;
+  }
+
+  /* Summary: the total as one row, the sources three to a row. */
+  .thist__summary {
+    gap: 8px;
+  }
+
+  .thist__total {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 2px 10px;
+    padding: 10px 14px;
+  }
+
+  .thist__total .thist__label {
+    grid-column: 1 / -1;
+  }
+
+  .thist__total strong {
+    font-size: 20px;
+  }
+
+  .thist__total strong svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .thist__count {
+    font-size: 11px;
+  }
+
   .thist__sources {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .thist__source {
+    gap: 3px;
+    padding: 7px 8px;
+  }
+
+  /* Room for two lines on every label, so the amounts in a row line up. */
+  .thist__source .thist__label {
+    min-height: 2.5em;
+    font-size: 8.5px;
+    letter-spacing: 0.06em;
+    line-height: 1.25;
+  }
+
+  .thist__source-amount {
+    font-size: 14px;
+  }
+
+  .thist__source-meta {
+    font-size: 10px;
   }
 
   .thist__row {
