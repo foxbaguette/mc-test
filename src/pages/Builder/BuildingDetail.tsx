@@ -159,7 +159,6 @@ function Detail({ player, building }: DialogProps) {
             <div className="bdetail__cost">
               <span className="num">Я {formatR(cost)}</span>
               <Button
-                className={!busy && resources >= cost ? 'btn--charged btn--soft' : ''}
                 isLoading={pending === 'upgrade'}
                 disabled={busy || resources < cost}
                 onClick={() => act('upgrade', (a, p) => upgradeBuildingAction(a, p, building.buildingid), 'Upgrade successful')}

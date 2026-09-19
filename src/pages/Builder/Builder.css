@@ -1595,3 +1595,10 @@
     transform: translateY(100%);
   }
 }
+
+/* Builder: a button that can't be pressed yet sits back further than elsewhere, so the ones ready
+   stand out on their own, without an effect. A busy button keeps its full colour. */
+.builder .btn:disabled:not(.is-busy) {
+  opacity: 0.32;
+  filter: saturate(0.5) brightness(0.8);
+}

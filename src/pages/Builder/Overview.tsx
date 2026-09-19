@@ -223,7 +223,6 @@ function BuildingCard({
           <Button
             size="sm"
             block
-            className={!busy && affordable ? 'btn--charged btn--soft' : ''}
             isLoading={pending === `up:${building.buildingid}`}
             disabled={busy || !affordable}
             onClick={() => onUpgrade(building)}
@@ -248,7 +247,6 @@ function BuildingCard({
               size="sm"
               block
               color="gradientPink"
-              className={exploderReady ? 'btn--charged btn--soft' : ''}
               isLoading={pending === 'exploder'}
               disabled={!exploderReady}
               onClick={onExplode}
