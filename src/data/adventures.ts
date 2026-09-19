@@ -238,6 +238,13 @@ export function teamScore(mods: AdventureMod[], unlocks: ModUnlocks, templates: 
   return { score: Math.floor(total), matched }
 }
 
+/** Shines from the most common up; cards without one ("-") rank with Stone. */
+const SHINES = ['Stone', 'Gold', 'Stardust', 'Antimatter', 'XDimension']
+const shineRank = (shine: string) => {
+  const rank = SHINES.indexOf(shine.replace('-', '') || 'Stone')
+  return rank < 0 ? SHINES.length : rank
+}
+
 export interface TeamCandidate {
   asset_id: string
   template_id: number
@@ -252,13 +259,16 @@ export interface TeamCandidate {
 export function bestTeam(mods: AdventureMod[], unlocks: ModUnlocks, candidates: TeamCandidate[]) {
   const weight = mods.map((mod, i) => (unlocks.isUnlocked(i) ? 1 + mod.mod_value / 100 : 0))
 
+  // Of cards that do exactly the same for the team, the lowest shine goes: a rarer card sent on an
+  // adventure gains nothing, and stays free for when its shine does count.
   const byMask = new Map<number, TeamCandidate>()
   for (const candidate of candidates) {
     let mask = 0
     mods.forEach((mod, i) => {
       if (weight[i] && modMatches(mod, candidate.template)) mask |= 1 << i
     })
-    if (mask && !byMask.has(mask)) byMask.set(mask, candidate)
+    const kept = byMask.get(mask)
+    if (mask && (!kept || shineRank(candidate.template.shine) < shineRank(kept.template.shine))) byMask.set(mask, candidate)
   }
 
   const masks = [...byMask.keys()].filter((mask, _, all) => !all.some((other) => other !== mask && (other & mask) === mask))

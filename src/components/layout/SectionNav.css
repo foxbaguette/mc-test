@@ -99,8 +99,19 @@
     padding: 6px 2px;
     font-size: 11px;
     line-height: 1.15;
+    min-width: 0;
     text-align: center;
     white-space: normal;
+  }
+
+  /* One line per label, so every icon sits at the same height; a name too long for its tile ends
+     in an ellipsis rather than pushing its icon up. */
+  .section-nav__item .section-nav__label {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .section-nav__item.is-active {

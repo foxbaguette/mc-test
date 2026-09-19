@@ -84,3 +84,43 @@
 :is(.section-nav__item, .tab).is-active .nav-icon--hex::before {
   filter: brightness(1.25);
 }
+
+/*
+ * The top bar, at every width it shows (above the phone tab bar's 768px): the glyph on its own,
+ * lit from above (the gradient every single-colour glyph already carries), with a soft glow in its
+ * colour on hover and for the open section. The hex emblem is the phones': tab bar and menu sheet.
+ */
+@media (min-width: 769px) {
+  .section-nav .nav-icon {
+    --hex: 22px;
+  }
+
+  .section-nav .nav-icon--hex::before,
+  .section-nav .nav-icon--hex::after {
+    display: none;
+  }
+
+  .section-nav .nav-icon.nav-icon--hex .nav-icon__glyph > svg {
+    width: 22px;
+    height: 20px;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+    transition: filter 0.15s ease;
+  }
+
+  .section-nav__item:hover:not(.is-disabled) .nav-icon--hex .nav-icon__glyph > svg,
+  .section-nav__item.is-active .nav-icon--hex .nav-icon__glyph > svg {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px color-mix(in srgb, var(--c) 60%, transparent));
+  }
+}
+
+/* The bar's compact tablet layout (label under the icon) gets a little more glyph. */
+@media (min-width: 769px) and (max-width: 1099px) {
+  .section-nav .nav-icon {
+    --hex: 26px;
+  }
+
+  .section-nav .nav-icon.nav-icon--hex .nav-icon__glyph > svg {
+    width: 26px;
+    height: 24px;
+  }
+}

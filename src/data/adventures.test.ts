@@ -99,6 +99,25 @@ describe('bestTeam', () => {
     expect(picks.map((p) => p.asset_id).sort()).toEqual(['1', '2', '3'])
   })
 
+  it('takes the lower shine when a higher one adds nothing', () => {
+    const mods = [mod('race', 'Nordic', 30)]
+    const picks = bestTeam(mods, allUnlocked, [
+      candidate('1', { race: 'Nordic', shine: 'Antimatter' }),
+      candidate('2', { race: 'Nordic', shine: 'Gold' }),
+      candidate('3', { race: 'Nordic', shine: 'Stone' })
+    ])
+    expect(picks.map((p) => p.asset_id)).toEqual(['3'])
+  })
+
+  it('keeps a higher shine when the adventure asks for it', () => {
+    const mods = [mod('race', 'Nordic', 30), mod('shine', 'Gold', 20)]
+    const picks = bestTeam(mods, allUnlocked, [
+      candidate('1', { race: 'Nordic', shine: 'Stone' }),
+      candidate('2', { race: 'Nordic', shine: 'Gold' })
+    ])
+    expect(picks.map((p) => p.asset_id)).toEqual(['2'])
+  })
+
   it('skips a card whose objectives another card already covers', () => {
     const mods = [mod('race', 'Nordic', 30), mod('element', 'Fire', 50)]
     const picks = bestTeam(mods, allUnlocked, [

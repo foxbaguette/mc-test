@@ -143,8 +143,8 @@ export function useNavItems(): Record<NavGroup, NavItem[]> {
               path: 'planetary-defense',
               title: 'Planetary Defense',
               icon: (
-                <NavIcon color="#f85a29">
-                  <PlanetaryDefenseSVG />
+                <NavIcon color="#2de2ff">
+                  <PlanetaryDefenseSVG color="#2de2ff" />
                 </NavIcon>
               )
             }

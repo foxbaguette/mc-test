@@ -15,13 +15,15 @@ interface ToastState {
 }
 
 let nextId = 1
+/** How long a toast stays before it goes on its own. */
+const TOAST_MS = 6500
 
 export const useToasts = create<ToastState>((set, get) => ({
   toasts: [],
   push(kind, message) {
     const id = nextId++
     set({ toasts: [...get().toasts, { id, kind, message }] })
-    setTimeout(() => get().dismiss(id), 5000)
+    setTimeout(() => get().dismiss(id), TOAST_MS)
   },
   dismiss(id) {
     set({ toasts: get().toasts.filter((t) => t.id !== id) })
