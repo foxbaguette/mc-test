@@ -24,6 +24,9 @@ export function Tasks() {
   const player = usePlayer()
   const { run, busy, account } = useTransaction()
   const [confirming, setConfirming] = useState<{ id: number; since: number } | null>(null)
+  // Phones show the first lines of the intro and of each task; a tap opens the rest.
+  const [introOpen, setIntroOpen] = useState(false)
+  const [openTask, setOpenTask] = useState<number | null>(null)
   const confirmAt = confirming ? confirming.since + CONFIRM_SECONDS * 1000 : undefined
   // Re-render when prices drop and when Confirm unlocks; the countdowns tick on their own.
   const now = useClockFor([config.data ? nextProgressAt(config.data, Date.now()) : undefined, confirmAt])
@@ -44,7 +47,7 @@ export function Tasks() {
     <>
       <section className="panel zap-intro">
         <h2 className="zap-intro__title">Zapp's Tasks</h2>
-        <p>
+        <p className={introOpen ? 'is-open' : ''} onClick={() => setIntroOpen((open) => !open)} aria-expanded={introOpen}>
           Zapp is currently trying to advance various pressing issues. Assist him in finishing tasks! Zapp will reward the helping
           player with Alien Worlds Shards he found on his journeys. Since he consistently dedicates time to these tasks, each one
           becomes easier to complete over time. Once a task is finished by <u>any</u> player, it will be replaced by a new one.
@@ -126,12 +129,20 @@ export function Tasks() {
                     ) : (
                       <>
                         <h3 className="zap-task__title">{task.title}</h3>
-                        <p className="zap-task__desc">{description}</p>
+                        <p
+                          className={`zap-task__desc ${openTask === task.task_id ? 'is-open' : ''}`}
+                          onClick={() => setOpenTask((id) => (id === task.task_id ? null : task.task_id))}
+                          aria-expanded={openTask === task.task_id}
+                        >
+                          {description}
+                        </p>
                       </>
                     )}
                   </div>
 
                   <div className="zap-task__action">
+                    {/* Phones: the price beside the button, since the description is cut short there. */}
+                    {!isConfirming && <span className="zap-task__cost">{priceChip('cost')}</span>}
                     <Button
                       block
                       color={isConfirming ? 'gradientYellow' : 'solidBlue'}

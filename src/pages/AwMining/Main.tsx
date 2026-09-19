@@ -168,12 +168,14 @@ export function Main() {
                   className="tool-card is-equipped"
                   style={{ '--rarity': RARITY_COLORS[tool.rarity] } as React.CSSProperties}
                 >
-                  <img
-                    src={publicUrl(`/assets/aw-nft-images/${tool.template_id}.webp`)}
-                    alt={tool.name}
-                    title={tool.name}
-                    loading="lazy"
-                  />
+                  <span className="nft-crop">
+                    <img
+                      src={publicUrl(`/assets/aw-nft-images/${tool.template_id}.webp`)}
+                      alt={tool.name}
+                      title={tool.name}
+                      loading="lazy"
+                    />
+                  </span>
                   <Button
                     color="ghost"
                     size="sm"
@@ -204,12 +206,14 @@ export function Main() {
                   className="tool-card"
                   style={{ '--rarity': RARITY_COLORS[asset.data.rarity] } as React.CSSProperties}
                 >
-                  <img
-                    src={publicUrl(`/assets/aw-nft-images/${asset.template?.template_id}.webp`)}
-                    alt={asset.data.name}
-                    title={asset.data.name}
-                    loading="lazy"
-                  />
+                  <span className="nft-crop">
+                    <img
+                      src={publicUrl(`/assets/aw-nft-images/${asset.template?.template_id}.webp`)}
+                      alt={asset.data.name}
+                      title={asset.data.name}
+                      loading="lazy"
+                    />
+                  </span>
                   <Button
                     size="sm"
                     block

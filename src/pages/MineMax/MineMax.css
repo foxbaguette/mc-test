@@ -235,71 +235,105 @@
   }
 }
 
+/* Phones: the three tools in one row, the planets as a 3 x 2 world select, the best one lit. */
 @media (max-width: 640px) {
+  .maxi {
+    gap: 12px;
+  }
+
   .maxi-bar {
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .maxi-tools {
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 
   .maxi-tool {
-    flex: 1 1 100%;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  .maxi-tool--skeleton {
+    flex: 1 1 0;
+    width: auto;
+    height: 84px;
   }
 
   .maxi-tool__img {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
   }
 
   .maxi-tool__img img {
-    top: -13px;
+    top: -12px;
+  }
+
+  .maxi-tool__text {
+    align-items: center;
+    width: 100%;
+  }
+
+  .maxi-tool__text strong {
+    max-width: 100%;
+    font-size: 10px;
+  }
+
+  .maxi-tool__rarity {
+    font-size: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  .maxi-bar .icon-btn {
+    align-self: center;
+    width: 34px;
+    height: 34px;
   }
 
   .maxi-planets {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .maxi-planet--skeleton {
+    height: 150px;
   }
 
   .maxi-planet {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    grid-template-areas:
-      'img name value'
-      'img land value';
-    align-items: center;
-    gap: 0 12px;
-    padding: 12px 14px;
-    text-align: left;
+    gap: 2px;
+    padding: 10px 5px 6px;
   }
 
   .maxi-planet__img {
-    grid-area: img;
-    width: 44px;
-    height: 44px;
-    margin: 0;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 4px;
   }
 
   .maxi-planet__name {
-    grid-area: name;
-    font-size: 15px;
-  }
-
-  .maxi-planet__land {
-    grid-area: land;
-    min-height: 0;
     font-size: 12px;
   }
 
-  .maxi-planet__estimate {
-    grid-area: value;
-    align-self: center;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: none;
-    text-align: right;
+  .maxi-planet__land {
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
+    font-size: 10px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .maxi-planet.is-best .maxi-planet__estimate {
-    background: none;
+  .maxi-planet__estimate {
+    margin-top: 4px;
+    padding: 4px 3px;
+    border-radius: 7px;
   }
 
   .maxi-planet__label {
@@ -307,7 +341,7 @@
   }
 
   .maxi-planet__value {
-    font-size: 14px;
+    font-size: 11px;
   }
 
   .maxi-planet:hover,
@@ -315,8 +349,15 @@
     transform: none;
   }
 
+  .maxi-actions {
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 0;
+  }
+
   .maxi-actions .btn {
     width: 100%;
     min-width: 0;
+    min-height: 44px;
   }
 }

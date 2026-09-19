@@ -190,5 +190,51 @@
   .week-card {
     order: var(--mobile-order);
     min-height: 0;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .week-reward {
+    margin-top: 0;
+  }
+
+  .week-cards {
+    gap: 6px;
+  }
+
+  .callout {
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  /* A claimed week is history: one slim row, like a finished entry in a game's reward log. */
+  .week-card:not(.is-claimable) {
+    padding: 10px 14px;
+  }
+
+  .week-card:not(.is-claimable) .week-card__desc {
+    display: none;
+  }
+
+  .week-card__title {
+    font-size: 15px;
+  }
+
+  .week-card__amount strong {
+    font-size: 22px;
+  }
+
+  .week-card__desc {
+    font-size: 12.5px;
+  }
+
+  .week-card__actions {
+    gap: 6px;
+  }
+
+  .week-reward .btn .btn__label {
+    font-size: 13px;
   }
 }

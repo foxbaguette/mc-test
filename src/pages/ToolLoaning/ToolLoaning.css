@@ -642,29 +642,6 @@
     display: none;
   }
 
-  /*
-   * Only the artwork: the square inside the card's art window (about 28-76% across, 15-49% down
-   * the card), so none of the frame or its corner badges shows. Gold and Stardust frames sit
-   * lower than Stone ones, which sets the top edge.
-   */
-  .tl-card__art {
-    position: relative;
-    aspect-ratio: 1;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .tl-card__art img {
-    position: absolute;
-    top: -44%;
-    left: -58%;
-    width: 208%;
-    max-width: none;
-    height: auto;
-    aspect-ratio: 264 / 370;
-    object-fit: fill;
-  }
-
   .tl-card__count {
     bottom: 4px;
     left: 4px;

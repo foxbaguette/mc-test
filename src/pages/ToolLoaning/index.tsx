@@ -24,11 +24,7 @@ export default function ToolLoaning() {
 
   return (
     <>
-      <PageHeader
-        title="Tool Loaning"
-        image={publicUrl('/assets/background/bg-tool-loaning.webp')}
-        className="page-header--compact"
-      />
+      <PageHeader title="Tool Loaning" image={publicUrl('/assets/background/bg-tool-loaning.webp')} />
 
       <div className="page loaning plates">
         <Wallet />

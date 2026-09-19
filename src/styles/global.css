@@ -405,3 +405,48 @@ svg {
     border-radius: 14px;
   }
 }
+
+/*
+ * Phones: a tool NFT card shown as its artwork only, the square inside the card's art window
+ * (about 28-76% across, 15-49% down), so none of the frame or its corner badges shows. Gold and
+ * Stardust frames sit lower than Stone ones, which sets the top edge. Wrap the card <img> in it.
+ */
+@media (max-width: 640px) {
+  .nft-crop {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* html: beats the pages' own card image rules (.tool-card img, …), which load later. */
+  html .nft-crop img {
+    position: absolute;
+    top: -44%;
+    left: -58%;
+    width: 208%;
+    max-width: none;
+    height: auto;
+    aspect-ratio: 264 / 370;
+    object-fit: fill;
+  }
+}
+
+/* Phones: pages start right under the banner and panels give their content the room. */
+@media (max-width: 640px) {
+  .page {
+    gap: 12px;
+    padding-top: 12px;
+    padding-bottom: 20px;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .segmented button {
+    min-height: 32px;
+    font-size: 11px;
+  }
+}

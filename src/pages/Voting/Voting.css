@@ -308,3 +308,89 @@
     display: none;
   }
 }
+
+/* Phones: the two votes side by side as pick slots, avatar on top, and slimmer ranking rows. */
+@media (max-width: 640px) {
+  .vote__power {
+    gap: 6px;
+  }
+
+  .vote__power-value {
+    font-size: 22px;
+  }
+
+  .vote__power svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .vote__picks-title {
+    font-size: 12px;
+  }
+
+  .vote__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .vote__pick {
+    gap: 6px;
+    padding: 10px 8px;
+  }
+
+  .vote__pick-head {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .vote__pick-head .vote__avatar {
+    width: 52px;
+    height: 52px;
+  }
+
+  .vote__pick-field {
+    width: 100%;
+    gap: 4px;
+  }
+
+  .vote__pick-label {
+    font-size: 9px;
+    text-align: center;
+  }
+
+  .vote__pick-head .select select {
+    min-height: 36px;
+    font-size: 12px;
+  }
+
+  .vote__desc {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 11.5px;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .vote__row {
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 5px 10px 5px 8px;
+  }
+
+  .vote__row .vote__avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .vote__name {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .vote__votes {
+    font-size: 13px;
+  }
+}

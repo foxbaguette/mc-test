@@ -404,3 +404,132 @@
     font-size: 15px;
   }
 }
+
+/* Phones: a claim centre. Each reward is one row: what it is, how much, and its button beside it. */
+@media (max-width: 640px) {
+  .vault {
+    gap: 8px;
+  }
+
+  .vault__summary {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  .vault__summary .btn {
+    flex: none;
+    width: auto;
+    min-width: 116px;
+    min-height: 38px;
+  }
+
+  .vault__summary-data {
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .vault__summary-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+
+  .vault__summary-value {
+    gap: 6px;
+    font-size: 20px;
+  }
+
+  .vault__summary-value svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .vault__grid {
+    gap: 6px;
+  }
+
+  .vault-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 116px;
+    grid-template-areas:
+      'head head'
+      'value action'
+      'info info';
+    align-items: center;
+    gap: 4px 10px;
+    padding: 9px 10px 8px;
+  }
+
+  .vault-card__head {
+    grid-area: head;
+    gap: 8px;
+  }
+
+  .vault-card__icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+  }
+
+  .vault-card__icon svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .vault-card__title {
+    font-size: 9.5px;
+  }
+
+  .vault-card__value {
+    grid-area: value;
+    min-width: 0;
+  }
+
+  .vault-card__amount {
+    font-size: 18px;
+  }
+
+  .vault-card__unit svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .vault-card__action {
+    grid-area: action;
+  }
+
+  .vault-card__action .btn {
+    min-height: 34px;
+    font-size: 11px;
+  }
+
+  .vault-card__info {
+    grid-area: info;
+    font-size: 10.5px;
+  }
+
+  .vault-card__info svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  /* The Reward Point deposit keeps its two fields under the amount. */
+  .vault-card--wide {
+    grid-template-areas:
+      'head head'
+      'value value'
+      'action action'
+      'info info';
+  }
+
+  .vault__qp {
+    gap: 6px;
+  }
+
+  .vault__input {
+    height: 36px;
+  }
+}

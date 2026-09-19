@@ -448,3 +448,141 @@
     justify-content: space-between;
   }
 }
+
+/* Phones: a short intro, the three steps side by side, and each hunt as a compact row. */
+@media (max-width: 640px) {
+  .hunts {
+    gap: 12px;
+  }
+
+  .hunts__intro {
+    gap: 8px;
+  }
+
+  .hunts__intro-title {
+    font-size: 16px;
+  }
+
+  .hunts__intro p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 12.5px;
+    line-height: 1.5;
+    cursor: pointer;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .hunts__intro p.is-open {
+    display: block;
+  }
+
+  .hunts__steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+  }
+
+  .hunts__steps li {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 7px 6px;
+    font-size: 9.5px;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .hunts__steps li::before {
+    display: none;
+  }
+
+  .hunts__steps svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .hunts__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .hunt--skeleton {
+    height: 128px;
+  }
+
+  .hunt {
+    flex-direction: row;
+  }
+
+  .hunt:hover {
+    transform: none;
+  }
+
+  .hunt__media {
+    flex: none;
+    width: 108px;
+    aspect-ratio: auto;
+  }
+
+  .hunt__media img {
+    height: 100%;
+  }
+
+  .hunt__state {
+    top: 6px;
+    left: 6px;
+    padding: 2px 7px;
+    font-size: 9.5px;
+  }
+
+  .hunt__body {
+    flex: 1;
+    gap: 5px;
+    min-width: 0;
+    padding: 8px 10px 10px;
+  }
+
+  .hunt__title {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hunt__where {
+    font-size: 11px;
+  }
+
+  .hunt__plates {
+    gap: 5px;
+  }
+
+  .hunt__plate {
+    padding: 3px 7px;
+  }
+
+  .hunt__plate-label {
+    font-size: 8px;
+  }
+
+  .hunt__plate-value {
+    font-size: 12px;
+  }
+
+  .hunt__plate-value svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .hunt__body .btn {
+    min-height: 32px;
+    margin-top: 2px;
+    font-size: 12px;
+  }
+
+  .past__row {
+    padding: 8px 10px;
+  }
+}

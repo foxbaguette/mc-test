@@ -39,6 +39,8 @@ export default function TreasureHuntPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const canMine = useCanMine()
   const [view, setView] = useState<View>('active')
+  // Phones show the first lines of the intro; a tap opens the rest.
+  const [introOpen, setIntroOpen] = useState(false)
 
   const refreshing = hunts.isFetching || miner.isFetching || tools.isFetching
   const list = hunts.data ?? []
@@ -116,7 +118,7 @@ export default function TreasureHuntPage() {
 
         <section className="panel hunts__intro">
           <h2 className="hunts__intro-title">Treasure Hunt</h2>
-          <p>
+          <p className={introOpen ? 'is-open' : ''} onClick={() => setIntroOpen((open) => !open)} aria-expanded={introOpen}>
             A treasure is buried on a chosen land. Mine that land and you join the hunt: every player who mines it before the
             treasure is found shares the reward equally. The hunt ends as soon as the land has produced the target amount, so the
             sooner you mine, the better your odds — mining just before a hunt opens puts your cooldown where you want it. For more

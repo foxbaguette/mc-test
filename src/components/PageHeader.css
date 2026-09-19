@@ -9,12 +9,13 @@
   overflow: hidden;
 }
 
+/* Phones: a slim strip, so the screen itself starts near the top. */
 @media (max-width: 640px) {
-  .page-header--compact {
+  .page-header {
     height: 64px;
   }
 
-  .page-header--compact .page-header__title {
+  .page-header__title {
     font-size: 20px;
   }
 }

@@ -389,3 +389,109 @@
     animation: none;
   }
 }
+
+/* Phones only: the tiers as one comparison table (see TierTable). */
+.member__table {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .member__intro {
+    font-size: 15px;
+  }
+
+  .member__referral,
+  .member__status {
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+  }
+
+  .member__referral .btn {
+    width: 100%;
+    min-height: 36px;
+  }
+
+  .member__tiers {
+    display: none;
+  }
+
+  .member__table {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--plate-edge);
+    border-radius: var(--plate-radius);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  }
+
+  .member__table-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .member__table-row:last-child {
+    border-bottom: 0;
+  }
+
+  .member__table-feature {
+    align-self: center;
+    padding: 7px 8px 7px 10px;
+    font-size: 11.5px;
+    line-height: 1.25;
+  }
+
+  .member__table-cell,
+  .member__table-tier {
+    display: grid;
+    place-items: center;
+    padding: 6px 4px;
+  }
+
+  /* The player's own tier is the lit column. */
+  .member__table-cell.is-current,
+  .member__table-tier.is-current {
+    background: rgba(246, 168, 0, 0.08);
+  }
+
+  .member__table-tier {
+    align-content: start;
+    gap: 5px;
+    padding: 10px 3px 8px;
+    text-align: center;
+  }
+
+  .member__table-tier.is-current {
+    box-shadow: inset 0 2px 0 var(--yellow);
+  }
+
+  .member__table-tier strong {
+    font-family: var(--font-heading);
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+
+  .member__table-tier .member__badge {
+    padding: 2px 6px;
+    font-size: 8px;
+  }
+
+  .member__table-tier .btn {
+    min-height: 26px;
+    padding: 0 5px;
+    font-size: 8.5px;
+    line-height: 1.1;
+    white-space: normal;
+  }
+
+  .member__table-row--desc .member__table-cell {
+    place-items: start center;
+    color: var(--text-faint);
+    font-size: 9.5px;
+    line-height: 1.35;
+    text-align: center;
+  }
+}

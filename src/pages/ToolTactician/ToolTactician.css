@@ -345,3 +345,86 @@
     letter-spacing: 0.06em;
   }
 }
+
+/* Phones: one slim row per tool (name and shine side by side) and tighter result plates. */
+@media (max-width: 640px) {
+  .tactician {
+    gap: 8px;
+  }
+
+  .tactician__setup {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .tactician__setup-title {
+    font-size: 9.5px;
+  }
+
+  .tactician__toggle {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .tactician__selects {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .tactician__select {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 3px 6px;
+    padding: 6px 8px 7px;
+  }
+
+  .tactician__select .tactician__label {
+    grid-column: 1 / -1;
+    font-size: 9px;
+  }
+
+  .tactician__select--land .select {
+    grid-column: 1 / -1;
+  }
+
+  .tactician__select .select {
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .tactician__select .select select {
+    border-radius: 9px;
+    font-size: 11.5px;
+  }
+
+  .tactician__grid {
+    gap: 6px;
+  }
+
+  .tactician__block {
+    padding: 8px 12px 4px;
+  }
+
+  .tactician__heading {
+    margin-bottom: 0;
+    font-size: 9.5px;
+  }
+
+  .tactician__row {
+    padding: 5px 0;
+    font-size: 12.5px;
+  }
+
+  .tactician__value svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .tactician__row.is-highlight .tactician__value {
+    font-size: 15px;
+  }
+
+  .tactician__land-row {
+    padding: 7px 8px;
+  }
+}

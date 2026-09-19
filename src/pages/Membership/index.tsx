@@ -49,6 +49,44 @@ export default function Membership() {
 
   if (joining) return <JoinForm cost={cost} onDone={() => setJoining(false)} />
 
+  const tiers: TierProps[] = [
+    {
+      title: 'FREE',
+      active: FREE_TIER,
+      current: currentTier === 'free',
+      status: <Badge state="active">ACTIVE</Badge>,
+      description: 'Available to all visitors of our website. No account required.'
+    },
+    {
+      title: 'MEMBER',
+      active: MEMBER_TIER,
+      current: currentTier === 'member',
+      status: player.isMember ? (
+        <Badge state={player.flagged ? 'revoked' : 'active'}>{player.flagged ? 'REVOKED' : 'ACTIVE'}</Badge>
+      ) : (
+        <Button size="sm" onClick={() => setJoining(true)}>
+          BECOME MEMBER
+        </Button>
+      ),
+      description: `Become a member for just ${tlmToNumber(cost).toLocaleString('en-US')} TLM`
+    },
+    {
+      title: 'VERIFIED MEMBER',
+      active: FEATURES,
+      current: currentTier === 'verified',
+      status:
+        !player.isMember || player.flagged ? (
+          <Badge state="inactive">INACTIVE</Badge>
+        ) : player.isTrial ? (
+          <Badge state="pending">PENDING</Badge>
+        ) : (
+          <Badge state="active">ACTIVE</Badge>
+        ),
+      description:
+        'Member accounts regularly get checked if they are eligible for verified membership. No further action required.'
+    }
+  ]
+
   const intro = !player.isMember
     ? 'Become a member and start earning mc points today'
     : player.flagged
@@ -83,46 +121,12 @@ export default function Membership() {
         )}
 
         <div className="member__tiers">
-          <Tier
-            title="FREE"
-            active={FREE_TIER}
-            current={currentTier === 'free'}
-            status={<Badge state="active">ACTIVE</Badge>}
-            description="Available to all visitors of our website. No account required."
-          />
-
-          <Tier
-            title="MEMBER"
-            active={MEMBER_TIER}
-            current={currentTier === 'member'}
-            status={
-              player.isMember ? (
-                <Badge state={player.flagged ? 'revoked' : 'active'}>{player.flagged ? 'REVOKED' : 'ACTIVE'}</Badge>
-              ) : (
-                <Button size="sm" onClick={() => setJoining(true)}>
-                  BECOME MEMBER
-                </Button>
-              )
-            }
-            description={`Become a member for just ${tlmToNumber(cost).toLocaleString('en-US')} TLM`}
-          />
-
-          <Tier
-            title="VERIFIED MEMBER"
-            active={FEATURES}
-            current={currentTier === 'verified'}
-            status={
-              !player.isMember || player.flagged ? (
-                <Badge state="inactive">INACTIVE</Badge>
-              ) : player.isTrial ? (
-                <Badge state="pending">PENDING</Badge>
-              ) : (
-                <Badge state="active">ACTIVE</Badge>
-              )
-            }
-            description="Member accounts regularly get checked if they are eligible for verified membership. No further action required."
-          />
+          {tiers.map((tier) => (
+            <Tier key={tier.title} {...tier} />
+          ))}
         </div>
+
+        <TierTable tiers={tiers} />
       </div>
     </>
   )
@@ -158,6 +162,45 @@ function Tier({ title, active, status, description, current }: TierProps) {
         })}
       </ul>
       <p className="member__tier-desc">{description}</p>
+    </section>
+  )
+}
+
+/** Phones: the tiers side by side as one comparison table, like a game's membership pass. */
+function TierTable({ tiers }: { tiers: TierProps[] }) {
+  return (
+    <section className="member__table">
+      <div className="member__table-row member__table-row--head">
+        <span />
+        {tiers.map((tier) => (
+          <span key={tier.title} className={`member__table-tier ${tier.current ? 'is-current' : ''}`}>
+            <strong>{tier.title}</strong>
+            {tier.status}
+          </span>
+        ))}
+      </div>
+      {FEATURES.map((feature) => (
+        <div key={feature} className="member__table-row">
+          <span className="member__table-feature">{feature}</span>
+          {tiers.map((tier) => (
+            <span key={tier.title} className={`member__table-cell ${tier.current ? 'is-current' : ''}`}>
+              {tier.active.includes(feature) ? (
+                <CheckSquareIcon size={16} color="#00D1FF" />
+              ) : (
+                <CloseIcon size={16} color="#D32C54" strokeWidth={2.5} />
+              )}
+            </span>
+          ))}
+        </div>
+      ))}
+      <div className="member__table-row member__table-row--desc">
+        <span />
+        {tiers.map((tier) => (
+          <span key={tier.title} className={`member__table-cell ${tier.current ? 'is-current' : ''}`}>
+            {tier.description}
+          </span>
+        ))}
+      </div>
     </section>
   )
 }

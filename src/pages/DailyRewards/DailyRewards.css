@@ -113,3 +113,23 @@
 .daily__spin.btn:disabled {
   opacity: 0.7;
 }
+
+/* Phones: the wheel takes the width of the screen and the spin button sits under it, big and wide. */
+@media (max-width: 640px) {
+  .daily__stage {
+    gap: 12px;
+  }
+
+  .daily__wheel {
+    width: min(88vw, 50vh);
+  }
+
+  .daily__text {
+    font-size: 13px;
+  }
+
+  .daily__spin.btn {
+    width: min(100%, 320px);
+    min-height: 52px;
+  }
+}

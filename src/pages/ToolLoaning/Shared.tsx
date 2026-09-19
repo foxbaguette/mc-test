@@ -28,7 +28,7 @@ export function ToolCard({ templateId, name, rarity, shine, owned, ready, stats,
       className={`tl-card ${ready ? 'is-ready' : ''}`}
       style={{ '--rarity': RARITY_COLORS[rarity] ?? 'var(--border-2)' } as React.CSSProperties}
     >
-      <div className="tl-card__art">
+      <div className="tl-card__art nft-crop">
         <img
           src={publicUrl(`/assets/aw-nft-images/${templateId}.webp`)}
           alt={name}

@@ -475,3 +475,260 @@
     margin-right: 0;
   }
 }
+
+/* Phones only: the price beside the button. */
+.zap-task__cost {
+  display: none;
+}
+
+/*
+ * Phones: Zapp's tasks as a quest log. Each task is a row: the artwork as a square thumbnail
+ * with its shard reward, then title, the first lines of the story, and price beside the button.
+ */
+@media (max-width: 640px) {
+  .zap.page {
+    gap: 10px;
+    padding-top: 12px;
+    padding-bottom: 20px;
+  }
+
+  .zap-intro {
+    padding: 12px 14px;
+  }
+
+  .zap-intro__title {
+    margin-bottom: 4px;
+    font-size: 16px;
+  }
+
+  .zap-intro p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 12.5px;
+    line-height: 1.5;
+    cursor: pointer;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .zap-intro p.is-open {
+    display: block;
+  }
+
+  .zap-bar {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .zap-bar__progress {
+    gap: 7px;
+    padding: 4px 11px;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  .zap-bar__progress strong {
+    font-size: 14px;
+  }
+
+  .zap-bar__history {
+    flex: none;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 11px;
+    font-size: 11px;
+  }
+
+  .zap-bar__history svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .zap-grid {
+    gap: 8px;
+  }
+
+  .zap-task--skeleton {
+    height: 116px;
+  }
+
+  .zap-task {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-areas:
+      'media body'
+      'media action';
+    grid-template-rows: 1fr auto;
+  }
+
+  .zap-task:hover {
+    transform: none;
+  }
+
+  .zap-task__media {
+    grid-area: media;
+    align-self: start;
+    width: 88px;
+    height: 88px;
+    margin: 8px 0 8px 8px;
+    aspect-ratio: auto;
+    border-radius: 10px;
+  }
+
+  .zap-task__media::after {
+    inset: 3px;
+    border-radius: 7px;
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45);
+  }
+
+  /* The reward, along the foot of the thumbnail. */
+  .zap-task__shards {
+    top: auto;
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    justify-content: center;
+    gap: 4px;
+    padding: 2px 4px;
+    border-radius: 3px 7px 7px 3px;
+    font-size: 11px;
+  }
+
+  .zap-task__shards svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .zap-task__body {
+    grid-area: body;
+    gap: 3px;
+    min-width: 0;
+    padding: 10px 10px 4px;
+  }
+
+  .zap-task__title {
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .zap-task__desc {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 11.5px;
+    line-height: 1.45;
+    cursor: pointer;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .zap-task__desc.is-open {
+    display: block;
+  }
+
+  .zap-task__desc .zap-price,
+  .zap-task__confirm .zap-price {
+    padding: 0 5px;
+  }
+
+  .zap-task__confirm {
+    gap: 4px;
+  }
+
+  .zap-task__confirm p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .zap-task__cancel svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .zap-task__action {
+    grid-area: action;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: 4px 6px;
+    padding: 2px 10px 10px;
+  }
+
+  .zap-task__cost {
+    display: inline-flex;
+  }
+
+  .zap-task__cost .zap-price {
+    margin: 0;
+    padding: 3px 7px;
+    font-size: 12px;
+  }
+
+  .zap-task__cost .zap-price svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .zap-task__action .btn {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: 32px;
+    padding: 2px 8px;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    line-height: 1.15;
+    /* A long label takes two lines rather than running past the button. */
+    white-space: normal;
+  }
+
+  .zap-task__action .btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .zap-task__short {
+    flex-basis: 100%;
+    justify-content: flex-start;
+    font-size: 10.5px;
+  }
+
+  .zap-task__short.is-hidden {
+    display: none;
+  }
+
+  /* History: two lines per task, like a game's activity log. */
+  .zap-history__row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'task task shards'
+      'wallet elapsed support';
+    gap: 2px 10px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+  }
+
+  .zap-history__shards {
+    justify-self: end;
+  }
+
+  .zap-history__wallet {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .zap-history__task img {
+    width: 48px;
+    height: 30px;
+  }
+
+  .zap-history__elapsed {
+    font-size: 11.5px;
+  }
+
+  .zap-history__shards svg,
+  .zap-history__support svg {
+    width: 15px;
+    height: 15px;
+  }
+}
