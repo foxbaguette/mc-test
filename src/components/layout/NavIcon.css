@@ -1,0 +1,86 @@
+/* Section icons: shared by the desktop bar, the tablet grid, the phone tab bar and the menu sheet. */
+.nav-icon {
+  --hex: 28px;
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--hex);
+  height: var(--hex);
+}
+
+.nav-icon .nav-icon__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.nav-icon__glyph {
+  display: grid;
+  place-items: center;
+}
+
+/* Sizes per place the menu appears. */
+.nav-tile .nav-icon {
+  --hex: 50px;
+}
+
+.drawer__grid .nav-icon {
+  --hex: 40px;
+}
+
+.tab .nav-icon {
+  --hex: 30px;
+}
+
+@media (max-width: 1099px) {
+  .section-nav__item .nav-icon {
+    --hex: 30px;
+  }
+}
+
+/* The tile's icon box sized for the old glyphs; the emblem sets its own size. */
+.nav-tile__icon:has(.nav-icon),
+.drawer__grid .nav-tile__icon:has(.nav-icon) {
+  width: auto;
+  height: auto;
+}
+
+/* Hex emblem: the glyph set into a hexagon with a rim in the section's colour. */
+.nav-icon--hex::before,
+.nav-icon--hex::after {
+  content: '';
+  position: absolute;
+  clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+.nav-icon--hex::before {
+  z-index: -2;
+  inset: 0;
+  background: linear-gradient(180deg, var(--lt), var(--dk));
+  transition: filter 0.15s ease;
+}
+
+.nav-icon--hex::after {
+  z-index: -1;
+  inset: calc(var(--hex) * 0.04 + 0.5px);
+  background: radial-gradient(70% 60% at 50% 35%, color-mix(in srgb, var(--c) 30%, transparent), transparent 75%), #0a1728;
+}
+
+/* Beats the containers' own svg sizes (.tab svg, .nav-tile__icon svg, …). */
+.nav-icon.nav-icon--hex .nav-icon__glyph > svg {
+  width: calc(var(--hex) * 0.56);
+  height: calc(var(--hex) * 0.48);
+  filter: drop-shadow(0 0 calc(var(--hex) * 0.1) color-mix(in srgb, var(--c) 55%, transparent));
+}
+
+.nav-icon--hex.is-mono .nav-icon__glyph :not(clipPath, clipPath *)[fill]:not([fill='none']) {
+  fill: var(--g);
+}
+
+:is(.nav-tile, .section-nav__item, .tab):hover:not(.is-disabled) .nav-icon--hex::before,
+:is(.section-nav__item, .tab).is-active .nav-icon--hex::before {
+  filter: brightness(1.25);
+}

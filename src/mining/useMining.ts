@@ -9,7 +9,7 @@ import { pickBestLoanTool, refreshToolLoaning, useLoanableTools, useLoanLand, us
 import { tlmToNumber } from '@/lib/format'
 import { cooldownLabel, useNow } from '@/lib/time'
 import { useSession, type MiningType } from '@/state/session'
-import { canMine, MINING_BLOCKED_MESSAGE } from '@/wallet/session'
+import { canMine } from '@/wallet/session'
 
 import { mineReadyAt, pickFavoriteLand } from './estimates'
 import { mineWithLoanedTool } from './loan'
@@ -138,7 +138,7 @@ export function useMining() {
   const textBelow = cannotMine
     ? 'Become a member to use mine'
     : !walletCanMine
-      ? MINING_BLOCKED_MESSAGE
+      ? 'Unavailable with Anchor'
       : isLoan
         ? 'Tool Loaning'
         : usesFavorites
