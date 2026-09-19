@@ -68,7 +68,7 @@ export function ToolStats({ power, nftPower, cooldown }: { power: number; nftPow
         <ShardsSVG /> <span className="num">{nftPower / 10}</span>
       </span>
       {cooldown !== undefined && (
-        <span className="tl-stat" title="Cooldown">
+        <span className="tl-stat" title="Cooldown on Geothermal Springs">
           <ClockIcon /> <span className="num">{Math.round(cooldown / 60)}m</span>
         </span>
       )}

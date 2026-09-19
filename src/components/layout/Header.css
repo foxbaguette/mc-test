@@ -338,6 +338,22 @@
     display: none;
   }
 
+  /* Phones keep the next mine's estimate above the button; the mode's name stays off to save room. */
+  .mine .mine__above.has-estimate {
+    display: block;
+    margin-top: 5px;
+    font-size: 9px;
+    line-height: 1;
+  }
+
+  .mine .mine__mode {
+    display: none;
+  }
+
+  .mine .mine__estimate {
+    margin-left: 0;
+  }
+
   .mine__body {
     gap: 6px;
   }

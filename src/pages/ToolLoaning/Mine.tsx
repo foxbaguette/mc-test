@@ -6,7 +6,7 @@ import { Button } from '@/components/Button'
 import { MiningBlocked } from '@/components/MiningBlocked'
 import { RefreshIcon } from '@/icons/ui'
 import { useEquippedTools } from '@/data/mining'
-import { refreshToolLoaning, useLoanableTools, useLoanLand, type LoanTool } from '@/data/toolLoaning'
+import { loanCooldownSeconds, refreshToolLoaning, useLoanableTools, useLoanLand, type LoanTool } from '@/data/toolLoaning'
 import PersonSVG from '@/icons/person'
 import SettingsSVG from '@/icons/settings'
 import { cooldownLabel, useClockFor } from '@/lib/time'
@@ -92,7 +92,7 @@ export function Mine() {
                 shine={tool.shine}
                 owned={tool.owned}
                 ready={isReady}
-                stats={<ToolStats power={tool.mining_power} nftPower={tool.nft_power} cooldown={tool.cooldown_seconds} />}
+                stats={<ToolStats power={tool.mining_power} nftPower={tool.nft_power} cooldown={loanCooldownSeconds(tool)} />}
               >
                 <Button
                   block

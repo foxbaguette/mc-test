@@ -23,8 +23,8 @@ export function MineWidget() {
         <RefreshIcon size={20} />
       </button>
       <div className="mine__body">
-        <span className="mine__above">
-          {mining.textAbove}
+        <span className={`mine__above ${mining.estimatedTlm !== null ? 'has-estimate' : ''}`}>
+          <span className="mine__mode">{mining.textAbove}</span>
           {mining.estimatedTlm !== null && (
             <span className="mine__estimate num" title="Estimated TLM for the next mine, on the current pools">
               ≈ {mining.estimatedTlm.toFixed(4)} <TLMSVG />

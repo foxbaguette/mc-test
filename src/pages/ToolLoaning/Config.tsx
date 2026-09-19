@@ -5,7 +5,7 @@ import { RARITY_COLORS, RARITY_ORDER } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { ClockIcon } from '@/icons/ui'
 import { Select } from '@/components/Select'
-import { SHINE_ORDER, useToolOv, useToolWallet } from '@/data/toolLoaning'
+import { loanCooldownSeconds, SHINE_ORDER, useToolOv, useToolWallet } from '@/data/toolLoaning'
 import PickaxeSVG from '@/icons/pickaxe'
 import ShardsSVG from '@/icons/shards'
 import { setTempListAction } from '@/chain/actions/toolLoaning'
@@ -115,8 +115,8 @@ export function Config() {
                     <span className="chip" title="NFT power">
                       <ShardsSVG /> {tool.nft_power / 10}
                     </span>
-                    <span className="chip" title="Cooldown">
-                      <ClockIcon /> {tool.cooldown_seconds} sec
+                    <span className="chip" title="Cooldown on Geothermal Springs">
+                      <ClockIcon /> {Math.round(loanCooldownSeconds(tool) / 60)}m
                     </span>
                   </span>
                   <span className="toggle">

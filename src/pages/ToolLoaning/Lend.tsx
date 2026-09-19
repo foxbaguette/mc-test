@@ -5,7 +5,7 @@ import { RARITY_ORDER } from '@/chain/config'
 import { Button } from '@/components/Button'
 import { WarningCircleIcon } from '@/icons/ui'
 import { useToolInventory } from '@/data/mining'
-import { SHINE_ORDER, useStakedTools, useToolOv } from '@/data/toolLoaning'
+import { loanCooldownSeconds, SHINE_ORDER, useStakedTools, useToolOv } from '@/data/toolLoaning'
 import { chainDate, formatDateNumeric } from '@/lib/time'
 import { stakeToolsAction, unstakeToolsAction } from '@/chain/actions/toolLoaning'
 import { useTransaction } from '@/wallet/useTransaction'
@@ -155,7 +155,7 @@ export function Lend() {
                 name={ov.tool_name}
                 rarity={ov.rarity}
                 shine={ov.shine}
-                stats={<ToolStats power={ov.mining_power} nftPower={ov.nft_power} cooldown={ov.cooldown_seconds} />}
+                stats={<ToolStats power={ov.mining_power} nftPower={ov.nft_power} cooldown={loanCooldownSeconds(ov)} />}
                 note={`Gain ${ov.owner_share / 10}% of all TLM mined with this tool.`}
               >
                 <Button

@@ -19,6 +19,16 @@ export const KOL_DIGGER = 'Certified Kol Digger'
 /** The land every Certified Kol Digger loan mines on (as the original site did). */
 export const KOL_DIGGER_LAND = '1099512958237'
 
+/**
+ * Loaned tools mine on Mission Control's suggested lands, all Geothermal Springs, whose cooldown
+ * modifier (15, i.e. 1.5x) stretches every tool's own cooldown. What a player waits for is that.
+ */
+export const LOAN_LAND_COOLDOWN = 1.5
+
+/** A loaned tool's cooldown on Geothermal Springs, in seconds (the Kol Digger counts as 500 s). */
+export const loanCooldownSeconds = (tool: { tool_name?: string; cooldown_seconds: number }) =>
+  (tool.tool_name === KOL_DIGGER ? 500 : tool.cooldown_seconds) * LOAN_LAND_COOLDOWN
+
 export const SHINE_ORDER: Record<string, number> = { 'X-Dimension': 0, Antimatter: 1, Stardust: 2, Gold: 3, Stone: 4 }
 
 export const useToolOv = (enabled = true) =>
@@ -117,7 +127,7 @@ export function useLoanableTools(account: string | null) {
         const isKol = tool.tool_name === KOL_DIGGER
         const source = isKol ? soonestMTool! : tool
         const lastUse = +chainDate(source.readyat) - source.cooldown_seconds * 1000
-        const delay = (isKol ? 500 : tool.cooldown_seconds) * 1.5 * 1000
+        const delay = loanCooldownSeconds(tool) * 1000
         return {
           ...tool,
           mtool: isKol ? soonestMTool : undefined,

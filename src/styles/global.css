@@ -393,7 +393,8 @@ svg {
 
 @media (max-width: 768px) {
   :root {
-    --header-h: 80px;
+    /* Room for the next mine's estimate above the mine button. */
+    --header-h: 88px;
   }
 
   body {
