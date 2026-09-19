@@ -1,0 +1,562 @@
+/* Planetary Defense: Magor orange for attack, blue for defense, on the site's plates. */
+.pd {
+  --pd-attack: #f85a29;
+  --pd-attack-lt: #ff9a5c;
+  --pd-defense: #00baff;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pd__nav {
+  display: flex;
+}
+
+.pd-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+/* Cards */
+.pd-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 18px 18px;
+  overflow: hidden;
+  border: 1px solid var(--plate-edge);
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--plate-radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+}
+
+.pd-card--attack {
+  border-left-color: var(--pd-attack);
+  background:
+    radial-gradient(70% 60% at 0 0, rgba(248, 90, 41, 0.12), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+}
+
+.pd-card--defense {
+  border-left-color: var(--pd-defense);
+  background:
+    radial-gradient(70% 60% at 0 0, rgba(0, 186, 255, 0.1), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+}
+
+.pd-card--pvp {
+  border-left-color: var(--yellow);
+}
+
+.pd-card--skeleton {
+  height: 320px;
+  border-radius: var(--plate-radius);
+}
+
+.pd-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pd-card__eyebrow {
+  color: var(--text-faint);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pd-card__title {
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 2.4vw, 26px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.pd-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pd-empty {
+  padding: 18px 0;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  text-align: center;
+}
+
+.pd-note {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+/* A running clock gets the live pill, as elsewhere on the site. */
+.pd-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pd-state::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+}
+
+.pd-state.is-live::before {
+  background: var(--pd-attack-lt);
+  box-shadow: 0 0 8px rgba(248, 90, 41, 0.8);
+  animation: pd-blink 2.4s ease-in-out infinite;
+}
+
+.pd-state.is-completed::before {
+  background: var(--green);
+}
+
+@keyframes pd-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Readouts */
+.pd-plates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+/* The half-width mission cards: two readouts per row, an odd last one across the row. */
+.pd-grid .pd-plates {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Player stats: three wide readouts per row, so the role reads in full. */
+.pd-plates--stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pd-plates > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.pd-plate {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--plate-radius-sm);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015));
+}
+
+.pd-plate.is-accent {
+  border-left-color: var(--yellow);
+}
+
+.pd-plate__label {
+  color: var(--text-faint);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pd-plate__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-plate.is-accent .pd-plate__value {
+  color: var(--yellow);
+}
+
+.pd-plate__value svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+}
+
+/* Progress toward a mission's target */
+.pd-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pd-meter__figures {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pd-meter__figures small {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.pd-meter__figures strong {
+  color: var(--pd-attack-lt);
+}
+
+.pd-meter--defense .pd-meter__figures strong {
+  color: var(--pd-defense);
+}
+
+.pd-meter__bar {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pd-meter__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c2410c, var(--pd-attack), var(--pd-attack-lt));
+  box-shadow: 0 0 12px rgba(248, 90, 41, 0.5);
+  transition: width 0.3s ease;
+}
+
+.pd-meter--defense .pd-meter__bar > span {
+  background: linear-gradient(90deg, #0369a1, var(--pd-defense));
+  box-shadow: 0 0 12px rgba(0, 186, 255, 0.45);
+}
+
+/* Actions */
+.pd-action.btn {
+  --plate-tracking: 0.1em;
+  min-width: 160px;
+}
+
+.pd-team {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pd-team--skeleton {
+  height: 120px;
+  border-radius: var(--radius);
+}
+
+.pd-team--find {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pd-select.select {
+  --select-c1: rgba(255, 255, 255, 0.16);
+  --select-c2: rgba(255, 255, 255, 0.16);
+
+  flex: 1 1 260px;
+  min-width: 0;
+  height: 40px;
+}
+
+.pd-team > .btn {
+  align-self: flex-start;
+}
+
+/* Lists: team members, requests, history */
+.pd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.pd-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 10px 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pd-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-row__meta {
+  color: var(--text-faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pd-row__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pd-row__value svg {
+  width: 13px;
+  height: 13px;
+}
+
+.pd-row__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.pd-winner {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pd-winner.is-defense {
+  background: rgba(0, 186, 255, 0.14);
+  color: var(--pd-defense);
+}
+
+.pd-winner.is-attack {
+  background: rgba(248, 90, 41, 0.16);
+  color: var(--pd-attack-lt);
+}
+
+/* PvP: both sides' scores over a tug-of-war bar */
+.pd-versus {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+.pd-versus__side {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pd-versus__side.is-attack {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.pd-versus__label {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pd-versus__side.is-defense .pd-versus__label,
+.pd-versus__side.is-defense strong {
+  color: var(--pd-defense);
+}
+
+.pd-versus__side.is-attack .pd-versus__label,
+.pd-versus__side.is-attack strong {
+  color: var(--pd-attack-lt);
+}
+
+.pd-versus__side strong {
+  font-family: var(--font-heading);
+  font-size: 22px;
+}
+
+.pd-versus__side small {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.pd-versus__bar {
+  grid-column: 1 / -1;
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c2410c, var(--pd-attack));
+}
+
+.pd-versus__bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #0369a1, var(--pd-defense));
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 900px) {
+  .pd-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Phones: slimmer cards, two readouts per row, full-width actions. */
+@media (max-width: 640px) {
+  .pd {
+    gap: 10px;
+  }
+
+  .pd__nav .segmented {
+    display: flex;
+    width: 100%;
+  }
+
+  .pd__nav .segmented button {
+    flex: 1;
+    padding: 0 6px;
+  }
+
+  .pd-grid {
+    gap: 10px;
+  }
+
+  .pd-card {
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .pd-card__eyebrow {
+    font-size: 10px;
+  }
+
+  .pd-card__title {
+    font-size: 18px;
+  }
+
+  .pd-state {
+    padding: 3px 9px;
+    font-size: 9.5px;
+  }
+
+  .pd-plates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .pd-plate {
+    padding: 5px 9px;
+  }
+
+  .pd-plate__label {
+    font-size: 8.5px;
+    letter-spacing: 0.06em;
+  }
+
+  .pd-plate__value {
+    font-size: 13px;
+  }
+
+  .pd-meter__figures {
+    font-size: 13px;
+  }
+
+  .pd-meter__bar {
+    height: 6px;
+  }
+
+  .pd-card__foot {
+    gap: 6px;
+  }
+
+  .pd-action.btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .pd-team > .btn {
+    align-self: stretch;
+  }
+
+  .pd-select.select {
+    flex-basis: 100%;
+    height: 36px;
+  }
+
+  .pd-select.select select {
+    font-size: 12px;
+  }
+
+  .pd-row {
+    gap: 8px;
+    min-height: 36px;
+    padding: 5px 8px 5px 10px;
+    font-size: 13px;
+  }
+
+  .pd-row .btn {
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 10.5px;
+  }
+
+  .pd-versus__side strong {
+    font-size: 17px;
+  }
+
+  .pd-versus__bar {
+    height: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-state.is-live::before {
+    animation: none;
+  }
+}

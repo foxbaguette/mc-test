@@ -123,3 +123,18 @@ export const newsKeys = {
 export const tlmHistoryKeys = {
   month: (account: Account, month: string) => ['tlmHistory', account, month] as const
 }
+
+export const pdKeys = {
+  all: ['pd'] as const,
+  member: (account: Account) => ['pd', 'member', account] as const,
+  missions: ['pd', 'missions'] as const,
+  playerMissions: (account: Account) => ['pd', 'playerMissions', account] as const,
+  power: (account: Account) => ['pd', 'power', account] as const,
+  owners: ['pd', 'owners'] as const,
+  supports: ['pd', 'supports'] as const,
+  requests: (account: Account, as: 'player' | 'warlord') => ['pd', 'requests', account, as] as const,
+  defense: ['pd', 'defense'] as const,
+  defenseWins: ['pd', 'defenseWins'] as const,
+  pvp: ['pd', 'pvp'] as const,
+  chest: (landId: string | undefined) => ['pd', 'chest', landId] as const
+}

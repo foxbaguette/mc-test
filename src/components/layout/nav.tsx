@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 import { DISCORD_URL } from '@/chain/config'
 import { useMembership, usePlayerSupport } from '@/data/player'
+import { usePdMember } from '@/data/planetaryDefense'
 import ApplicationsSVG from '@/icons/applications'
 import AwMiningSVG from '@/icons/aw-mining'
 import BulldozerSVG from '@/icons/bulldozer'
@@ -14,6 +15,7 @@ import MCPBuilderSVG from '@/icons/mcp-builder'
 import MembershipSVG from '@/icons/membership'
 import NewsSVG from '@/icons/news'
 import PickaxeSVG from '@/icons/pickaxe'
+import PlanetaryDefenseSVG from '@/icons/planetary-defense'
 import RocketSVG from '@/icons/rocket'
 import TriliumVaultSVG from '@/icons/trilium-vault'
 import TreasureSVG from '@/icons/treasure'
@@ -49,6 +51,8 @@ export const TABBAR_ORDER = ['builder', 'adventures', 'tool-loaning', 'emporium'
 export function useNavItems(): Record<NavGroup, NavItem[]> {
   const { account, isMember, isFullMember } = useMembership()
   const isSupport = !!usePlayerSupport(account).data?.wallet
+  // Planetary Defense is for players with an account there (members) and its warlords.
+  const isPdMember = !!usePdMember(account).data
 
   return {
     main: [
@@ -133,6 +137,19 @@ export function useNavItems(): Record<NavGroup, NavItem[]> {
           </NavIcon>
         )
       },
+      ...(isPdMember
+        ? [
+            {
+              path: 'planetary-defense',
+              title: 'Planetary Defense',
+              icon: (
+                <NavIcon color="#f85a29">
+                  <PlanetaryDefenseSVG />
+                </NavIcon>
+              )
+            }
+          ]
+        : []),
       // Support only ever reaches the site for this one, so it stays on the bar for them.
       ...(isSupport
         ? [

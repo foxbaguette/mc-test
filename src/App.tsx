@@ -28,6 +28,7 @@ const TriliumVault = lazy(() => import('@/pages/TriliumVault'))
 const ToolTactician = lazy(() => import('@/pages/ToolTactician'))
 const Membership = lazy(() => import('@/pages/Membership'))
 const News = lazy(() => import('@/pages/News'))
+const PlanetaryDefense = lazy(() => import('@/pages/PlanetaryDefense'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 
 function PublicOnly({ children }: { children: ReactNode }) {
@@ -89,6 +90,7 @@ export function App() {
               <Route path="/trilium-vault" element={<TriliumVault />} />
               <Route path="/tool-tactician" element={<ToolTactician />} />
               <Route path="/membership" element={<Membership />} />
+              <Route path="/planetary-defense" element={<PlanetaryDefense />} />
               <Route path="/news" element={<News />} />
             </Route>
             <Route path="/mine-history" element={<Navigate to="/tlm-history" replace />} />

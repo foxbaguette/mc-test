@@ -28,6 +28,18 @@ import type {
 import type { Adventure, AdventureParticipation, AdvTemplate, LevelUnlock } from './types/adventures'
 import type { EmporiumConfig, EmporiumTask } from './types/emporium'
 import type { DaoCandidate, PlanetCandidate, VoteHistory, VotingConfig } from './types/voting'
+import type {
+  PdChest,
+  PdDefenseMission,
+  PdDefenseWin,
+  PdMission,
+  PdOwner,
+  PdPlayer,
+  PdPlayerMission,
+  PdPvp,
+  PdRequest,
+  PdSupport
+} from './types/planetaryDefense'
 
 const { MISSIONS, MEMBERS, USPTS, ALIEN_WORLDS, HQ_MU, M_FEDERATION, AWLNDRATINGS, PLANETAWORLD } = CONTRACTS
 
@@ -193,3 +205,32 @@ export const readBuilderRanking = () => getRows<BuilderRanking>({ code: GAME, ta
 
 export const readMinerClaim = (account: string) =>
   getRow<MinerClaim>({ code: M_FEDERATION, table: 'minerclaim', ...exact(account) })
+
+// magordefense (Planetary Defense)
+const { PLANETARY_DEFENSE: PD } = CONTRACTS
+export const readPdMember = (account: string) =>
+  getRow<{ player_name: string }>({ code: PD, table: 'members', ...exact(account) }, { confirmEmpty: true })
+export const readPdMissions = () => getRows<PdMission>({ code: PD, table: 'missions' })
+/** Index 2: the player. */
+export const readPdPlayerMissions = (account: string) =>
+  getRows<PdPlayerMission>({ code: PD, table: 'playermiss', index_position: 2, key_type: 'name', ...exact(account) })
+export const readPdPlayer = (account: string) => getRow<PdPlayer>({ code: PD, table: 'players', ...exact(account) })
+export const readPdOwner = (account: string) => getRow<PdOwner>({ code: PD, table: 'owners', ...exact(account) })
+export const readPdInForge = (account: string) =>
+  getRow<{ player_address: string }>({ code: PD, table: 'forge', ...exact(account) })
+export const readPdOwners = () => getRows<PdOwner>({ code: PD, table: 'owners' })
+export const readPdSupports = () => getRows<PdSupport>({ code: PD, table: 'supports' })
+/** Index 2: the player asking; index 3: the warlord asked. */
+export const readPdRequests = (account: string, as: 'player' | 'warlord') =>
+  getRows<PdRequest>({
+    code: PD,
+    table: 'requests2',
+    index_position: as === 'player' ? 2 : 3,
+    key_type: 'name',
+    ...exact(account)
+  })
+export const readPdDefenseMissions = () => getRows<PdDefenseMission>({ code: PD, table: 'defense' })
+export const readPdDefenseWins = () => getRows<PdDefenseWin>({ code: PD, table: 'defwin2' })
+/** The latest PvP rounds, newest first. */
+export const readPdPvpRounds = (count: number) => getRows<PdPvp>({ code: PD, table: 'pvp3', limit: count, reverse: true })
+export const readPdChest = (landId: string) => getRow<PdChest>({ code: PD, table: 'chests', ...exact(landId) })
