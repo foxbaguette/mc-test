@@ -116,3 +116,21 @@ export function pickFavoriteLand(lands: FavoriteLand[], readyAt: (land: Favorite
   const secondary = (land: FavoriteLand) => (type === 'orange' ? land.shards : land.estimatedTlm)
   return [...pool].sort((a, b) => primary(b) - primary(a) || secondary(b) - secondary(a))[0]
 }
+
+export type LandSort = 'ready' | 'tlm' | 'shards'
+
+/**
+ * Favourite lands in the order the player chose. Lands ready to mine always come first. "Ready
+ * first" then goes by cooldown (longest-cooling ready lands first, then the soonest to be ready);
+ * the estimate orders put the best estimate first within each group, ties going to the other one.
+ */
+export function sortFavoriteLands<T extends { land: FavoriteLand; isReady: boolean }>(lands: T[], sort: LandSort): T[] {
+  const ready = lands.filter((l) => l.isReady).sort((a, b) => b.land.delay - a.land.delay)
+  const waiting = lands.filter((l) => !l.isReady).sort((a, b) => a.land.delay - b.land.delay)
+  if (sort === 'ready') return [...ready, ...waiting]
+  const byEstimate = (a: T, b: T) =>
+    sort === 'tlm'
+      ? b.land.estimatedTlm - a.land.estimatedTlm || b.land.shards - a.land.shards
+      : b.land.shards - a.land.shards || b.land.estimatedTlm - a.land.estimatedTlm
+  return [...ready.sort(byEstimate), ...waiting.sort(byEstimate)]
+}

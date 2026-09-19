@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { FavoriteLand } from '@/data/favorites'
 import type { EquippedTool } from '@/data/types/mining'
 
-import { effectiveCommission, estimateTlm, mineReadyAt, pickFavoriteLand } from './estimates'
+import { effectiveCommission, estimateTlm, mineReadyAt, pickFavoriteLand, sortFavoriteLands } from './estimates'
 
 const tool = (delay: number, last_use = 0) => ({ delay, last_use }) as unknown as EquippedTool
 
@@ -76,5 +76,31 @@ describe('pickFavoriteLand', () => {
 
   it('is null without lands', () => {
     expect(pickFavoriteLand([], readyAt, 'green', 10)).toBeNull()
+  })
+})
+
+describe('sortFavoriteLands', () => {
+  const entry = (asset_id: string, isReady: boolean, estimatedTlm: number, shards: number, delay = 10) => ({
+    land: { asset_id, estimatedTlm, shards, delay } as unknown as FavoriteLand,
+    isReady
+  })
+  const lands = [
+    entry('cooling-best', false, 9, 1),
+    entry('ready-low', true, 2, 5),
+    entry('cooling-low', false, 1, 9),
+    entry('ready-high', true, 4, 3)
+  ]
+  const ids = (list: ReturnType<typeof sortFavoriteLands<(typeof lands)[number]>>) => list.map((l) => l.land.asset_id)
+
+  it('puts ready lands first when sorting by TLM, the best estimate first in each group', () => {
+    expect(ids(sortFavoriteLands(lands, 'tlm'))).toEqual(['ready-high', 'ready-low', 'cooling-best', 'cooling-low'])
+  })
+
+  it('puts ready lands first when sorting by Shards too', () => {
+    expect(ids(sortFavoriteLands(lands, 'shards'))).toEqual(['ready-low', 'ready-high', 'cooling-low', 'cooling-best'])
+  })
+
+  it('keeps ready lands first in the ready order', () => {
+    expect(ids(sortFavoriteLands(lands, 'ready')).slice(0, 2).sort()).toEqual(['ready-high', 'ready-low'])
   })
 })

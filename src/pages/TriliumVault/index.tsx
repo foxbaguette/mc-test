@@ -6,7 +6,7 @@ import { Modal } from '@/components/Modal'
 import { Ticking } from '@/components/Ticking'
 import { PageHeader } from '@/components/PageHeader'
 import { usePlayer } from '@/data/player'
-import { useMinerClaim } from '@/data/toolLoaning'
+import { refreshToolLoaning, useMinerClaim, useToolWallet } from '@/data/toolLoaning'
 import { refreshVault, useClaimableWeeks, useLandComms, useLandPayouts } from '@/data/vault'
 import InformationSvgBuilder from '@/icons/info-builder'
 import LandSVG from '@/icons/land'
@@ -25,6 +25,7 @@ import {
   withdrawRewardPointsAction
 } from '@/chain/actions/rewards'
 import { claimMinesAction } from '@/chain/actions/mining'
+import { claimToolsTlmAction } from '@/chain/actions/toolLoaning'
 import { useTransaction } from '@/wallet/useTransaction'
 import { publicUrl } from '@/lib/publicUrl'
 
@@ -37,6 +38,7 @@ export default function TriliumVault() {
   const landComms = useLandComms(account)
   const payouts = useLandPayouts(account)
   const weeks = useClaimableWeeks()
+  const toolWallet = useToolWallet(account)
 
   const [withdrawQp, setWithdrawQp] = useState('0')
   const [depositQp, setDepositQp] = useState('0')
@@ -53,6 +55,8 @@ export default function TriliumVault() {
   const commsAmount = tlmToNumber(landComms.data?.comms)
   const payoutAmount = tlmToNumber(payouts.data?.payoutAmount)
   const storedPoints = player.member?.score_nft ?? 0
+  // A trial balance runs below zero until real TLM is deposited: nothing to claim then.
+  const toolDeposit = Math.max(0, tlmToNumber(toolWallet.data?.deposit))
 
   // Everything that can be collected right now, and the one transaction that takes it all.
   const mineReady = mineAmount > 0 && !mineWaiting
@@ -197,6 +201,36 @@ export default function TriliumVault() {
             }
           />
 
+          {/* Claimed on its own: the deposit pays for loaned tools, so Claim All leaves it where it is. */}
+          <VaultCard
+            accent="blue"
+            className="vault-card--tools"
+            icon={<PickaxeSVG />}
+            title="Tool Loaning Deposit"
+            amount={toolDeposit.toFixed(4)}
+            unit={<TLMSVG />}
+            ready={toolDeposit > 0}
+            info="TLM you deposited for Tool Loaning"
+            action={
+              <Button
+                block
+                size="sm"
+                isLoading={pending === 'tools'}
+                disabled={!!pending || toolDeposit <= 0}
+                onClick={() =>
+                  sign(
+                    (a, p) => [claimToolsTlmAction(a, p, toolDeposit)],
+                    'TLM Claimed',
+                    () => Promise.all([refreshVault(account), refreshToolLoaning(account)]),
+                    'tools'
+                  )
+                }
+              >
+                Claim
+              </Button>
+            }
+          />
+
           <VaultCard
             wide
             accent="green"
@@ -275,7 +309,8 @@ export default function TriliumVault() {
 }
 
 interface CardProps {
-  accent: 'gold' | 'teal' | 'violet' | 'pink' | 'green'
+  accent: 'gold' | 'teal' | 'violet' | 'pink' | 'green' | 'blue'
+  className?: string
   icon: ReactNode
   title: string
   amount: string
@@ -288,7 +323,7 @@ interface CardProps {
   onAmountClick?: () => void
 }
 
-function VaultCard({ accent, icon, title, amount, unit, info, action, ready, wide, onAmountClick }: CardProps) {
+function VaultCard({ accent, className = '', icon, title, amount, unit, info, action, ready, wide, onAmountClick }: CardProps) {
   const value = (
     <>
       <span className="vault-card__amount num">{amount}</span>
@@ -297,7 +332,9 @@ function VaultCard({ accent, icon, title, amount, unit, info, action, ready, wid
   )
 
   return (
-    <section className={`vault-card vault-card--${accent} ${ready ? 'is-ready' : ''} ${wide ? 'vault-card--wide' : ''}`}>
+    <section
+      className={`vault-card vault-card--${accent} ${className} ${ready ? 'is-ready' : ''} ${wide ? 'vault-card--wide' : ''}`}
+    >
       <header className="vault-card__head">
         <span className="vault-card__icon">{icon}</span>
         <h2 className="vault-card__title">{title}</h2>

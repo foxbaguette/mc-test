@@ -114,8 +114,17 @@
   --accent: 96, 195, 74;
 }
 
+.vault-card--blue {
+  --accent: 0, 186, 255;
+}
+
 .vault-card--wide {
   grid-column: 1 / -1;
+}
+
+/* Tool Loaning deposit and the Reward Point deposit share the last row. */
+.vault-card--tools + .vault-card--wide {
+  grid-column: span 3;
 }
 
 /* Something to collect: a gold outline and a lit top edge. */
@@ -317,6 +326,12 @@
 @media (max-width: 1200px) {
   .vault__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Two to a row: the Tool Loaning deposit takes a row of its own, like the Reward Point one. */
+  .vault-card--tools,
+  .vault-card--tools + .vault-card--wide {
+    grid-column: 1 / -1;
   }
 }
 

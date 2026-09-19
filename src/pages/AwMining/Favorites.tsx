@@ -15,7 +15,7 @@ import { landImage, planetImage } from '@/lib/format'
 import { cooldownLabel, useClockFor } from '@/lib/time'
 import { Ticking } from '@/components/Ticking'
 import { remFavLand, remFavTools, setBagAction, setLandAction } from '@/chain/actions/mining'
-import { mineReadyAt } from '@/mining/estimates'
+import { mineReadyAt, sortFavoriteLands, type LandSort } from '@/mining/estimates'
 import { mineNow } from '@/mining/mineNow'
 import { useCanMine } from '@/state/session'
 import { publicUrl } from '@/lib/publicUrl'
@@ -23,8 +23,6 @@ import { miningKeys, playerKeys } from '@/data/keys'
 
 import { useTransaction } from '@/wallet/useTransaction'
 import { RefreshIcon } from '@/icons/ui'
-
-type LandSort = 'ready' | 'tlm' | 'shards'
 
 const SORT_OPTIONS: { value: LandSort; label: string }[] = [
   { value: 'ready', label: 'Ready first' },
@@ -64,16 +62,7 @@ export function Favorites() {
   // Re-render when a land's cooldown ends, to re-sort; the countdowns tick on their own.
   const now = useClockFor(favorites.lands.map(readyAt))
   const withReady = favorites.lands.map((land) => ({ land, at: readyAt(land), isReady: readyAt(land) <= now }))
-  const ready = withReady.filter((l) => l.isReady).sort((a, b) => b.land.delay - a.land.delay)
-  const waiting = withReady.filter((l) => !l.isReady).sort((a, b) => a.land.delay - b.land.delay)
-  // Ready first: lands to mine now, then the rest by how soon they are ready. Or the best estimate first.
-  // Ties go to the other estimate.
-  const sorted =
-    sort === 'tlm'
-      ? [...withReady].sort((a, b) => b.land.estimatedTlm - a.land.estimatedTlm || b.land.shards - a.land.shards)
-      : sort === 'shards'
-        ? [...withReady].sort((a, b) => b.land.shards - a.land.shards || b.land.estimatedTlm - a.land.estimatedTlm)
-        : [...ready, ...waiting]
+  const sorted = sortFavoriteLands(withReady, sort)
 
   const refreshLands = () => Promise.all([refreshMining(account), favorites.refetch()])
 
