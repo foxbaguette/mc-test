@@ -11,6 +11,7 @@ import { useMining } from '@/mining/useMining'
 export function MineWidget() {
   const { isFullMember } = useMembership()
   const mining = useMining()
+  const hasContent = mining.estimatedTlm !== null || !!mining.upgrade
 
   return (
     <div className="mine" aria-live="polite">
@@ -23,11 +24,17 @@ export function MineWidget() {
         <RefreshIcon size={20} />
       </button>
       <div className="mine__body">
-        <span className={`mine__above ${mining.estimatedTlm !== null ? 'has-estimate' : ''}`}>
-          <span className="mine__mode">{mining.textAbove}</span>
+        {/* What the next mine is worth: its estimate, and the better land on its way. */}
+        <span className={`mine__above ${hasContent ? 'has-content' : ''}`}>
+          {mining.textAbove && <span className="mine__mode">{mining.textAbove}</span>}
           {mining.estimatedTlm !== null && (
             <span className="mine__estimate num" title="Estimated TLM for the next mine, on the current pools">
               ≈ {mining.estimatedTlm.toFixed(4)} <TLMSVG />
+            </span>
+          )}
+          {mining.upgrade && (
+            <span className="mine__upgrade num" title={mining.upgrade.title}>
+              <ArrowUpIcon size={10} /> {mining.upgrade.in}
             </span>
           )}
         </span>
@@ -40,15 +47,8 @@ export function MineWidget() {
         >
           <span className="num">{mining.buttonText}</span>
         </Button>
-        <span className="mine__below">
-          <span className="mine__land" title={mining.textBelow}>
-            {mining.textBelow}
-          </span>
-          {mining.upgrade && (
-            <span className="mine__upgrade num" title={mining.upgrade.title}>
-              <ArrowUpIcon size={10} /> {mining.upgrade.in}
-            </span>
-          )}
+        <span className="mine__below" title={mining.textBelow}>
+          {mining.textBelow}
         </span>
       </div>
     </div>

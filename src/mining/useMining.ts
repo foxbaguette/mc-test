@@ -43,14 +43,6 @@ export const COLORS: Record<MiningType, ButtonColor> = {
   red: 'gradientRed'
 }
 
-const ABOVE: Record<MiningType, string> = {
-  gold: 'Mining',
-  green: 'Favorites (shards)',
-  orange: 'Favorites (TLM)',
-  blue: 'Mine Maximizer',
-  red: 'Tool Loaning'
-}
-
 /** State and actions behind the header's mine button. */
 export function useMining() {
   const navigate = useNavigate()
@@ -214,11 +206,8 @@ export function useMining() {
     setBusy(false)
   }
 
-  const textAbove = cannotMine
-    ? 'Not a Member'
-    : isLoan
-      ? `Deposit: ${tlmToNumber(loanWallet.data?.deposit).toFixed(4)} TLM`
-      : ABOVE[miningType]
+  // The button's colour says which mode it is in, so only what the colour cannot say goes above it.
+  const textAbove = cannotMine ? 'Not a Member' : isLoan ? `Deposit: ${tlmToNumber(loanWallet.data?.deposit).toFixed(4)} TLM` : ''
 
   const textBelow = cannotMine
     ? 'Become a member to use mine'
