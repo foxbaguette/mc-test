@@ -78,10 +78,10 @@
   }
 }
 
+/* Phones keep toasts under the top bar, where the eye already is after pressing mine. */
 @media (max-width: 768px) {
   .toaster {
-    top: auto;
-    bottom: calc(var(--tabbar-h, 64px) + env(safe-area-inset-bottom) + 12px);
+    top: calc(var(--header-h) + 8px);
     right: 16px;
   }
 }
