@@ -134,9 +134,10 @@ describe('nextFavoriteUpgrade', () => {
     expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)).toBeNull()
   })
 
-  it('still names a better land while nothing is ready', () => {
+  it('says nothing while mining is still on cooldown', () => {
     const lands = [land('soonest', 100, 1, 1), land('better', 400, 7, 7)]
-    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)?.land.asset_id).toBe('better')
+    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)).toBeNull()
+    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 150)?.land.asset_id).toBe('better')
   })
 
   it('is null without lands', () => {

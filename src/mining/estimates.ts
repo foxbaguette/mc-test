@@ -140,8 +140,9 @@ const UPGRADE_EPSILON = 1e-4
 
 /**
  * The favourite land the mine button will move up to once it comes off cooldown: one that pays more
- * than the land it would pick right now. The soonest such land, so the player knows how long the
- * better pick is away; null when nothing cooling down beats the current pick.
+ * than the land it would pick right now. The soonest such land, so the player can decide whether to
+ * wait for it; null when nothing cooling down beats the current pick, and while mining is still on
+ * cooldown, where the button's own countdown is the only one that matters.
  */
 export function nextFavoriteUpgrade(
   lands: FavoriteLand[],
@@ -150,7 +151,7 @@ export function nextFavoriteUpgrade(
   now: number
 ): { land: FavoriteLand; at: number } | null {
   const current = pickFavoriteLand(lands, readyAt, type, now)
-  if (!current) return null
+  if (!current || readyAt(current) > now) return null
   const value = (land: FavoriteLand) => (type === 'orange' ? land.estimatedTlm : land.shards)
   const currentValue = value(current)
   const better = lands
