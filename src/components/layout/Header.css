@@ -417,3 +417,32 @@
   width: 10px;
   height: 10px;
 }
+
+/* The land name below the button, with the upgrade hint beside it when a better favourite is coming. */
+.mine__below {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.mine__land {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A better favourite land comes off cooldown: how long until the button picks it instead. */
+.mine__upgrade {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--green);
+  letter-spacing: 0.02em;
+}
+
+.mine__upgrade svg {
+  width: 10px;
+  height: 10px;
+}

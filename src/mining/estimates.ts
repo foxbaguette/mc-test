@@ -134,3 +134,28 @@ export function sortFavoriteLands<T extends { land: FavoriteLand; isReady: boole
       : b.land.shards - a.land.shards || b.land.estimatedTlm - a.land.estimatedTlm
   return [...ready.sort(byEstimate), ...waiting.sort(byEstimate)]
 }
+
+/** Below this, a land pays the same for all the player can see, so it is no upgrade. */
+const UPGRADE_EPSILON = 1e-4
+
+/**
+ * The favourite land the mine button will move up to once it comes off cooldown: one that pays more
+ * than the land it would pick right now. The soonest such land, so the player knows how long the
+ * better pick is away; null when nothing cooling down beats the current pick.
+ */
+export function nextFavoriteUpgrade(
+  lands: FavoriteLand[],
+  readyAt: (land: FavoriteLand) => number,
+  type: MiningType,
+  now: number
+): { land: FavoriteLand; at: number } | null {
+  const current = pickFavoriteLand(lands, readyAt, type, now)
+  if (!current) return null
+  const value = (land: FavoriteLand) => (type === 'orange' ? land.estimatedTlm : land.shards)
+  const currentValue = value(current)
+  const better = lands
+    .filter((land) => readyAt(land) > now && value(land) - currentValue >= UPGRADE_EPSILON)
+    .map((land) => ({ land, at: readyAt(land) }))
+    .sort((a, b) => a.at - b.at || value(b.land) - value(a.land))
+  return better[0] ?? null
+}

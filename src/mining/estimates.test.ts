@@ -3,7 +3,14 @@ import { describe, expect, it } from 'vitest'
 import type { FavoriteLand } from '@/data/favorites'
 import type { EquippedTool } from '@/data/types/mining'
 
-import { effectiveCommission, estimateTlm, mineReadyAt, pickFavoriteLand, sortFavoriteLands } from './estimates'
+import {
+  effectiveCommission,
+  estimateTlm,
+  mineReadyAt,
+  nextFavoriteUpgrade,
+  pickFavoriteLand,
+  sortFavoriteLands
+} from './estimates'
 
 const tool = (delay: number, last_use = 0) => ({ delay, last_use }) as unknown as EquippedTool
 
@@ -102,5 +109,37 @@ describe('sortFavoriteLands', () => {
 
   it('keeps ready lands first in the ready order', () => {
     expect(ids(sortFavoriteLands(lands, 'ready')).slice(0, 2).sort()).toEqual(['ready-high', 'ready-low'])
+  })
+})
+
+describe('nextFavoriteUpgrade', () => {
+  const land = (asset_id: string, readyAt: number, estimatedTlm: number, shards: number) =>
+    ({ asset_id, readyAt, estimatedTlm, shards }) as unknown as FavoriteLand & { readyAt: number }
+  const readyAt = (l: FavoriteLand) => (l as FavoriteLand & { readyAt: number }).readyAt
+
+  it('names the soonest land that pays more than the current pick', () => {
+    const lands = [land('ready', 0, 5, 5), land('better-late', 900, 20, 20), land('better-soon', 300, 9, 9)]
+    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)?.land.asset_id).toBe('better-soon')
+    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)?.at).toBe(300)
+  })
+
+  it('goes by shards in the shards mode', () => {
+    const lands = [land('ready', 0, 1, 5), land('cooling', 300, 50, 4)]
+    expect(nextFavoriteUpgrade(lands, readyAt, 'green', 10)).toBeNull()
+    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)?.land.asset_id).toBe('cooling')
+  })
+
+  it('ignores lands that pay the same or less', () => {
+    const lands = [land('ready', 0, 5, 5), land('cooling', 300, 5, 5)]
+    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)).toBeNull()
+  })
+
+  it('still names a better land while nothing is ready', () => {
+    const lands = [land('soonest', 100, 1, 1), land('better', 400, 7, 7)]
+    expect(nextFavoriteUpgrade(lands, readyAt, 'orange', 10)?.land.asset_id).toBe('better')
+  })
+
+  it('is null without lands', () => {
+    expect(nextFavoriteUpgrade([], readyAt, 'orange', 10)).toBeNull()
   })
 })

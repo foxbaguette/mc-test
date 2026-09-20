@@ -186,6 +186,15 @@ export function ChevronIcon({
   )
 }
 
+/** ↑: a step up, such as the mine button moving to a better land. */
+export function ArrowUpIcon({ color = 'currentColor', strokeWidth = 2.5, ...rest }: GlyphProps) {
+  return (
+    <svg {...glyph(rest)} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 19V5m-6 6 6-6 6 6" />
+    </svg>
+  )
+}
+
 export function GearIcon({ color = 'currentColor', strokeWidth = 1.8, ...rest }: GlyphProps) {
   return (
     <svg {...glyph(rest)} fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">

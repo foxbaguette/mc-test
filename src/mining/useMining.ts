@@ -27,6 +27,7 @@ import {
   estimateTlm,
   mineReadyAt,
   miningPowerByRarity,
+  nextFavoriteUpgrade,
   pickFavoriteLand
 } from './estimates'
 import { mineWithLoanedTool } from './loan'
@@ -80,6 +81,20 @@ export function useMining() {
     () =>
       usesFavorites
         ? pickFavoriteLand(
+            favorites.lands,
+            (land) => mineReadyAt(land.delay, tools.data, miner.data?.last_mine),
+            miningType,
+            coarseNow
+          )
+        : null,
+    [usesFavorites, favorites.lands, tools.data, miner.data, miningType, coarseNow]
+  )
+
+  // A favourite that pays more but is still cooling down: the button moves up to it once it is ready.
+  const upgrade = useMemo(
+    () =>
+      usesFavorites
+        ? nextFavoriteUpgrade(
             favorites.lands,
             (land) => mineReadyAt(land.delay, tools.data, miner.data?.last_mine),
             miningType,
@@ -228,6 +243,16 @@ export function useMining() {
     textAbove,
     /** TLM the next mine should pay, before any bonus; null where there is no estimate. */
     estimatedTlm,
+    /** The better favourite land the button will pick once it comes off cooldown, while it waits. */
+    upgrade:
+      upgrade && upgrade.at > now
+        ? {
+            in: cooldownLabel(upgrade.at, now, ''),
+            title: `${upgrade.land.name} pays more (${
+              miningType === 'orange' ? `${upgrade.land.estimatedTlm.toFixed(4)} TLM` : `${upgrade.land.shards} shards`
+            }) and comes off cooldown in ${cooldownLabel(upgrade.at, now, '')}`
+          }
+        : null,
     textBelow
   }
 }

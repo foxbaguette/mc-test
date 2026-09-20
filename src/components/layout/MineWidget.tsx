@@ -1,6 +1,6 @@
 import { Button } from '@/components/Button'
 import TLMSVG from '@/icons/tlm'
-import { RefreshIcon } from '@/icons/ui'
+import { ArrowUpIcon, RefreshIcon } from '@/icons/ui'
 import { useMembership } from '@/data/player'
 import { useMining } from '@/mining/useMining'
 
@@ -40,8 +40,15 @@ export function MineWidget() {
         >
           <span className="num">{mining.buttonText}</span>
         </Button>
-        <span className="mine__below" title={mining.textBelow}>
-          {mining.textBelow}
+        <span className="mine__below">
+          <span className="mine__land" title={mining.textBelow}>
+            {mining.textBelow}
+          </span>
+          {mining.upgrade && (
+            <span className="mine__upgrade num" title={mining.upgrade.title}>
+              <ArrowUpIcon size={10} /> {mining.upgrade.in}
+            </span>
+          )}
         </span>
       </div>
     </div>
